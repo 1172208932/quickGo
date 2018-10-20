@@ -1,0 +1,199 @@
+﻿var main = (function () {
+	function Main() {
+		var params = {
+			gameId: 1004,
+			baseURL: "https://wxapi.xingqiu123.com/ServiceCore/",
+			//baseURL: "http://47.96.1.255:8080/ServiceCore/",
+			zone: "susliks",
+			showStat: true,
+			showDebugTool: true,
+			userId: 2342598,
+			offerId: "1450014295",
+			version:VERSION,
+			release:BUILD_NUMBER
+
+		};
+		Main.__super.call(this, params);
+	}
+	Laya.class(Main, "py.main", PaoYa.Main);
+	Main.prototype.onShareAppMessage = function () {
+		PaoYa.DataCenter.isShare=true;
+		return {
+			title: PaoYa.DataCenter.config.game.share_list.randomItem,
+			imageUrl: PaoYa.ShareManager.imageURL,
+			query: "",
+			success: function (res) {
+				console.log(res.shareTickets, res.groupMsgInfos);
+			}
+		}
+	}
+	var __proto = Main.prototype;
+	__proto.initService = function () {
+		window.$networkMonitor.on(PaoYa.NetworkMonitor.NETWORK_CHANGE, this, function (isConnected, isWIFI) {
+			var currentScene = window.$navigator.visibleScene;
+			if (currentScene instanceof GameScene || currentScene instanceof GameEntryScene || currentScene instanceof MatchScene) {
+				window.$navigator.popToRootScene();
+				Toast.showModal("警告", "与服务器断开连接");
+			}
+		});
+		window.$socket.on(Laya.Event.CLOSE, this, function () {
+			if (window.$navigator.visibleScene instanceof GameScene) {
+				window.$navigator.popToRootScene();
+				Toast.showModal("警告", "与服务器断开连接");
+			}
+		})
+
+		/**初始化排行榜业务 */
+		var params = {
+			showKey: "score",
+			rank: {
+				res: ["res/atlas/wxlocal/Common.atlas", "res/atlas/wxlocal/Rank.atlas"],
+				btnLeftTitle: "高分榜"
+			},
+			groupRank: {
+				res: ["res/atlas/wxlocal/Common.atlas", "res/atlas/wxlocal/Rank.atlas"]
+			},
+			type: 1
+		}
+		this.rankService = new RankService(params);
+
+		/**初始化好友邀请业务 */
+		this.ifService = new InviteService();
+		this.ifService.on(InviteService.START_GAME, this, function (data, data2) {
+			console.log('好友邀请数据：', data, data2);
+			PaoYa.DataCenter.gameType = 'friend';
+			var params = {};
+			params.match_list = [];
+			if (data.invite_user.user_id == PaoYa.DataCenter.user.id) {
+
+				var selfData = data.invite_user;
+				var otherData = data.receive_user;
+			} else {
+				var selfData = data.receive_user;
+				var otherData = data.invite_user;
+			}
+			selfData.user_icon = selfData.user_icon.makeIcon();
+			otherData.user_icon = otherData.user_icon.makeIcon();
+			params.match_list.push(selfData, otherData);
+			PaoYa.DataCenter.game_params = params;
+			PaoYa.Loader.load(RES.gameRes(), this, function () {
+				var gameScene = new GameScene(params);
+				window.$navigator.push(gameScene);
+			})
+		});
+	};
+
+	Main.prototype.initScene = function () {
+		if (typeof wx != 'undefined') {
+			Service.setupAd("adunit-4db5d604f742b716");
+		}
+		var _this = this;
+		PaoYa.Loader.load(RES.homeRes(), this, function () {
+			PaoYa.LaunchScreenView.show("泡泡消消乐");
+			if (this.launchOption.referrerInfo && this.launchOption.referrerInfo.extraData && this.launchOption.referrerInfo.extraData.to) {
+				if (PaoYa.DataCenter.login) {
+					this.jumpScene();
+				} else {
+					PaoYa.NotificationCenter.defaultCenter.on(PaoYa.NotificationName.LoginSuccess, this, this.jumpScene)
+				}
+			} else {
+				var homeScene = new HomeScene();
+				PaoYa.DataCenter.HomeScene = homeScene;
+				window.$navigator.push(homeScene);
+				PaoYa.LaunchScreenView.hide();
+			}
+		})
+	};
+	__proto.loginSuccess = function () {
+
+		console.log("登陆成功")
+	}
+
+
+	__proto.handleNetworkChange = function (isConnected, isWIFI) {
+		if (isConnected) {
+		}
+		else {
+			Toast.showModal("警告", "您的网络已断开");
+		}
+	};
+	__proto.handleOnShow = function (res) {
+		PaoYa.Main.prototype.handleOnShow.call(this, res);
+		var scene = res.scene;
+		var query = res.query;
+		var shareTicket = res.shareTicket;
+		//以下写每个游戏独立的内容
+		this.rankService&&this.rankService.handleOnShow(res)
+		this.ifService&&this.ifService.handleOnShow(res);
+		if (query.type == PaoYa.ShareType.InviteFriend) {
+			PaoYa.DataCenter.noviceBattle = true;
+		}
+	};
+	__proto.jumpScene = function () {
+		this.launchOption = window.game.launchOption;
+		console.log("小程序传过来的参数：", this.launchOption);
+		if (!this.launchOption.referrerInfo) { return; }
+		if (!this.launchOption.referrerInfo.extraData) { return; }
+		if (!this.launchOption.referrerInfo.extraData.to) { return; }
+		var extraData = this.launchOption.referrerInfo.extraData;
+		var sceneId = extraData.to;
+		var params = extraData.p;
+
+		PaoYa.DataCenter.isFromMiniProgram = true;
+		switch (sceneId) {
+			//跳转随机匹配页
+			case 1002:
+				PaoYa.DataCenter.gameType = "match";
+				console.log("执行匹配")
+				MatchGradeScene.goMatch(params.matchTypeId);
+				break;
+			case 2003:
+		
+				break;
+			//天梯匹配加载页
+			case 3002:
+
+				break;
+			case 4001:
+				PaoYa.DataCenter.gameType = "friend";
+				HomeScene.battle();
+				break;
+		}
+		this.launchOption.referrerInfo = {};
+		PaoYa.LaunchScreenView.hide();
+	}
+	__proto.onShow = function (res) {
+        PaoYa.Main.prototype.onShow.call(this, res);
+        if(PaoYa.DataCenter.isShare){
+            PaoYa.DataCenter.isShare=false;
+            return;
+        }
+        window.$navigator.popToRootScene();
+        console.log("show触发模式1111", res);
+        this.jumpScene();    
+    }
+	__proto.onHide = function (res) {
+		console.log("hide触发模式", res.mode);
+		if (PaoYa.DataCenter.isFromMiniProgram && !PaoYa.DataCenter.isShare) {
+			console.log("杀掉进程")
+			this.exit();
+		}
+	}
+	//console.log = function(){};
+
+	return Main;
+})()
+
+window.game = new main();
+Laya.Stat.hide();
+PaoYa.ShareManager.imageURL = "https://r.callwo.com/whacamole/share_icon.png";
+Laya.UIConfig.closeDialogOnSide = false;
+PaoYa.DataCenter.CDNURL = 'https://r.callwo.com/';
+Laya.Sprite.prototype.setPrizes = function (y, prizes) {
+	if (this.getChildByName("prizeShowView")) { return }
+	var view = new PrizeShowView(prizes)
+	view.name = "prizeShowView"
+	view.y = y
+	this.addChild(view)
+}
+

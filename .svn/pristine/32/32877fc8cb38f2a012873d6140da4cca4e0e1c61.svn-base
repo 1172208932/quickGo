@@ -1,0 +1,12 @@
+export default class HomeView extends PaoYa.View {
+    constructor(){super()}
+    getSceneUrl() {
+        return 'HomeView.json'
+    }
+    // onViewReady(){
+    //     this.textOn.on(Laya.Event.CLICK,this,function(){
+    //         console.log(1111111111)
+    //     })
+    // }
+
+}

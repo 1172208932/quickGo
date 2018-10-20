@@ -1,0 +1,21 @@
+import SpineConfig from '../SpineConfig'
+    export default class HomeThenView extends PaoYa.View {
+    constructor() { super() }
+    getSceneUrl() {
+        return 'scene/HomeThenView.json'
+    }
+    onEnable(){
+            this.shield = new Laya.Skeleton(SpineConfig.fen_xiang.templet);
+            this.shield.pos(626, 332)
+            this.shield.play(0 , true);
+            this.shield.size(300,300)
+            this.shield.on(Laya.Event.CLICK,this,function(){
+                console.log(123)
+                this.owner.toGetProp()
+            })
+            this.addChild(this.shield);       
+    }
+    onDestroy(){
+        this.shield && this.shield.destroy();
+    }
+}

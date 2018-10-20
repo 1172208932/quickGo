@@ -1,0 +1,3620 @@
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var DEBUG = true;
+var onWX = typeof wx != 'undefined';
+var onMiniGame = onWX;
+var PaoYa;
+(function (PaoYa) {
+    /**
+     * <p><code>Handler</code> 是事件处理器类。</p>
+     * <p>推荐使用 Handler.create() 方法从对象池创建，减少对象创建消耗。创建的 Handler 对象不再使用后，可以使用 Handler.recover() 将其回收到对象池，回收后不要再使用此对象，否则会导致不可预料的错误。</p>
+     * <p><b>注意：</b>由于鼠标事件也用本对象池，不正确的回收及调用，可能会影响鼠标事件的执行。</p>
+     */
+    var Handler = /** @class */ (function () {
+        /**
+         * 根据指定的属性值，创建一个 <code>Handler</code> 类的实例。
+         * @param	caller 执行域。
+         * @param	method 处理函数。
+         * @param	args 函数参数。
+         * @param	once 是否只执行一次。
+         */
+        function Handler(caller, method, args, once) {
+            if (caller === void 0) { caller = null; }
+            if (method === void 0) { method = null; }
+            if (args === void 0) { args = null; }
+            if (once === void 0) { once = false; }
+            /** 表示是否只执行一次。如果为true，回调后执行recover()进行回收，回收后会被再利用，默认为false 。*/
+            this.once = false;
+            /**@private */
+            this._id = 0;
+            this.setTo(caller, method, args, once);
+        }
+        /**
+         * 设置此对象的指定属性值。
+         * @param	caller 执行域(this)。
+         * @param	method 回调方法。
+         * @param	args 携带的参数。
+         * @param	once 是否只执行一次，如果为true，执行后执行recover()进行回收。
+         * @return  返回 handler 本身。
+         */
+        Handler.prototype.setTo = function (caller, method, args, once) {
+            this._id = Handler._gid++;
+            this.caller = caller;
+            this.method = method;
+            this.args = args;
+            this.once = once;
+            return this;
+        };
+        /**
+         * 执行处理器。
+         */
+        Handler.prototype.run = function () {
+            if (this.method == null)
+                return null;
+            var id = this._id;
+            var result = this.method.apply(this.caller, this.args);
+            this._id === id && this.once && this.recover();
+            return result;
+        };
+        /**
+         * 执行处理器，携带额外数据。
+         * @param	data 附加的回调数据，可以是单数据或者Array(作为多参)。
+         */
+        Handler.prototype.runWith = function (data) {
+            if (this.method == null)
+                return null;
+            var id = this._id;
+            if (data == null)
+                var result = this.method.apply(this.caller, this.args);
+            else if (!this.args && !data.unshift)
+                result = this.method.call(this.caller, data);
+            else if (this.args)
+                result = this.method.apply(this.caller, this.args.concat(data));
+            else
+                result = this.method.apply(this.caller, data);
+            this._id === id && this.once && this.recover();
+            return result;
+        };
+        /**
+         * 清理对象引用。
+         */
+        Handler.prototype.clear = function () {
+            this.caller = null;
+            this.method = null;
+            this.args = null;
+            return this;
+        };
+        /**
+         * 清理并回收到 Handler 对象池内。
+         */
+        Handler.prototype.recover = function () {
+            if (this._id > 0) {
+                this._id = 0;
+                Handler._pool.push(this.clear());
+            }
+        };
+        /**
+         * 从对象池内创建一个Handler，默认会执行一次并立即回收，如果不需要自动回收，设置once参数为false。
+         * @param	caller 执行域(this)。
+         * @param	method 回调方法。
+         * @param	args 携带的参数。
+         * @param	once 是否只执行一次，如果为true，回调后执行recover()进行回收，默认为true。
+         * @return  返回创建的handler实例。
+         */
+        Handler.create = function (caller, method, args, once) {
+            if (args === void 0) { args = null; }
+            if (once === void 0) { once = true; }
+            if (Handler._pool.length)
+                return Handler._pool.pop().setTo(caller, method, args, once);
+            return new Handler(caller, method, args, once);
+        };
+        /**@private handler对象池*/
+        Handler._pool = [];
+        /**@private */
+        Handler._gid = 1;
+        return Handler;
+    }());
+    PaoYa.Handler = Handler;
+})(PaoYa || (PaoYa = {}));
+/// <reference path="./Handler.ts" />
+var PaoYa;
+/// <reference path="./Handler.ts" />
+(function (PaoYa) {
+    /**
+     * <code>EventDispatcher</code> 类是可调度事件的所有类的基类。
+     */
+    var EventDispatcher = /** @class */ (function () {
+        function EventDispatcher() {
+        }
+        /**
+         * 检查 EventDispatcher 对象是否为特定事件类型注册了任何侦听器。
+         * @param	type 事件的类型。
+         * @return 如果指定类型的侦听器已注册，则值为 true；否则，值为 false。
+         */
+        EventDispatcher.prototype.hasListener = function (type) {
+            var listener = this._events && this._events[type];
+            return !!listener;
+        };
+        /**
+         * 派发事件。
+         * @param type	事件类型。
+         * @param data	（可选）回调数据。<b>注意：</b>如果是需要传递多个参数 p1,p2,p3,...可以使用数组结构如：[p1,p2,p3,...] ；如果需要回调单个参数 p ，且 p 是一个数组，则需要使用结构如：[p]，其他的单个参数 p ，可以直接传入参数 p。
+         * @return 此事件类型是否有侦听者，如果有侦听者则值为 true，否则值为 false。
+         */
+        EventDispatcher.prototype.event = function (type, data) {
+            if (data === void 0) { data = null; }
+            if (!this._events || !this._events[type])
+                return false;
+            var listeners = this._events[type];
+            if (listeners.run) {
+                if (listeners.once)
+                    delete this._events[type];
+                data != null ? listeners.runWith(data) : listeners.run();
+            }
+            else {
+                for (var i = 0, n = listeners.length; i < n; i++) {
+                    var listener = listeners[i];
+                    if (listener) {
+                        (data != null) ? listener.runWith(data) : listener.run();
+                    }
+                    if (!listener || listener.once) {
+                        listeners.splice(i, 1);
+                        i--;
+                        n--;
+                    }
+                }
+                if (listeners.length === 0 && this._events)
+                    delete this._events[type];
+            }
+            return true;
+        };
+        /**
+         * 使用 EventDispatcher 对象注册指定类型的事件侦听器对象，以使侦听器能够接收事件通知。
+         * @param type		事件的类型。
+         * @param caller	事件侦听函数的执行域。
+         * @param listener	事件侦听函数。
+         * @param args		（可选）事件侦听函数的回调参数。
+         * @return 此 EventDispatcher 对象。
+         */
+        EventDispatcher.prototype.on = function (type, caller, listener, args) {
+            if (args === void 0) { args = null; }
+            return this._createListener(type, caller, listener, args, false);
+        };
+        /**
+         * 使用 EventDispatcher 对象注册指定类型的事件侦听器对象，以使侦听器能够接收事件通知，此侦听事件响应一次后自动移除。
+         * @param type		事件的类型。
+         * @param caller	事件侦听函数的执行域。
+         * @param listener	事件侦听函数。
+         * @param args		（可选）事件侦听函数的回调参数。
+         * @return 此 EventDispatcher 对象。
+         */
+        EventDispatcher.prototype.once = function (type, caller, listener, args) {
+            if (args === void 0) { args = null; }
+            return this._createListener(type, caller, listener, args, true);
+        };
+        /**@private */
+        EventDispatcher.prototype._createListener = function (type, caller, listener, args, once, offBefore) {
+            if (offBefore === void 0) { offBefore = true; }
+            //移除之前相同的监听
+            offBefore && this.off(type, caller, listener, once);
+            //使用对象池进行创建回收
+            var handler = EventHandler.create(caller || this, listener, args, once);
+            this._events || (this._events = {});
+            var events = this._events;
+            //默认单个，每个对象只有多个监听才用数组，节省一个数组的消耗
+            if (!events[type])
+                events[type] = handler;
+            else {
+                if (!events[type].run)
+                    events[type].push(handler);
+                else
+                    events[type] = [events[type], handler];
+            }
+            return this;
+        };
+        /**
+         * 从 EventDispatcher 对象中删除侦听器。
+         * @param type		事件的类型。
+         * @param caller	事件侦听函数的执行域。
+         * @param listener	事件侦听函数。
+         * @param onceOnly	（可选）如果值为 true ,则只移除通过 once 方法添加的侦听器。
+         * @return 此 EventDispatcher 对象。
+         */
+        EventDispatcher.prototype.off = function (type, caller, listener, onceOnly) {
+            if (onceOnly === void 0) { onceOnly = false; }
+            if (!this._events || !this._events[type])
+                return this;
+            var listeners = this._events[type];
+            if (listener != null) {
+                if (listeners.run) {
+                    if ((!caller || listeners.caller === caller) && listeners.method === listener && (!onceOnly || listeners.once)) {
+                        delete this._events[type];
+                        listeners.recover();
+                    }
+                }
+                else {
+                    var count = 0;
+                    for (var i = 0, n = listeners.length; i < n; i++) {
+                        var item = listeners[i];
+                        if (item && (!caller || item.caller === caller) && item.method === listener && (!onceOnly || item.once)) {
+                            count++;
+                            listeners[i] = null;
+                            item.recover();
+                        }
+                    }
+                    //如果全部移除，则删除索引
+                    if (count === n)
+                        delete this._events[type];
+                }
+            }
+            return this;
+        };
+        /**
+         * 从 EventDispatcher 对象中删除指定事件类型的所有侦听器。
+         * @param type	（可选）事件类型，如果值为 null，则移除本对象所有类型的侦听器。
+         * @return 此 EventDispatcher 对象。
+         */
+        EventDispatcher.prototype.offAll = function (type) {
+            if (type === void 0) { type = null; }
+            var events = this._events;
+            if (!events)
+                return this;
+            if (type) {
+                this._recoverHandlers(events[type]);
+                delete events[type];
+            }
+            else {
+                for (var name in events) {
+                    this._recoverHandlers(events[name]);
+                }
+                this._events = null;
+            }
+            return this;
+        };
+        EventDispatcher.prototype._recoverHandlers = function (arr) {
+            if (!arr)
+                return;
+            if (arr.run) {
+                arr.recover();
+            }
+            else {
+                for (var i = arr.length - 1; i > -1; i--) {
+                    if (arr[i]) {
+                        arr[i].recover();
+                        arr[i] = null;
+                    }
+                }
+            }
+        };
+        return EventDispatcher;
+    }());
+    PaoYa.EventDispatcher = EventDispatcher;
+    var EventHandler = /** @class */ (function (_super) {
+        __extends(EventHandler, _super);
+        function EventHandler(caller, method, args, once) {
+            return _super.call(this, caller, method, args, once) || this;
+        }
+        EventHandler.prototype.recover = function () {
+            if (this._id > 0) {
+                this._id = 0;
+                EventHandler._pool.push(this.clear());
+            }
+        };
+        /**
+         * 从对象池内创建一个Handler，默认会执行一次回收，如果不需要自动回收，设置once参数为false。
+         * @param caller	执行域(this)。
+         * @param method	回调方法。
+         * @param args		（可选）携带的参数。
+         * @param once		（可选）是否只执行一次，如果为true，回调后执行recover()进行回收，默认为true。
+         * @return 返回创建的handler实例。
+         */
+        EventHandler.create = function (caller, method, args, once) {
+            if (args === void 0) { args = null; }
+            if (once === void 0) { once = true; }
+            if (EventHandler._pool.length)
+                return EventHandler._pool.pop().setTo(caller, method, args, once);
+            return new EventHandler(caller, method, args, once);
+        };
+        return EventHandler;
+    }(PaoYa.Handler));
+})(PaoYa || (PaoYa = {}));
+/// <reference path="./EventDispather.ts" />
+var PaoYa;
+/// <reference path="./EventDispather.ts" />
+(function (PaoYa) {
+    var NotificationName = /** @class */ (function () {
+        function NotificationName() {
+        }
+        NotificationName.ApplicationShow = 'app-show';
+        NotificationName.ApplicationHide = 'app-hide';
+        NotificationName.GameShow = 'game-show';
+        NotificationName.NetworkChanged = 'network-changed';
+        NotificationName.LoginSuccess = 'login-success';
+        return NotificationName;
+    }());
+    PaoYa.NotificationName = NotificationName;
+    var NotificationCenter = /** @class */ (function () {
+        function NotificationCenter() {
+        }
+        NotificationCenter.defaultCenter = new PaoYa.EventDispatcher();
+        return NotificationCenter;
+    }());
+    PaoYa.NotificationCenter = NotificationCenter;
+})(PaoYa || (PaoYa = {}));
+/// <reference path="../../base/EventDispather.ts" />
+/// <reference path="../../base/NotificationCenter.ts" />
+var PaoYa;
+/// <reference path="../../base/EventDispather.ts" />
+/// <reference path="../../base/NotificationCenter.ts" />
+(function (PaoYa) {
+    var BaseScene = /** @class */ (function (_super) {
+        __extends(BaseScene, _super);
+        function BaseScene() {
+            var _this = _super.call(this) || this;
+            /**当前是否活跃，直接标识了当前scene是否显示在屏幕上 */
+            _this.isActive = true;
+            _this.initView();
+            return _this;
+        }
+        /**初始化View */
+        BaseScene.prototype.initView = function () { };
+        /**view加载完成时调用 */
+        BaseScene.prototype.viewDidLoad = function () {
+            this.event(Scene.VIEW_DID_LOAD);
+        };
+        /**view将要显示时调用 */
+        BaseScene.prototype.viewWillAppear = function () {
+            this.event(Scene.VIEW_WILL_APPEAR);
+        };
+        /**view显示完成时调用 */
+        BaseScene.prototype.viewDidAppear = function () {
+            this.event(Scene.VIEW_DID_APPEAR);
+        };
+        /**view将要消失时调用 */
+        BaseScene.prototype.viewWillDisappear = function () {
+            this.event(Scene.VIEW_WILL_DISAPPEAR);
+        };
+        /**view完全消失时调用 */
+        BaseScene.prototype.viewDidDisappear = function () {
+            this.event(Scene.VIEW_DID_DISAPPEAR);
+        };
+        /**Scene销毁时调用 */
+        BaseScene.prototype.destroy = function () {
+            this.event(Scene.WILL_DESTROY);
+            if (!Scene.destroyHandler) {
+                console.error('必须指定Scene.destroyHandler');
+            }
+            Scene.destroyHandler(this);
+            /**这里需要做判断，为了解决没有view的scene用作service的情况，这个坑需要注意 */
+            // if (this.view) {
+            // var child = this.view._childs[0];
+            //child == fairygui.GRoot.inst.displayObject
+            // if ((typeof fairygui != 'undefined') && Laya.Component && (child instanceof Laya.Component)) {
+            //     this.view.dispose();
+            // } else {
+            //     this.view.destroy(true);
+            // }
+            // if (this.view instanceof Laya.Sprite) {
+            //     if (this.view.parent) {
+            //         this.view.removeSelf();
+            //     }
+            //     this.view.destroy(true)
+            // } else {
+            //     this.view.dispose()
+            // }
+            // }
+            this.offAll();
+            this.view = null;
+            this.navigator = null;
+            this.isActive = false;
+            if (typeof wx != 'undefined') {
+                wx.triggerGC();
+            }
+        };
+        BaseScene.VIEW_DID_LOAD = 'VIEW_DID_LOAD';
+        BaseScene.VIEW_WILL_APPEAR = 'VIEW_WILL_APPEAR';
+        BaseScene.VIEW_DID_APPEAR = 'VIEW_DID_APPEAR';
+        BaseScene.VIEW_WILL_DISAPPEAR = 'VIEW_WILL_DISAPPEAR';
+        BaseScene.VIEW_DID_DISAPPEAR = 'VIEW_DID_DISAPPEAR';
+        BaseScene.WILL_DESTROY = 'WILL_DESTROY';
+        return BaseScene;
+    }(PaoYa.EventDispatcher));
+    PaoYa.BaseScene = BaseScene;
+    var Scene = /** @class */ (function (_super) {
+        __extends(Scene, _super);
+        function Scene() {
+            var _this = _super.call(this) || this;
+            _this._requests = [];
+            _this._messages = [];
+            return _this;
+        }
+        Scene.prototype.viewDidLoad = function () {
+        };
+        /**GET请求 */
+        Scene.prototype.GET = function (path, params, suc, fail) {
+            if (fail === void 0) { fail = null; }
+            var xmr = PaoYa.Request.GET(path, params, suc, fail);
+            this._requests.push(xmr);
+        };
+        /**POST请求 */
+        Scene.prototype.POST = function (path, params, suc, fail) {
+            if (fail === void 0) { fail = null; }
+            var xmr = PaoYa.Request.POST(path, params, suc, fail);
+            this._requests.push(xmr);
+        };
+        Scene.prototype.sendMessage = function (cmd, params) {
+            PaoYa.socket.sendMessage(cmd, params);
+        };
+        /**
+         * Socket监听服务器推送消息
+         * @warn 这里是可以省略掉caller的，因为caller一般都是指代this
+        */
+        Scene.prototype.onMessage = function (cmd, caller, listener) {
+            if (!window.$socket) {
+                console.log("socket 没有初始化");
+            }
+            this._messages.push({ cmd: cmd, caller: caller, listener: listener });
+            window.$socket.on(cmd, caller, listener);
+        };
+        /**进入前台时执行，由游戏事件分发主动调用 */
+        Scene.prototype.onShow = function (res) {
+        };
+        /**进入后台时执行，由游戏事件分发主动调用 */
+        Scene.prototype.onHide = function (res) {
+        };
+        /**点击右上角转发时触发 */
+        Scene.prototype.onShareAppMessage = function () {
+            return null;
+        };
+        /**销毁时调用 */
+        Scene.prototype.destroy = function () {
+            if (this._requests.length > 0) {
+                for (var i = this._requests.length - 1; i >= 0; i--) {
+                    var xmr = this._requests.pop();
+                    if (xmr.http.readyState != XMLHttpRequest.DONE) {
+                        xmr.http.abort && xmr.http.abort();
+                    }
+                }
+            }
+            if (this._messages.length > 0) {
+                for (var i = this._messages.length - 1; i >= 0; i--) {
+                    var item = this._messages.pop();
+                    PaoYa.socket.off(item.cmd, item.caller, item.listener);
+                }
+            }
+            this._requests = null;
+            this._messages = null;
+            _super.prototype.destroy.call(this);
+        };
+        return Scene;
+    }(BaseScene));
+    PaoYa.Scene = Scene;
+})(PaoYa || (PaoYa = {}));
+/// <reference path="./Scene.ts" />
+var PaoYa;
+/// <reference path="./Scene.ts" />
+(function (PaoYa) {
+    var Navigator = /** @class */ (function () {
+        function Navigator() {
+            this.scenes = [];
+            this.visibleScene = null;
+        }
+        /**将全新的scene显示在屏幕上 */
+        Navigator.prototype.push = function (scene, animated) {
+            if (animated === void 0) { animated = true; }
+            if (!(scene instanceof PaoYa.Scene)) {
+                console.error("scene必须为Scene的子类");
+            }
+            var view = scene.view;
+            if (!view) {
+                console.error("必须设置该场景的视图，键名为view");
+            }
+            if (!Navigator.setupViewHandler || !Navigator.activeView || !Navigator.deactiveView) {
+                console.error("必须指定view在navigator中的初始化方式");
+            }
+            var sceneCount = this.scenes.length;
+            if (sceneCount > 0) {
+                var from = this.scenes[sceneCount - 1];
+                from.viewWillDisappear();
+                Navigator.deactiveView(from.view);
+                from.isActive = false;
+                from.viewDidDisappear();
+            }
+            scene.viewDidLoad();
+            Navigator.setupViewHandler(view);
+            scene.viewWillAppear();
+            scene.navigator = this;
+            scene.isActive = true;
+            this.scenes.push(scene);
+            this.visibleScene = scene;
+            scene.viewDidAppear();
+        };
+        /**将scene临时显示到屏幕上，不会加入到之前的栈中 */
+        Navigator.prototype.show = function (scene, animated) {
+            if (animated === void 0) { animated = true; }
+            if (!(scene instanceof PaoYa.Scene)) {
+                console.error("scene必须为Scene的子类");
+            }
+            var view = scene.view;
+            if (!view) {
+                console.error("必须设置该场景的视图，键名为view");
+            }
+            scene.viewDidLoad();
+            Navigator.setupViewHandler(view);
+            scene.viewWillAppear();
+            scene.navigator = this;
+            scene.isActive = true;
+            scene.viewDidAppear();
+        };
+        Navigator.prototype.dismiss = function (scene, animated) {
+            if (animated === void 0) { animated = true; }
+            scene.viewWillDisappear();
+            Navigator.deactiveView(scene.view);
+            scene.isActive = false;
+            scene.viewDidDisappear();
+            scene.destroy();
+        };
+        /**将视图推出栈*/
+        Navigator.prototype.pop = function () {
+            if (this.scenes.length <= 1) {
+                console.error("当前只有一个scene，此时不能执行pop操作");
+                return;
+            }
+            var from = this.visibleScene;
+            from.viewWillDisappear();
+            this.scenes.pop();
+            from.viewDidDisappear();
+            from.destroy();
+            var to = this.scenes[this.scenes.length - 1];
+            to.viewWillAppear();
+            Navigator.activeView(to.view);
+            to.isActive = true;
+            to.viewDidAppear();
+            this.visibleScene = to;
+        };
+        /** 跳到栈底的scene*/
+        Navigator.prototype.popToRootScene = function () {
+            if (this.scenes.length <= 1) {
+                console.error("当前只有一个scene，此时不能执行popToRootScene操作");
+                return;
+            }
+            for (var i = this.scenes.length - 1; i > 0; i--) {
+                var scene = this.scenes[i];
+                scene.destroy();
+                this.scenes.pop();
+            }
+            var to = this.scenes[0];
+            to.viewWillAppear();
+            Navigator.activeView(to.view);
+            to.isActive = true;
+            to.viewDidAppear();
+            this.visibleScene = to;
+        };
+        /**跳到指定的scene*/
+        Navigator.prototype.popToScene = function (toScene) {
+            var index = this.scenes.indexOf(toScene);
+            if (index < 0) {
+                console.error("指定的scene未包含在navigator中");
+            }
+            for (var i = this.scenes.length - 1; i > index; i--) {
+                var scene = this.scenes[i];
+                scene.destroy();
+                this.scenes.pop();
+            }
+            var to = toScene;
+            to.viewWillAppear();
+            Navigator.activeView(to.view);
+            to.isActive = true;
+            to.viewDidAppear();
+            this.visibleScene = to;
+        };
+        /**在视图栈中动态替换指定的scene，实现逻辑为
+         * 1、找到指定的oldScene所在的位置，并pop到她所在的位置
+         * 2、用newScene替换掉它
+         */
+        Navigator.prototype.replaceSceneWith = function (oldScene, newScene) {
+            var index = this.scenes.indexOf(oldScene);
+            if (index < 0) {
+                console.error("指定的scene未包含在navigator中");
+                return;
+            }
+            for (var i = this.scenes.length - 1; i >= index; i--) {
+                var scene_1 = this.scenes[i];
+                scene_1.destroy();
+                this.scenes.pop();
+            }
+            var scene = newScene;
+            scene.viewDidLoad();
+            Navigator.setupViewHandler(scene.view);
+            scene.viewWillAppear();
+            scene.navigator = this;
+            scene.isActive = true;
+            this.scenes.push(scene);
+            this.visibleScene = scene;
+            scene.viewDidAppear();
+        };
+        /**找到指定SceneClass的scene */
+        Navigator.prototype.findSceneWithClass = function (SceneClass) {
+            var desScene = null;
+            for (var i = this.scenes.length - 1; i >= 0; i--) {
+                var scene = this.scenes[i];
+                if (scene instanceof SceneClass) {
+                    desScene = scene;
+                    break;
+                }
+            }
+            return desScene;
+        };
+        Navigator.prototype.replace = function (SceneClass, newScene) {
+            var scene = this.findSceneWithClass(SceneClass);
+            this.replaceSceneWith(scene, newScene);
+        };
+        return Navigator;
+    }());
+    PaoYa.Navigator = Navigator;
+})(PaoYa || (PaoYa = {}));
+var PaoYa;
+(function (PaoYa) {
+    var View = /** @class */ (function (_super) {
+        __extends(View, _super);
+        function View() {
+            var _this = _super.call(this) || this;
+            _this.prepare();
+            _this.setupData();
+            return _this;
+        }
+        View.prototype.createChildren = function () {
+            _super.prototype.createChildren.call(this);
+            var clsName = this.constructor.toString();
+            var uiClsName = clsName + 'UI';
+        };
+        View.prototype.prepare = function () {
+        };
+        View.prototype.setupData = function () {
+        };
+        return View;
+    }(Laya.View));
+    PaoYa.View = View;
+})(PaoYa || (PaoYa = {}));
+/// <reference path="../../base/EventDispather.ts" />
+var PaoYa;
+/// <reference path="../../base/EventDispather.ts" />
+(function (PaoYa) {
+    var WebSocket = /** @class */ (function (_super) {
+        __extends(WebSocket, _super);
+        function WebSocket(host, port, byteClass) {
+            if (port === void 0) { port = 0; }
+            if (byteClass === void 0) { byteClass = Laya.Byte; }
+            var _this = _super.call(this) || this;
+            _this._endian = null;
+            _this._stamp = NaN;
+            _this._connected = false;
+            _this._addInputPosition = 0;
+            _this._input = null;
+            _this._output = null;
+            /**
+            *表示建立连接时需等待的毫秒数。
+            */
+            _this.timeout = 20000;
+            /**
+            *@private
+            *在写入或读取对象时，控制所使用的 AMF 的版本。
+            */
+            _this.objectEncoding = 0;
+            /**
+            *不再缓存服务端发来的数据。
+            */
+            _this.disableInput = false;
+            /**
+            *用来发送和接收数据的 <code>Byte</code> 类。
+            */
+            _this._byteClass = null;
+            /**
+            *<p>子协议名称。子协议名称字符串，或由多个子协议名称字符串构成的数组。必须在调用 connect 或者 connectByUrl 之前进行赋值，否则无效。</p>
+            *<p>指定后，只有当服务器选择了其中的某个子协议，连接才能建立成功，否则建立失败，派发 Event.ERROR 事件。</p>
+            *@see https://html.spec.whatwg.org/multipage/comms.html#dom-websocket
+            */
+            _this.protocols = [];
+            _this.endian = "bigEndian";
+            if (host && port > 0 && port < 65535)
+                _this.connect(host, port);
+            return _this;
+        }
+        /**
+        *<p>连接到指定的主机和端口。</p>
+        *<p>连接成功派发 Event.OPEN 事件；连接失败派发 Event.ERROR 事件；连接被关闭派发 Event.CLOSE 事件；接收到数据派发 Event.MESSAGE 事件； 除了 Event.MESSAGE 事件参数为数据内容，其他事件参数都是原生的 HTML DOM Event 对象。</p>
+        *@param host 服务器地址。
+        *@param port 服务器端口。
+        */
+        WebSocket.prototype.connect = function (host, port) {
+            var url = "ws://" + host + ":" + port;
+            if (window.location.protocol == "https:") {
+                url = "wss://" + host + ":" + port;
+            }
+            else {
+                url = "ws://" + host + ":" + port;
+            }
+            this.connectByUrl(url);
+        };
+        /**
+        *<p>连接到指定的服务端 WebSocket URL。 URL 类似 ws://yourdomain:port。</p>
+        *<p>连接成功派发 Event.OPEN 事件；连接失败派发 Event.ERROR 事件；连接被关闭派发 Event.CLOSE 事件；接收到数据派发 Event.MESSAGE 事件； 除了 Event.MESSAGE 事件参数为数据内容，其他事件参数都是原生的 HTML DOM Event 对象。</p>
+        *@param url 要连接的服务端 WebSocket URL。 URL 类似 ws://yourdomain:port。
+        */
+        WebSocket.prototype.connectByUrl = function (url) {
+            var _$this = this;
+            if (this._socket != null)
+                this.close();
+            this._socket && this.cleanSocket();
+            if (!this.protocols || this.protocols.length == 0) {
+                this._socket = new Laya.Browser.window.WebSocket(url);
+            }
+            else {
+                this._socket = new Laya.Browser.window.WebSocket(url, this.protocols);
+            }
+            this._socket.binaryType = "arraybuffer";
+            this._output = new this._byteClass();
+            this._output.endian = this.endian;
+            this._input = new this._byteClass();
+            this._input.endian = this.endian;
+            this._addInputPosition = 0;
+            this._socket.onopen = function (e) {
+                _$this._onOpen(e);
+            };
+            this._socket.onmessage = function (msg) {
+                _$this._onMessage(msg);
+            };
+            this._socket.onclose = function (e) {
+                _$this._onClose(e);
+            };
+            this._socket.onerror = function (e) {
+                _$this._onError(e);
+            };
+        };
+        /**
+        *清理socket。
+        */
+        WebSocket.prototype.cleanSocket = function () {
+            try {
+                this._socket.close();
+            }
+            catch (e) { }
+            this._connected = false;
+            this._socket.onopen = null;
+            this._socket.onmessage = null;
+            this._socket.onclose = null;
+            this._socket.onerror = null;
+            this._socket = null;
+        };
+        /**
+        *关闭连接。
+        */
+        WebSocket.prototype.close = function () {
+            if (this._socket != null) {
+                try {
+                    this._socket.close();
+                }
+                catch (e) { }
+            }
+        };
+        /**
+        *@private
+        *连接建立成功 。
+        */
+        WebSocket.prototype._onOpen = function (e) {
+            this._connected = true;
+            this.event(/*laya.events.Event.OPEN*/ "open", e);
+        };
+        /**
+        *@private
+        *接收到数据处理方法。
+        *@param msg 数据。
+        */
+        WebSocket.prototype._onMessage = function (msg) {
+            if (!msg || !msg.data)
+                return;
+            var data = msg.data;
+            if (this.disableInput && data) {
+                this.event(/*laya.events.Event.MESSAGE*/ "message", data);
+                return;
+            }
+            if (this._input.length > 0 && this._input.bytesAvailable < 1) {
+                this._input.clear();
+                this._addInputPosition = 0;
+            }
+            ;
+            var pre = this._input.pos;
+            !this._addInputPosition && (this._addInputPosition = 0);
+            this._input.pos = this._addInputPosition;
+            if (data) {
+                if ((typeof data == 'string')) {
+                    this._input.writeUTFBytes(data);
+                }
+                else {
+                    this._input.writeArrayBuffer(data);
+                }
+                this._addInputPosition = this._input.pos;
+                this._input.pos = pre;
+            }
+            this.event(/*laya.events.Event.MESSAGE*/ "message", data);
+        };
+        /**
+        *@private
+        *连接被关闭处理方法。
+        */
+        WebSocket.prototype._onClose = function (e) {
+            this._connected = false;
+            this.event(/*laya.events.Event.CLOSE*/ "close", e);
+        };
+        /**
+        *@private
+        *出现异常处理方法。
+        */
+        WebSocket.prototype._onError = function (e) {
+            this.event(/*laya.events.Event.ERROR*/ "error", e);
+        };
+        /**
+        *发送数据到服务器。
+        *@param data 需要发送的数据，可以是String或者ArrayBuffer。
+        */
+        WebSocket.prototype.send = function (data) {
+            this._socket.send(data);
+        };
+        /**
+        *发送缓冲区中的数据到服务器。
+        */
+        WebSocket.prototype.flush = function () {
+            if (this._output && this._output.length > 0) {
+                var evt;
+                try {
+                    this._socket && this._socket.send(this._output.__getBuffer().slice(0, this._output.length));
+                }
+                catch (e) {
+                    evt = e;
+                }
+                this._output.endian = this.endian;
+                this._output.clear();
+                if (evt)
+                    this.event(/*laya.events.Event.ERROR*/ "error", evt);
+            }
+        };
+        Object.defineProperty(WebSocket.prototype, "endian", {
+            /**
+            *<p>主机字节序，是 CPU 存放数据的两种不同顺序，包括小端字节序和大端字节序。</p>
+            *<p> LITTLE_ENDIAN ：小端字节序，地址低位存储值的低位，地址高位存储值的高位。</p>
+            *<p> BIG_ENDIAN ：大端字节序，地址低位存储值的高位，地址高位存储值的低位。</p>
+            */
+            get: function () {
+                return this._endian;
+            },
+            set: function (value) {
+                this._endian = value;
+                if (this._input != null)
+                    this._input.endian = value;
+                if (this._output != null)
+                    this._output.endian = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(WebSocket.prototype, "connected", {
+            /**
+            *表示此 Socket 对象目前是否已连接。
+            */
+            get: function () {
+                return this._connected;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(WebSocket.prototype, "input", {
+            /**
+            *缓存的服务端发来的数据。
+            */
+            get: function () {
+                return this._input;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(WebSocket.prototype, "output", {
+            /**
+                *表示需要发送至服务端的缓冲区中的数据。
+                */
+            get: function () {
+                return this._output;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return WebSocket;
+    }(PaoYa.EventDispatcher));
+    PaoYa.WebSocket = WebSocket;
+})(PaoYa || (PaoYa = {}));
+/// <reference path="../../base/EventDispather.ts" />
+/// <reference path="../../base/NotificationCenter.ts" />
+var PaoYa;
+/// <reference path="../../base/EventDispather.ts" />
+/// <reference path="../../base/NotificationCenter.ts" />
+(function (PaoYa) {
+    var LifeCircleMonitor = /** @class */ (function (_super) {
+        __extends(LifeCircleMonitor, _super);
+        function LifeCircleMonitor() {
+            var _this = _super.call(this) || this;
+            /**是否在前台 */
+            _this.inForeground = false;
+            return _this;
+        }
+        /**生命周期监听开始 */
+        LifeCircleMonitor.prototype.startMonitor = function () {
+            var _this = this;
+            if (typeof wx === "undefined") {
+                console.warn('只有在微信环境下才能启用LifeCircleMonitor');
+                return;
+            }
+            wx.onShow(function (res) {
+                console.log("SHOW | " + JSON.stringify(res));
+                _this.inForeground = true;
+                _this.event(LifeCircleMonitor.SHOW, res);
+                PaoYa.NotificationCenter.defaultCenter.event(PaoYa.NotificationName.ApplicationShow, res);
+            });
+            wx.onHide(function (res) {
+                //{mode:back}  {mode:close}
+                console.log("HIDE | " + JSON.stringify(res));
+                _this.inForeground = false;
+                _this.event(LifeCircleMonitor.HIDE, res);
+                PaoYa.NotificationCenter.defaultCenter.event(PaoYa.NotificationName.ApplicationHide, res);
+            });
+        };
+        /**生命周期监听结束 */
+        LifeCircleMonitor.prototype.stopMonitor = function () {
+            wx.offShow();
+            wx.offHide();
+        };
+        LifeCircleMonitor.SHOW = 'app.on.show';
+        LifeCircleMonitor.HIDE = 'app.on.hide';
+        LifeCircleMonitor.OFF_SHOW = 'app.off.show';
+        LifeCircleMonitor.OFF_HIDE = 'app.off.hide';
+        return LifeCircleMonitor;
+    }(PaoYa.EventDispatcher));
+    PaoYa.LifeCircleMonitor = LifeCircleMonitor;
+})(PaoYa || (PaoYa = {}));
+/// <reference path="../../base/EventDispather.ts" />
+/// <reference path="../../base/NotificationCenter.ts" />
+/// <reference path="./LifeCircleMonitor.ts" />
+var PaoYa;
+/// <reference path="../../base/EventDispather.ts" />
+/// <reference path="../../base/NotificationCenter.ts" />
+/// <reference path="./LifeCircleMonitor.ts" />
+(function (PaoYa) {
+    var NetworkMonitor = /** @class */ (function (_super) {
+        __extends(NetworkMonitor, _super);
+        function NetworkMonitor() {
+            var _this = _super.call(this) || this;
+            /**当前网络是否连接 */
+            _this.isConnected = true;
+            _this.isWIFI = true;
+            _this.type = '';
+            if (typeof wx === "undefined") {
+                console.warn('只有在微信环境下才能启用NetworkMonitor');
+                return _this;
+            }
+            _this.getCurrentType(function (type) {
+                _this.isConnected = (type != 'unknown' || type != 'none');
+                _this.isWIFI = type === 'wifi';
+                _this.type = type;
+            });
+            _this.startMonitor();
+            return _this;
+        }
+        /**启用网络监听 */
+        NetworkMonitor.prototype.startMonitor = function () {
+            var _this = this;
+            wx.onNetworkStatusChange(function (res) {
+                _this.isWIFI = res.networkType === 'wifi';
+                _this.type = res.networkType;
+                _this.isConnected = res.isConnected;
+                console.log("NETWORK | change | " + JSON.stringify(res));
+                _this.event(NetworkMonitor.NETWORK_CHANGE, res);
+                PaoYa.NotificationCenter.defaultCenter.event(PaoYa.NotificationName.NetworkChanged, res);
+            });
+        };
+        /**停止网络监听 */
+        NetworkMonitor.prototype.stopMonitor = function () {
+            wx.offNetworkStatusChange();
+        };
+        /**获取当前网络状态 */
+        NetworkMonitor.prototype.getCurrentType = function (cb) {
+            wx.getNetworkType({
+                success: function (res) {
+                    console.log("NETWORK | type | " + JSON.stringify(res));
+                    cb && cb(res.networkType);
+                }
+            });
+        };
+        NetworkMonitor.NETWORK_CHANGE = 'NetworkMonitor.network.change';
+        return NetworkMonitor;
+    }(PaoYa.EventDispatcher));
+    PaoYa.NetworkMonitor = NetworkMonitor;
+})(PaoYa || (PaoYa = {}));
+/// <reference path="./WebSocket.ts" />
+/// <reference path="../../wx/monitor/NetworkMonitor.ts" />
+/// <reference path="../../wx/monitor/LifeCircleMonitor.ts" />
+/// <reference path="../../base/NotificationCenter.ts" />
+var PaoYa;
+/// <reference path="./WebSocket.ts" />
+/// <reference path="../../wx/monitor/NetworkMonitor.ts" />
+/// <reference path="../../wx/monitor/LifeCircleMonitor.ts" />
+/// <reference path="../../base/NotificationCenter.ts" />
+(function (PaoYa) {
+    var SocketConfig = /** @class */ (function () {
+        function SocketConfig() {
+        }
+        SocketConfig.zone = "";
+        return SocketConfig;
+    }());
+    PaoYa.SocketConfig = SocketConfig;
+    var Socket = /** @class */ (function (_super) {
+        __extends(Socket, _super);
+        function Socket(url) {
+            var _this = _super.call(this) || this;
+            _this.url = url;
+            /**当前是否在重连 */
+            _this.isReconnecting = false;
+            /**当前重连次数 */
+            _this.reconnectTimes = 0;
+            _this.addObserver();
+            return _this;
+        }
+        Object.defineProperty(Socket.prototype, "canReconnect", {
+            get: function () {
+                var networkMonitor = window.$networkMonitor;
+                var lifeCircleMonitor = window.$lifeCircleMonitor;
+                if (typeof wx === 'undefined') {
+                    console.log("SOCKET是否连接：" + (this.connected ? "是" : "否"));
+                    console.log("是否在前台：" + (lifeCircleMonitor.inForeground ? "是" : "否"));
+                    console.log("网络是否连接：" + (networkMonitor.isConnected ? "是" : "否"));
+                    console.log("是否正在重连：" + (this.isReconnecting ? "是" : "否"));
+                }
+                return !this.connected && lifeCircleMonitor.inForeground && networkMonitor.isConnected && !this.isReconnecting;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Socket.prototype.addObserver = function () {
+            var _this = this;
+            var center = PaoYa.NotificationCenter.defaultCenter;
+            center.on(PaoYa.NotificationName.NetworkChanged, this, function (isConnected, isWIFI) {
+                if (_this.canReconnect) {
+                    _this._startReconnect();
+                }
+            });
+            // lifeCircleMonitor.on(LifeCircleMonitor.SHOW, this, function () {
+            //     if (this.canReconnect) {
+            //         this._startReconnect();
+            //     }
+            // })
+            center.on(PaoYa.NotificationName.GameShow, this, function () {
+                if (_this.canReconnect) {
+                    _this._startReconnect();
+                }
+            });
+        };
+        /**切换服务器 */
+        Socket.prototype.changeUrl = function (url) {
+            var _this = this;
+            if (url != this.url) {
+                if (this.isReconnecting) {
+                    this._stopReconnect();
+                }
+                if (this.connected) {
+                    this.close();
+                }
+                Laya.timer.once(1000, this, function () {
+                    _this.connectByUrl(url);
+                });
+            }
+        };
+        /**重写父类方法 */
+        Socket.prototype._onOpen = function (e) {
+            if (window.navigator.userAgent.indexOf('Mobile') > -1) {
+                console.log("S OPEN:");
+                var res = JSON.stringify(e) || "";
+                console.log(res.toString());
+            }
+            else {
+                console.log("%c S OPEN: ", "background:#f3f8f1;color:#177cb0", e);
+            }
+            _super.prototype._onOpen.call(this, e);
+            if (this.isReconnecting) {
+                this._stopReconnect();
+                this.onReconnectEnd();
+                this.event(Socket.RECONNECT_END);
+            }
+        };
+        //{code:1006,reason:"abnormal closure"}服务器主动断开连接
+        //{code:1000} 用户主动断开连接
+        Socket.prototype._onClose = function (e) {
+            var res = JSON.stringify(e) || "";
+            if (window.navigator.userAgent.indexOf('Mobile') > -1) {
+                console.log("S CLOSE:");
+                console.log(res.toString());
+            }
+            else {
+                console.log("%c S CLOSE: ", "background:#f3f8f1;color:#177cb0", res.toString());
+            }
+            _super.prototype._onClose.call(this, e);
+            if (e.code == 1000) {
+                return;
+            }
+            if (this.canReconnect) {
+                if (e.code && e.code == 1006) { //网络原因导致的
+                    this._startReconnect(Socket.reconnectConfig.duration);
+                }
+                else {
+                    this._startReconnect(Socket.reconnectConfig.interval);
+                }
+            }
+        };
+        /**重写父类方法 */
+        Socket.prototype._onMessage = function (msg) {
+            _super.prototype._onMessage.call(this, msg);
+            if (!msg || !msg.data)
+                return;
+            var data = msg.data;
+            if (window.navigator.userAgent.indexOf('Mobile') > -1) {
+                console.log("S <<<");
+                console.log(data);
+            }
+            else {
+                console.log("%c S <<< ", "background:#f3f8f1;color:#177cb0", data);
+            }
+            this.handleMessage(data);
+        };
+        /**重写父类方法 */
+        Socket.prototype._onError = function (e) {
+            var res = JSON.stringify(e) || "";
+            if (window.navigator.userAgent.indexOf('Mobile') > -1) {
+                console.log("S ERROR:");
+                console.log(res.toString());
+            }
+            else {
+                console.log("%c S ERROR: ", "background:#f3f8f1;color:#177cb0", res.toString());
+            }
+            _super.prototype._onError.call(this, e);
+            // if (!window.$networkMonitor.isConnected) {
+            //     if (this.isReconnecting) {
+            //         this._stopReconnect();
+            //     }
+            // } else {
+            // }
+        };
+        /**处理消息返回内容，子类需重写 */
+        Socket.prototype.handleMessage = function (msg) { };
+        /**自定义方法，便于快速执行 */
+        Socket.prototype.connect = function () {
+            this.connectByUrl(this.url);
+        };
+        /**重写父类方法 */
+        Socket.prototype.connectByUrl = function (url) {
+            PaoYa.DataTrack.startSocketTime();
+            this.url = url;
+            _super.prototype.connectByUrl.call(this, url);
+        };
+        Socket.prototype.startWatchDog = function () {
+            Laya.timer.loop(5000, this, this.handleWatchDog);
+        };
+        Socket.prototype.handleWatchDog = function () {
+            if (this.connected) {
+                this.stopWatchDog();
+            }
+            else {
+                this._startReconnect();
+            }
+        };
+        Socket.prototype.stopWatchDog = function () {
+            Laya.timer.clear(this, this.handleWatchDog);
+        };
+        /**开始重连 */
+        Socket.prototype._startReconnect = function (interval) {
+            if (interval === void 0) { interval = Socket.reconnectConfig.interval; }
+            if (this.isReconnecting) {
+                return;
+            }
+            this.isReconnecting = true;
+            this.reconnectTimes = 0;
+            this._reconnect();
+            this.onReconnectStart();
+            Laya.timer.loop(interval * 1000, this, this._reconnect);
+            this.event(Socket.RECONNECT_START, [this.reconnectTimes, Socket.reconnectConfig.total]);
+        };
+        /**停止重连 */
+        Socket.prototype._stopReconnect = function () {
+            if (!this.isReconnecting) {
+                return;
+            }
+            this.isReconnecting = false;
+            this.reconnectTimes = 0;
+            Laya.timer.clear(this, this._reconnect);
+        };
+        /**执行重连方法 */
+        Socket.prototype._reconnect = function () {
+            var config = Socket.reconnectConfig;
+            if (this.reconnectTimes < config.total) {
+                this.connect();
+                this.reconnectTimes++;
+                this.onReconnecting(this.reconnectTimes, config.total);
+                this.event(Socket.RECONNECT_PROGRESS, [this.reconnectTimes, config.total]);
+                if (this.reconnectTimes > config.total / 2) {
+                    Laya.timer.clear(this, this._reconnect);
+                    Laya.timer.loop(config.duration * 1000, this, this._reconnect);
+                }
+            }
+            else {
+                this._stopReconnect();
+                this.onReconnectFail();
+                this.event(Socket.RECONNECT_FAIL);
+            }
+        };
+        /**子类重写 */
+        Socket.prototype.onReconnecting = function (times, total) {
+        };
+        Socket.prototype.onReconnectStart = function () {
+        };
+        Socket.prototype.onReconnectEnd = function () {
+        };
+        Socket.prototype.onReconnectFail = function () {
+        };
+        /**重连配置 */
+        Socket.reconnectConfig = {
+            total: 8,
+            interval: 5,
+            duration: 10 //后续重连间隔
+        };
+        Socket.RECONNECT_START = "socket.reconnect.start";
+        Socket.RECONNECT_END = 'socket.reconnect.end';
+        Socket.RECONNECT_FAIL = 'socket.reconnect.fail';
+        Socket.RECONNECT_PROGRESS = 'socket.reconnect.progress';
+        return Socket;
+    }(Laya.Socket));
+    PaoYa.Socket = Socket;
+})(PaoYa || (PaoYa = {}));
+/// <reference path="./Socket.ts" />
+var PaoYa;
+/// <reference path="./Socket.ts" />
+(function (PaoYa) {
+    var ClientConfig = /** @class */ (function () {
+        function ClientConfig() {
+        }
+        ClientConfig.watchDogTime = 5;
+        ClientConfig.maxRetryTime = 3;
+        return ClientConfig;
+    }());
+    PaoYa.ClientConfig = ClientConfig;
+    var Client = /** @class */ (function (_super) {
+        __extends(Client, _super);
+        function Client(url) {
+            var _this = _super.call(this, url) || this;
+            _this.msgsSending = [];
+            _this.msgsSent = [];
+            _this.map = {};
+            _this.on(Client.LOGIN, _this, _this.onLogin);
+            return _this;
+        }
+        /**发送socket消息 */
+        Client.prototype.sendMessage = function (cmd, params) {
+            if (!params.game_id && window.game) {
+                params.game_id = window.game.gameId;
+            }
+            params.command = cmd;
+            var time = (new Date()).valueOf();
+            params.m_id = time;
+            if (this.map[time] == undefined) {
+                this.map[time] = 0;
+            }
+            else {
+                this.map[time] = this.map[time]++;
+            }
+            var msg = JSON.stringify(params);
+            if (window.navigator.userAgent.indexOf('Mobile') > -1) {
+                console.log("S >>>");
+                console.log(msg.toString());
+            }
+            else {
+                console.log("%c S >>> ", "background:#f3f8f1;color:#177cb0", cmd, " | ", msg.toString());
+            }
+            if (this.connected) {
+                this.send(msg);
+                var shouldCheck = true;
+                for (var i = 0; i < Client.ignoreCmds.length; i++) {
+                    var command = Client.ignoreCmds[i];
+                    if (cmd === command) {
+                        shouldCheck = false;
+                        break;
+                    }
+                }
+                if (shouldCheck) {
+                    this.msgsSent.push(msg);
+                }
+            }
+            else {
+                this.msgsSending.push(msg);
+                if (!this.isReconnecting) {
+                    this._startReconnect();
+                }
+                console.warn("缓存socket命令，等待连接成功后再次发送");
+            }
+        };
+        /**处理socket消息 */
+        Client.prototype.handleMessage = function (msg) {
+            _super.prototype.handleMessage.call(this, msg);
+            var obj = JSON.parse(msg);
+            var cmd = obj.command;
+            var value = obj.value;
+            var code = obj.code;
+            var message = obj.message || "请求出错";
+            if (code != 200) {
+                obj.errorcode && (code = obj.errorcode);
+                console.error(message);
+            }
+            this.event(cmd, [value, code, message]);
+            //remove item
+            this.removeMsg(obj);
+        };
+        Client.prototype.onLogin = function () {
+            var _this = this;
+            console.log("S: | sending | msgs: " + this.msgsSending.length + "\u4E2A");
+            this.msgsSending.forEach(function (msg) {
+                _this.send(msg);
+            });
+            // let msg = this.msgsSending.shift()
+            // msg && this.send(msg)
+            this.msgsSending.length = 0;
+            this.startWatchDog();
+            this.startHeartBeat();
+        };
+        Client.prototype.startWatchDog = function () {
+            Laya.timer.loop(ClientConfig.watchDogTime, this, this.checkCmd);
+        };
+        Client.prototype.stopWatchDog = function () {
+            //测试是否需要清空历史命令
+            this.msgsSent.length = 0;
+            Laya.timer.clear(this, this.checkCmd);
+        };
+        Client.prototype.checkCmd = function () {
+            var _this = this;
+            var currentTimestamp = (new Date()).valueOf();
+            this.msgsSent.forEach(function (item, index) {
+                var msg = JSON.parse(item);
+                if (msg.m_id && (currentTimestamp - msg.m_id > 5 * 1000)) {
+                    if (msg.retryTime < ClientConfig.maxRetryTime) {
+                        //resend msg
+                        PaoYa.DataTrack.track(PaoYa.DataTrackType.SocketRetry, { c: msg.command, t: msg.retryTime });
+                        _this.sendMessage(msg.command, msg);
+                    }
+                    else {
+                        _this.event(msg.command, [{}, -1, '请求超时']);
+                        console.warn("\u547D\u4EE4 " + msg.command + " \u8BF7\u6C42\u8D85\u65F6");
+                    }
+                    //remove item
+                    _this.removeMsg(msg);
+                }
+            });
+        };
+        Client.prototype.removeMsg = function (msg) {
+            for (var i = 0; i < this.msgsSent.length; i++) {
+                var item = JSON.parse(this.msgsSent[i]);
+                if (item.m_id == msg.m_id) {
+                    this.msgsSent.splice(i, 1);
+                    delete this.map[item.m_id];
+                }
+            }
+        };
+        Client.prototype._onClose = function (e) {
+            _super.prototype._onClose.call(this, e);
+            this.stopHeartBeat();
+            this.stopWatchDog();
+        };
+        Client.prototype.startHeartBeat = function () {
+            Laya.timer.loop(15000, this, this.handleHeartBeat);
+        };
+        Client.prototype.stopHeartBeat = function () {
+            Laya.timer.clear(this, this.handleHeartBeat);
+        };
+        Client.prototype.handleHeartBeat = function () {
+            this.sendMessage(Client.HEART_BEAT, {});
+        };
+        /**子类重写 */
+        Client.prototype.onReconnecting = function (cur, total) {
+            PaoYa.Toast.showLoading("\u8FDE\u63A5\u4E2D(" + cur + "/" + total + ")", true);
+        };
+        Client.prototype.onReconnectStart = function () {
+            this.stopHeartBeat();
+            PaoYa.Toast.showLoading("正在连接...");
+        };
+        Client.prototype.onReconnectEnd = function () {
+            PaoYa.Toast.showSuccess("连接成功", 1500);
+        };
+        Client.prototype.onReconnectFail = function () {
+            PaoYa.Toast.showSuccess("连接失败", 1500);
+        };
+        Client.ignoreCmds = ['betpk',
+            'joinmatch', 'cancelmatch',
+            'matchagain', 'cancelagain',
+            'promotionenroll', 'cancelenroll',
+            'laddermatch', 'cancelladdermatch', 'demandpk'];
+        //通用命令
+        Client.HEART_BEAT = "heartbeat";
+        Client.DISCONNECT = "disconnect";
+        Client.LEAVE_ROOM = 'leave_room';
+        Client.LOGIN = 'login';
+        //匹配
+        Client.MATCH_SUCCESS = "matchsuccess";
+        Client.MATCH_FAIL = "matchfail";
+        Client.MATCH_JOIN = "joinmatch";
+        Client.MATCH_CANCEL = "cancelmatch";
+        //天梯
+        Client.LADDER_MATCH_JOIN = "laddermatch";
+        Client.LADDER_MATCH_CANCEL = "cancelladdermatch";
+        //游戏阶段
+        Client.GAME_START_MATCH = 'startmatch';
+        Client.GAME_START_GAME = 'startpkgame';
+        Client.GAME_START_PK = 'startpk';
+        Client.GAME_BET = 'betpk';
+        Client.GAME_END_PK = 'endpk';
+        Client.GAME_END_PKGAME = 'endpkgame';
+        //再来一局
+        Client.AGIAN_SEND = 'matchagain';
+        Client.AGAIN_REJECT = 'matchreject';
+        Client.AGAIN_CANCAL = 'cancelagain';
+        //赛事
+        Client.CHAMPIONSHIP_JION = 'promotionenroll';
+        Client.CHAMPIONSHIP_CANCEL = 'cancelenroll';
+        Client.CHAMPIONSHIP_UPDATE_ROOM_COUNT = 'updateCount';
+        Client.CHAMPIONSHIP_UPDATE_TOTAL_COUNT = 'updatecurUserCount';
+        //分享
+        Client.SHARE_START_GAME = "sharestartgame";
+        Client.SHARE_INVITE_FRIEND = "invite_friend";
+        Client.SHARE_RECEIVE_INVITE = "receive_invite";
+        // static SHARE_LEAVE_ROOM = "shareleaveroom"
+        //群约战pk
+        Client.GROUP_JOIN_ROOM = "groupjoinroom";
+        Client.GROUP_ROOM_STATUS = "grouproomStatus";
+        return Client;
+    }(PaoYa.Socket));
+    PaoYa.Client = Client;
+})(PaoYa || (PaoYa = {}));
+/// <reference path="../../base/EventDispather.ts" />
+var PaoYa;
+/// <reference path="../../base/EventDispather.ts" />
+(function (PaoYa) {
+    var HttpRequest = /** @class */ (function (_super) {
+        __extends(HttpRequest, _super);
+        function HttpRequest() {
+            var _this_1 = _super.call(this) || this;
+            _this_1._responseType = null;
+            _this_1._data = null;
+            _this_1._http = new XMLHttpRequest();
+            /**
+            *@private
+            *请求进度的侦听处理函数。
+            *@param e 事件对象。
+            */
+            _this_1._onProgress = function (e) {
+                if (e && e.lengthComputable)
+                    this.event(/*laya.events.Event.PROGRESS*/ "progress", e.loaded / e.total);
+            };
+            /**
+            *@private
+            *请求中断的侦听处理函数。
+            *@param e 事件对象。
+            */
+            _this_1._onAbort = function (e) {
+                this.error("Request was aborted by user");
+            };
+            /**
+            *@private
+            *请求出错侦的听处理函数。
+            *@param e 事件对象。
+            */
+            _this_1._onError = function (e) {
+                this.error("Request failed Status:" + this._http.status + " text:" + this._http.statusText);
+            };
+            /**
+            *@private
+            *请求消息返回的侦听处理函数。
+            *@param e 事件对象。
+            */
+            _this_1._onLoad = function (e) {
+                var http = this._http;
+                var status = http.status !== undefined ? http.status : 200;
+                if (status === 200 || status === 204 || status === 0) {
+                    this.complete();
+                }
+                else {
+                    this.error("[" + http.status + "]" + http.statusText + ":" + http.responseURL);
+                }
+            };
+            return _this_1;
+        }
+        /**
+        *发送 HTTP 请求。
+        *@param url 请求的地址。大多数浏览器实施了一个同源安全策略，并且要求这个 URL 与包含脚本的文本具有相同的主机名和端口。
+        *@param data (default=null)发送的数据。
+        *@param method (default="get")用于请求的 HTTP 方法。值包括 "get"、"post"、"head"。
+        *@param responseType (default="text")Web 服务器的响应类型，可设置为 "text"、"json"、"xml"、"arraybuffer"。
+        *@param headers (default=null)HTTP 请求的头部信息。参数形如key-value数组：key是头部的名称，不应该包括空白、冒号或换行；value是头部的值，不应该包括换行。比如["Content-Type","application/json"]。
+        */
+        HttpRequest.prototype.send = function (url, data, method, responseType, headers) {
+            if (data === void 0) { data = null; }
+            if (method === void 0) { method = 'get'; }
+            if (responseType === void 0) { responseType = 'text'; }
+            this._responseType = responseType;
+            this._data = null;
+            var _this = this;
+            var http = this._http;
+            http.open(method, url, true);
+            if (headers) {
+                for (var i = 0; i < headers.length; i++) {
+                    http.setRequestHeader(headers[i++], headers[i]);
+                }
+            }
+            else {
+                if (!data || (typeof data == 'string'))
+                    http.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                else
+                    http.setRequestHeader("Content-Type", "application/json");
+            }
+            http.responseType = responseType !== "arraybuffer" ? "text" : "arraybuffer";
+            http.onerror = function (e) {
+                _this._onError(e);
+            };
+            http.onabort = function (e) {
+                _this._onAbort(e);
+            };
+            http.onprogress = function (e) {
+                _this._onProgress(e);
+            };
+            http.onload = function (e) {
+                _this._onLoad(e);
+            };
+            http.send(data);
+        };
+        /**
+        *@private
+        *请求错误的处理函数。
+        *@param message 错误信息。
+        */
+        HttpRequest.prototype.error = function (message) {
+            this.clear();
+            this.event(/*laya.events.Event.ERROR*/ "error", message);
+        };
+        /**
+        *@private
+        *请求成功完成的处理函数。
+        */
+        HttpRequest.prototype.complete = function () {
+            this.clear();
+            var flag = true;
+            try {
+                if (this._responseType === "json") {
+                    this._data = JSON.parse(this._http.responseText);
+                }
+                else if (this._responseType === "xml") {
+                    console.error("can't parse xml data, please handle this by yourself!");
+                }
+                else {
+                    this._data = this._http.response || this._http.responseText;
+                }
+            }
+            catch (e) {
+                flag = false;
+                this.error(e.message);
+            }
+            flag && this.event(/*laya.events.Event.COMPLETE*/ "complete", (this._data instanceof Array) ? [this._data] : this._data);
+        };
+        /**
+        *@private
+        *清除当前请求。
+        */
+        HttpRequest.prototype.clear = function () {
+            var http = this._http;
+            http.onerror = http.onabort = http.onprogress = http.onload = null;
+        };
+        Object.defineProperty(HttpRequest.prototype, "url", {
+            get: function () {
+                return this._http.responseURL;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(HttpRequest.prototype, "http", {
+            get: function () {
+                return this._http;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(HttpRequest.prototype, "data", {
+            get: function () {
+                return this._data;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        HttpRequest.COMPLETE = 'complete';
+        HttpRequest.PROGRESS = 'progress';
+        HttpRequest.ERROR = 'error';
+        return HttpRequest;
+    }(PaoYa.EventDispatcher));
+    PaoYa.HttpRequest = HttpRequest;
+})(PaoYa || (PaoYa = {}));
+/// <reference path="./HttpRequest.ts" />
+var PaoYa;
+/// <reference path="./HttpRequest.ts" />
+(function (PaoYa) {
+    var RequestConfig = /** @class */ (function () {
+        function RequestConfig() {
+        }
+        RequestConfig.baseURL = "";
+        RequestConfig.token = "";
+        RequestConfig.headers = ["Content-Type", "application/x-www-form-urlencoded"];
+        RequestConfig.maxRetryTimes = 3;
+        return RequestConfig;
+    }());
+    PaoYa.RequestConfig = RequestConfig;
+    var Request = /** @class */ (function (_super) {
+        __extends(Request, _super);
+        function Request() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        Request.prototype.sendRequest = function (path, params, method) {
+            if (!RequestConfig.baseURL) {
+                console.error("请指定baseURL");
+                return;
+            }
+            this._path = path;
+            if (RequestConfig.makeParamsHandler) {
+                params = RequestConfig.makeParamsHandler(params);
+            }
+            if (window.navigator.userAgent.indexOf('Mobile') > -1) {
+                console.log("R >>> | " + path + " | " + (params['wxparams'] || JSON.stringify(params)));
+            }
+            else {
+                console.log("%c R >>> ", "background:#f3f8f1;color:#9d2932", path + " | " + params['wxparams'] || JSON.stringify(params));
+            }
+            var items = [];
+            for (var key in params) {
+                items.push(encodeURIComponent(key) + "=" + encodeURIComponent(params[key]));
+            }
+            var result = items.join("&");
+            var url = RequestConfig.baseURL + path;
+            if (method == 'get') {
+                url += "?" + result;
+            }
+            this.$url = url;
+            this.$query = result;
+            this.$method = method;
+            this.send(url, result, method, null, RequestConfig.headers);
+        };
+        /**发送GET请求 */
+        Request.prototype.GET = function (path, params) {
+            this.sendRequest(path, params, 'get');
+        };
+        /**发送POST请求 */
+        Request.prototype.POST = function (path, params) {
+            this.sendRequest(path, params, 'post');
+        };
+        /**重写父类的complete方法 */
+        Request.prototype.complete = function () {
+            if (window.navigator.userAgent.indexOf('Mobile') > -1) {
+                console.log("R <<< | " + this._path + " | " + this.http.responseText);
+            }
+            else {
+                console.log("%c R <<< | ", "background:#f3f8f1;color:#9d2932", this._path, '| ', this.http.responseText);
+            }
+            _super.prototype.complete.call(this);
+        };
+        /**重写父类的complete方法 */
+        Request.prototype.error = function (message) {
+            var status = this.http.status;
+            if (this._retryTimes < RequestConfig.maxRetryTimes) {
+                this._retryTimes++;
+                PaoYa.DataTrack.track(PaoYa.DataTrackType.HTTPRetry, { c: this.$url, t: this._retryTimes });
+                setTimeout(function () {
+                    this.send(this.$url, this.$query, this.$method, null, RequestConfig.headers);
+                }.bind(this), 500);
+            }
+            else {
+                _super.prototype.error.call(this, message);
+            }
+        };
+        /**类方法进行GET请求 */
+        Request.GET = function (path, params, suc, fail) {
+            var _this = this;
+            if (fail === void 0) { fail = null; }
+            var xmr = new Request();
+            xmr.on(Laya.Event.COMPLETE, this, function (data) {
+                _this.handleError(data, suc, fail);
+            });
+            xmr.on(Laya.Event.ERROR, this, function (res) {
+                fail && fail(res || "连接服务器失败");
+            });
+            xmr.GET(path, params);
+            return xmr;
+        };
+        /**类方法进行POST请求 */
+        Request.POST = function (path, params, suc, fail) {
+            var _this = this;
+            if (fail === void 0) { fail = null; }
+            var xmr = new Request();
+            xmr.on(Laya.Event.COMPLETE, this, function (data) {
+                _this.handleError(data, suc, fail);
+            });
+            xmr.on(Laya.Event.ERROR, this, function (res) {
+                fail && fail(res || "连接服务器失败");
+            });
+            xmr.POST(path, params);
+            return xmr;
+        };
+        Request.handleError = function (data, suc, fail) {
+            data = JSON.parse(data);
+            var code = data.code;
+            if (code == 200) {
+                suc && suc(data.value);
+            }
+            else {
+                fail && fail(data.message || "请求出现错误", (data.errorcode ? data.errorcode : code));
+            }
+        };
+        return Request;
+    }(PaoYa.HttpRequest));
+    PaoYa.Request = Request;
+})(PaoYa || (PaoYa = {}));
+var MTA_CONFIG = {
+    app_id: "",
+    event_id: "",
+    api_base: "https://pingtas.qq.com/pingd",
+    prefix: "_mta_",
+    version: "1.3.5",
+    stat_share_app: !1,
+    stat_pull_down_fresh: !1,
+    stat_reach_bottom: !1
+};
+function getNetworkType(a) {
+    wx.getNetworkType({
+        success: function (b) {
+            a(b.networkType);
+        }
+    });
+}
+function getSystemInfo() {
+    var a = wx.getSystemInfoSync();
+    return {
+        adt: encodeURIComponent(a.model),
+        scl: a.pixelRatio,
+        scr: a.windowWidth + "x" + a.windowHeight,
+        lg: a.language,
+        fl: a.version,
+        jv: encodeURIComponent(a.system),
+        tz: encodeURIComponent(a.platform)
+    };
+}
+function getUID() {
+    try {
+        return wx.getStorageSync(MTA_CONFIG.prefix + "auid");
+    }
+    catch (a) { }
+}
+function setUID() {
+    try {
+        var a = getRandom();
+        wx.setStorageSync(MTA_CONFIG.prefix + "auid", a);
+        return a;
+    }
+    catch (b) { }
+}
+function getSID() {
+    try {
+        return wx.getStorageSync(MTA_CONFIG.prefix + "ssid");
+    }
+    catch (a) { }
+}
+function setSID() {
+    try {
+        var a = "s" + getRandom();
+        wx.setStorageSync(MTA_CONFIG.prefix + "ssid", a);
+        return a;
+    }
+    catch (b) { }
+}
+function getRandom(a) {
+    for (var b = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], c = 10; 1 < c; c--) {
+        var d = Math.floor(10 * Math.random()), e = b[d];
+        b[d] = b[c - 1];
+        b[c - 1] = e;
+    }
+    for (c = d = 0; 5 > c; c++)
+        d = 10 * d + b[c];
+    return (a || "") + (d + "" + +new Date);
+}
+function getPagePath() {
+    try {
+        var a = getCurrentPages(), b = "/";
+        0 < a.length && (b = a.pop().__route__);
+        return b;
+    }
+    catch (c) {
+        console.log("get current page path error:" + c);
+    }
+}
+function getMainInfo() {
+    var a = {
+        dm: "wechat.apps.xx",
+        url: getPagePath(),
+        pvi: "",
+        si: "",
+        ty: 0
+    };
+    a.pvi = function () {
+        var b = getUID();
+        b || (b = setUID(), a.ty = 1);
+        return b;
+    }();
+    a.si = function () {
+        var a = getSID();
+        a || (a = setSID());
+        return a;
+    }();
+    return a;
+}
+function getBasicInfo() {
+    var a = getSystemInfo();
+    getNetworkType(function (a) {
+        try {
+            wx.setStorageSync(MTA_CONFIG.prefix + "ntdata", a);
+        }
+        catch (c) { }
+    });
+    a.ct = wx.getStorageSync(MTA_CONFIG.prefix + "ntdata") || "4g";
+    return a;
+}
+function getExtentInfo() {
+    var a = MTA.Data.userInfo;
+    var b = [], c;
+    for (c in a)
+        a.hasOwnProperty(c) && b.push(c + "=" + a[c]);
+    a = b.join(";");
+    return {
+        r2: MTA_CONFIG.app_id,
+        r4: "wx",
+        ext: "v=" + MTA_CONFIG.version + (null !== a && "" !== a ? ";ui=" + encodeURIComponent(a) : "")
+    };
+}
+var MTA = {
+    App: {
+        init: function (a) {
+            "appID" in a && (MTA_CONFIG.app_id = a.appID);
+            "eventID" in a && (MTA_CONFIG.event_id = a.eventID);
+            "statShareApp" in a && (MTA_CONFIG.stat_share_app = a.statShareApp);
+            "statPullDownFresh" in a && (MTA_CONFIG.stat_pull_down_fresh = a.statPullDownFresh);
+            "statReachBottom" in a && (MTA_CONFIG.stat_reach_bottom = a.statReachBottom);
+            setSID();
+            "lauchOpts" in a && (MTA.Data.lanchInfo = a.lauchOpts, MTA.Data.lanchInfo.landing = 1);
+        }
+    },
+    Page: {
+        init: function () {
+            var a = getCurrentPages()[getCurrentPages().length - 1];
+            a.onShow &&
+                !function () {
+                    var b = a.onShow;
+                    a.onShow = function () {
+                        MTA.Page.stat();
+                        b.call(this, arguments);
+                    };
+                }();
+            MTA_CONFIG.stat_pull_down_fresh && a.onPullDownRefresh && !function () {
+                var b = a.onPullDownRefresh;
+                a.onPullDownRefresh = function () {
+                    MTA.Event.stat(MTA_CONFIG.prefix + "pulldownfresh", {
+                        url: a.__route__
+                    });
+                    b.call(this, arguments);
+                };
+            }();
+            MTA_CONFIG.stat_reach_bottom && a.onReachBottom && !function () {
+                var b = a.onReachBottom;
+                a.onReachBottom = function () {
+                    MTA.Event.stat(MTA_CONFIG.prefix + "reachbottom", {
+                        url: a.__route__
+                    });
+                    b.call(this, arguments);
+                };
+            }();
+            MTA_CONFIG.stat_share_app && a.onShareAppMessage && !function () {
+                var b = a.onShareAppMessage;
+                a.onShareAppMessage = function () {
+                    MTA.Event.stat(MTA_CONFIG.prefix + "shareapp", {
+                        url: a.__route__
+                    });
+                    return b.call(this, arguments);
+                };
+            }();
+        },
+        stat: function () {
+            if ("" != MTA_CONFIG.app_id) {
+                var a = [], b = getExtentInfo(), c = [getMainInfo(), b, getBasicInfo()];
+                MTA.Data.lanchInfo && (c.push({
+                    ht: MTA.Data.lanchInfo.scene,
+                    rdm: "/",
+                    rurl: MTA.Data.lanchInfo.path
+                }), MTA.Data.lanchInfo.query && MTA.Data.lanchInfo.query._mta_ref_id && c.push({
+                    rarg: MTA.Data.lanchInfo.query._mta_ref_id
+                }),
+                    1 == MTA.Data.lanchInfo.landing && (b.ext += ";lp=1", MTA.Data.lanchInfo.landing = 0));
+                c.push({
+                    rand: +new Date
+                });
+                b = 0;
+                for (var d = c.length; b < d; b++)
+                    for (var e in c[b])
+                        c[b].hasOwnProperty(e) && a.push(e + "=" + ("undefined" == typeof c[b][e] ? "" : c[b][e]));
+                wx.request({
+                    url: MTA_CONFIG.api_base + "?" + a.join("&").toLowerCase()
+                });
+            }
+        }
+    },
+    Event: {
+        stat: function (a, b) {
+            if ("" != MTA_CONFIG.event_id) {
+                var c = [], d = getMainInfo(), e = getExtentInfo();
+                d.dm = "wxapps.click";
+                d.url = a;
+                e.r2 = MTA_CONFIG.event_id;
+                var f = "undefined" === typeof b ? {} : b;
+                var k = [], g;
+                for (g in f)
+                    f.hasOwnProperty(g) &&
+                        k.push(encodeURIComponent(g) + "=" + encodeURIComponent(f[g]));
+                f = k.join(";");
+                e.r5 = f;
+                f = 0;
+                d = [d, e, getBasicInfo(), {
+                        rand: +new Date
+                    }];
+                for (e = d.length; f < e; f++)
+                    for (var h in d[f])
+                        d[f].hasOwnProperty(h) && c.push(h + "=" + ("undefined" == typeof d[f][h] ? "" : d[f][h]));
+                wx.request({
+                    url: MTA_CONFIG.api_base + "?" + c.join("&").toLowerCase()
+                });
+            }
+        }
+    },
+    Data: {
+        userInfo: null,
+        lanchInfo: null
+    }
+};
+// module.exports = MTA;
+// export default MTA;
+// import mta from './mta_analysis'
+/// <reference path="./mta_analysis.js" />
+/// <reference path="../core/network/Request.ts" />
+var PaoYa;
+// import mta from './mta_analysis'
+/// <reference path="./mta_analysis.js" />
+/// <reference path="../core/network/Request.ts" />
+(function (PaoYa) {
+    var DataTrack = /** @class */ (function () {
+        function DataTrack() {
+        }
+        DataTrack.setup = function (options) {
+            MTA.App.init({
+                "appID": "500624773",
+                "eventID": "500624774",
+                "lauchOpts": options
+            });
+        };
+        DataTrack.track = function (type, params) {
+            if (!params.gameId && window.game && window.game.gameId) {
+                params.gameId = window.game.gameId;
+            }
+            if (params.data) {
+                var value = JSON.parse(params.data);
+                value.T = PaoYa.networkMonitor.type;
+                params.data = JSON.stringify(value);
+            }
+            console.log("T | upload | " + JSON.stringify(params));
+            MTA.Event.stat(type + '', params);
+        };
+        DataTrack.trackType = function (type) {
+            PaoYa.Request.POST('userStatistics', { type: type }, null);
+        };
+        DataTrack.now = function () {
+            return new Date().valueOf();
+        };
+        DataTrack.startTrackTime = function (id) {
+            this.loginCostTime[id] = DataTrack.now();
+        };
+        DataTrack.stopTrackTime = function (id) {
+            var time = this.loginCostTime[id];
+            var delta = DataTrack.now() - time;
+            this.loginCostTime[id] = delta;
+            console.warn("T | " + id + " | cost | " + delta + " ms");
+        };
+        DataTrack.startSocketTime = function () {
+            this.socketCostTime = DataTrack.now();
+        };
+        DataTrack.stopSocketTime = function () {
+            var time = DataTrack.now() - this.socketCostTime;
+            console.warn("T | Socket | cost | " + time + "ms");
+            this.track(DataTrackType.SocketTimeCost, {
+                data: JSON.stringify({
+                    t: time
+                })
+            });
+        };
+        DataTrack.startSocketLogin = function () {
+            this.socketLoginTime = DataTrack.now();
+        };
+        DataTrack.stopSocketLogin = function () {
+            var time = DataTrack.now() - this.socketLoginTime;
+            console.warn("T | Socket login | cost | " + time + "ms");
+            this.track(DataTrackType.SocketLoginTimeCost, { data: JSON.stringify({ t: time }) });
+        };
+        DataTrack.uploadLoginCostTime = function () {
+            var upload = JSON.stringify(this.loginCostTime);
+            console.log("T | login | upload | " + upload);
+            this.track(DataTrackType.LoginTimeCost, { data: upload });
+        };
+        DataTrack.loginCostTime = {};
+        DataTrack.socketCostTime = 0;
+        DataTrack.socketLoginTime = 0;
+        return DataTrack;
+    }());
+    PaoYa.DataTrack = DataTrack;
+    var DataTrackType;
+    (function (DataTrackType) {
+        DataTrackType[DataTrackType["LoginTimeCost"] = 3001] = "LoginTimeCost";
+        DataTrackType[DataTrackType["SocketTimeCost"] = 3002] = "SocketTimeCost";
+        DataTrackType[DataTrackType["SocketLoginTimeCost"] = 3003] = "SocketLoginTimeCost";
+        DataTrackType[DataTrackType["SocketRetry"] = 3004] = "SocketRetry";
+        DataTrackType[DataTrackType["HTTPRetry"] = 3005] = "HTTPRetry";
+        DataTrackType[DataTrackType["Ladder"] = 1001] = "Ladder";
+        DataTrackType[DataTrackType["FriendBattle"] = 1002] = "FriendBattle";
+        DataTrackType[DataTrackType["RedPacket"] = 1003] = "RedPacket";
+        DataTrackType[DataTrackType["PlayOffline"] = 1004] = "PlayOffline";
+        DataTrackType[DataTrackType["Rank"] = 1004] = "Rank";
+        DataTrackType[DataTrackType["HallBack"] = 1006] = "HallBack";
+        DataTrackType[DataTrackType["WithDraw"] = 1007] = "WithDraw";
+        DataTrackType[DataTrackType["Jump"] = 1008] = "Jump";
+        DataTrackType[DataTrackType["Change"] = 1009] = "Change"; //换换手气
+    })(DataTrackType = PaoYa.DataTrackType || (PaoYa.DataTrackType = {}));
+})(PaoYa || (PaoYa = {}));
+var RectCorner;
+(function (RectCorner) {
+    RectCorner[RectCorner["RectCornerTopLeft"] = 1] = "RectCornerTopLeft";
+    RectCorner[RectCorner["RectCornerTopRight"] = 2] = "RectCornerTopRight";
+    RectCorner[RectCorner["RectCornerBottomLeft"] = 4] = "RectCornerBottomLeft";
+    RectCorner[RectCorner["RectCornerBottomRight"] = 8] = "RectCornerBottomRight";
+    RectCorner[RectCorner["RectCornerAllCorners"] = 15] = "RectCornerAllCorners";
+})(RectCorner || (RectCorner = {}));
+//圆角矩形
+function makeRoundRectPath(width, height, r, corner) {
+    var path = [];
+    if (corner & RectCorner.RectCornerTopLeft) {
+        path.push(["moveTo", r, 0]);
+    }
+    else {
+        path.push(["moveTo", 0, 0]);
+    }
+    if (corner & RectCorner.RectCornerTopRight) {
+        path.push(["lineTo", width - r, 0]);
+        path.push(["arcTo", width, 0, width, r, r]);
+    }
+    else {
+        path.push(["lineTo", width, 0]);
+    }
+    if (corner & RectCorner.RectCornerBottomRight) {
+        path.push(["lineTo", width, height - r]);
+        path.push(["arcTo", width, height, width - r, height, r]);
+    }
+    else {
+        path.push(["lineTo", width, height]);
+    }
+    if (corner & RectCorner.RectCornerBottomLeft) {
+        path.push(["lineTo", r, height]);
+        path.push(["arcTo", 0, height, 0, height - r, r]);
+    }
+    else {
+        path.push(["lineTo", 0, height]);
+    }
+    if (corner & RectCorner.RectCornerTopLeft) {
+        path.push(["lineTo", 0, r]);
+        path.push(["arcTo", 0, 0, r, 0, r]);
+    }
+    else {
+        path.push(["lineTo", 0, 0]);
+    }
+    path.push(["closePath"]);
+    return path;
+}
+function makeAllCornerRoundRectPath(w, h, r) {
+    return makeRoundRectPath(w, h, r, RectCorner.RectCornerAllCorners);
+}
+var PaoYa;
+(function (PaoYa) {
+    var ShareManager = /** @class */ (function () {
+        function ShareManager() {
+        }
+        /**组织分享 */
+        ShareManager.makeShareInfo = function (title, image, query, success, fail) {
+            if (image === void 0) { image = this.imageURL; }
+            if (fail === void 0) { fail = null; }
+            if (this.makeQueryHandler) {
+                query = this.makeQueryHandler(query);
+            }
+            return {
+                title: title,
+                imageUrl: image,
+                query: toQueryString(query),
+                success: success,
+                fail: function () {
+                    fail && fail();
+                }
+            };
+        };
+        /**分享主要方法，需要传入所有参数 */
+        ShareManager.share = function (title, image, query, success, fail) {
+            var _this = this;
+            PaoYa.DataCenter.isShare=true;
+            if (fail === void 0) { fail = null; }
+            if (!image && !this.imageURL) {
+                console.error("必须指定分享图片地址，建议使用ShareManager.imageURL全局设置统一分享图片");
+                return;
+            }
+            wx.shareAppMessage(this.makeShareInfo(title, image, query, function (res) {
+                console.warn("SHARE | " + JSON.stringify(res));
+                var isGroup = res.shareTickets && res.shareTickets.length > 0;
+                if (isGroup && _this.checkGroup) {
+                    var shareTicket = res.shareTickets[0];
+                    _this.getShareInfo(shareTicket, function (encryptedData, iv) {
+                        success && success(isGroup, encryptedData, iv);
+                    }, function () {
+                        fail && fail();
+                    });
+                }
+                else {
+                    success && success(isGroup);
+                }
+            }, fail));
+        };
+        /**分享方法，可以不用传入图片，图片将从 ShareManager.imageURL 获取 */
+        ShareManager.shareTitle = function (title, query, success, fail) {
+            if (fail === void 0) { fail = null; }
+            if (!this.imageURL) {
+                console.error("必须指定 ShareManager.imageURL 才可执行此方法");
+            }
+            this.share(title, this.imageURL, query, success, fail);
+        };
+        /**获取分享内容 */
+        ShareManager.getShareInfo = function (shareTicket, suc, fail) {
+            wx.getShareInfo({
+                shareTicket: shareTicket,
+                success: function (res) {
+                    console.log("SHARE | getShareInfo | " + JSON.stringify(res));
+                    suc && suc(res);
+                },
+                fail: fail
+            });
+        };
+        /**显示当前页面的转发按钮 */
+        ShareManager.showShareMenu = function (withShareTicket) {
+            if (withShareTicket === void 0) { withShareTicket = true; }
+            wx.showShareMenu({
+                withShareTicket: withShareTicket
+            });
+        };
+        /**隐藏转发按钮 */
+        ShareManager.hideShareMenu = function () {
+            wx.hideShareMenu({});
+        };
+        /**更新转发属性 */
+        ShareManager.updateShareMenu = function (withShareTicket) {
+            if (withShareTicket === void 0) { withShareTicket = true; }
+            wx.updateShareMenu({
+                withShareTicket: withShareTicket
+            });
+        };
+        /**是否验证群ID */
+        ShareManager.checkGroup = false;
+        return ShareManager;
+    }());
+    PaoYa.ShareManager = ShareManager;
+    function toQueryString(params) {
+        var items = [], queryStr = "";
+        for (var key in params) {
+            items.push(key + "=" + params[key]);
+        }
+        if (items.length) {
+            queryStr = items.join("&");
+        }
+        return queryStr;
+    }
+})(PaoYa || (PaoYa = {}));
+/// <reference path="../../base/EventDispather.ts" />
+var PaoYa;
+/// <reference path="../../base/EventDispather.ts" />
+(function (PaoYa) {
+    var UpdateManager = /** @class */ (function (_super) {
+        __extends(UpdateManager, _super);
+        function UpdateManager() {
+            var _this = _super.call(this) || this;
+            if (typeof wx === 'undefined') {
+                return _this;
+            }
+            if (!wx.getUpdateManager) {
+                return _this;
+            } //API版本兼容
+            var updateManager = wx.getUpdateManager();
+            updateManager.onCheckForUpdate(function (res) {
+                // 请求完新版本信息的回调
+                console.warn("\u5F53\u524D | " + (res.hasUpdate ? "有" : "无") + " | \u65B0\u7248\u672C");
+                if (res.hasUpdate) {
+                    _this.event(UpdateManager.HAS_UPDATE);
+                }
+            });
+            updateManager.onUpdateReady(function () {
+                // 新的版本已经下载好，调用 applyUpdate 应用新版本并重启
+                function cb() {
+                    updateManager.applyUpdate();
+                }
+                _this.event(UpdateManager.UPDATE_READY, cb);
+            });
+            updateManager.onUpdateFailed(function () {
+                // 新的版本下载失败
+                _this.event(UpdateManager.UPDATE_FAIL);
+            });
+            return _this;
+        }
+        UpdateManager.HAS_UPDATE = "HAS_UPDATE";
+        UpdateManager.UPDATE_READY = "UPDATE_READY";
+        UpdateManager.UPDATE_FAIL = "UPDATE_FAIL";
+        return UpdateManager;
+    }(PaoYa.EventDispatcher));
+    PaoYa.UpdateManager = UpdateManager;
+})(PaoYa || (PaoYa = {}));
+var PaoYa;
+(function (PaoYa) {
+    // export class PaoYa {
+    PaoYa.exitMiniProgram = (typeof wx === 'undefined') ? new Function() : wx.exitMiniProgram;
+    PaoYa.getLaunchOptionsSync = (typeof wx === 'undefined') ? new Function() : wx.getLaunchOptionsSync;
+    PaoYa.onShareAppMessage = (typeof wx === 'undefined') ? new Function() : wx.onShareAppMessage;
+    PaoYa.setKeepScreenOn = (typeof wx === 'undefined') ? new Function() : wx.setKeepScreenOn;
+    // }
+})(PaoYa || (PaoYa = {}));
+/// <reference path="../../base/EventDispather.ts" />
+/// <reference path="../../core/navigator/Navigator.ts" />
+/// <reference path="../../wx/monitor/NetworkMonitor.ts" />
+/// <reference path="../../wx/monitor/LifeCircleMonitor.ts" />
+/// <reference path="../../wx/manager/ShareManager.ts" />
+/// <reference path="../../wx/manager/UpdateManager.ts" />
+/// <reference path="../../wx/PaoYa.ts" />
+var PaoYa;
+/// <reference path="../../base/EventDispather.ts" />
+/// <reference path="../../core/navigator/Navigator.ts" />
+/// <reference path="../../wx/monitor/NetworkMonitor.ts" />
+/// <reference path="../../wx/monitor/LifeCircleMonitor.ts" />
+/// <reference path="../../wx/manager/ShareManager.ts" />
+/// <reference path="../../wx/manager/UpdateManager.ts" />
+/// <reference path="../../wx/PaoYa.ts" />
+(function (PaoYa) {
+    var Application = /** @class */ (function (_super) {
+        __extends(Application, _super);
+        function Application() {
+            var _this = _super.call(this) || this;
+            _this.init();
+            if (typeof wx != 'undefined') {
+                _this.launchOption = PaoYa.getLaunchOptionsSync();
+                console.warn("LAUNCH | " + JSON.stringify(_this.launchOption));
+                _this.initWeChat();
+                _this.checkUpdate();
+            }
+            return _this;
+        }
+        Application.prototype.init = function () {
+            //初始化导航控制器
+            var navigator = window.$navigator = PaoYa.navigator = new PaoYa.Navigator();
+            var networkMonitor = window.$networkMonitor = PaoYa.networkMonitor = new PaoYa.NetworkMonitor();
+            var lifeCircleMonitor = window.$lifeCircleMonitor = PaoYa.lifeCircleMonitor = new PaoYa.LifeCircleMonitor();
+            lifeCircleMonitor.on(PaoYa.LifeCircleMonitor.SHOW, this, this.onShow);
+            lifeCircleMonitor.on(PaoYa.LifeCircleMonitor.HIDE, this, this.onHide);
+            window.setTimeout(function () {
+                lifeCircleMonitor.startMonitor();
+            }, 5000);
+        };
+        Application.prototype.initWeChat = function () {
+            var _this = this;
+            /**转发 */
+            PaoYa.ShareManager.updateShareMenu();
+            PaoYa.ShareManager.showShareMenu();
+            PaoYa.onShareAppMessage(function () {
+                var scene = PaoYa.navigator.visibleScene;
+                var msg = scene.onShareAppMessage();
+                if (msg) {
+                    return msg;
+                }
+                else {
+                    return _this.onShareAppMessage();
+                }
+            });
+            PaoYa.setKeepScreenOn({
+                keepScreenOn: true
+            });
+        };
+        Application.prototype.checkUpdate = function () {
+            var manager = new PaoYa.UpdateManager();
+            manager.on(PaoYa.UpdateManager.HAS_UPDATE, this, function () {
+            });
+            manager.on(PaoYa.UpdateManager.UPDATE_READY, this, function (cb) {
+                PaoYa.Toast.showModal("提示", "新版本下载成功", "重启", function () {
+                    cb && cb();
+                });
+            });
+            manager.on(PaoYa.UpdateManager.UPDATE_FAIL, this, function () {
+            });
+        };
+        /**返回用户【转发】消息 */
+        Application.prototype.onShareAppMessage = function () {
+            return null;
+        };
+        Application.prototype.onShow = function (res) {
+            this.launchOption = res;
+            if (!PaoYa.networkMonitor.isConnected) {
+                PaoYa.Toast.showModal("提示", "网络已断开，请检查您的网络");
+                return;
+            }
+        };
+        Application.prototype.onHide = function (res) {
+        };
+        /**退出当前小游戏 */
+        Application.prototype.exit = function () {
+            PaoYa.exitMiniProgram({});
+        };
+        return Application;
+    }(PaoYa.EventDispatcher));
+    PaoYa.Application = Application;
+})(PaoYa || (PaoYa = {}));
+/// <reference path="./app.ts" />
+var PaoYa;
+/// <reference path="./app.ts" />
+(function (PaoYa) {
+    var Game = /** @class */ (function (_super) {
+        __extends(Game, _super);
+        function Game(params) {
+            var _this = _super.call(this) || this;
+            _this.params = params;
+            _this.initLaya();
+            return _this;
+        }
+        /**初始化Laya引擎，子类可重写此方法，实现自己的界面展示 */
+        Game.prototype.initLaya = function () {
+            //初始化微信小游戏
+            if (onWX) {
+                Laya.MiniAdpter.init();
+            }
+            //程序入口
+            Laya.init(750, 1334, Laya.WebGL);
+            //显示当前调试状态
+            if (DEBUG) {
+                if (this.params.showStat) {
+                    Laya.Stat.show();
+                }
+                if (!Laya.Browser.onMiniGame && Laya.DebugTool && this.params.showDebugTool) {
+                    //调用DebugTool调试面板
+                    Laya.DebugTool.init();
+                }
+            }
+            //屏幕适配相关
+            var stage = Laya.stage;
+            var Stage = Laya.Stage;
+            stage.scaleMode = Stage.SCALE_FIXED_WIDTH;
+            stage.alignH = Stage.ALIGN_CENTER;
+            stage.alignV = Stage.ALIGN_MIDDLE;
+            // stage.screenMode = Stage.SCREEN_VERTICAL;
+            // stage.frameRate = Stage.FRAME_MOUSE;
+            var sprite = new Laya.Sprite();
+            var Browser = Laya.Browser;
+            sprite.graphics.drawRect(0, 0, Browser.width, Browser.height, "#000000");
+            stage.addChild(sprite);
+        };
+        return Game;
+    }(PaoYa.Application));
+    PaoYa.Game = Game;
+})(PaoYa || (PaoYa = {}));
+var PaoYa;
+(function (PaoYa) {
+    var Toast = /** @class */ (function () {
+        function Toast() {
+        }
+        /**
+        * 1. icon默认是"success"
+        * 2. icon 和 image 同时存在只会有一个生效，image的优先级高于icon，不管什么情况下都会有图片的，这个是取消不了的
+        * 3. icon为null、undefined、""或者任何字符串，结果都为"success"
+        * 4. duration是毫秒级
+        * 5. 多次重复调用，只有最新调用的生效
+        */
+        Toast.show = function (title, icon, image, duration) {
+            if (image === void 0) { image = null; }
+            if (duration === void 0) { duration = 1500; }
+            if (typeof wx === 'undefined') {
+                console.warn("Toast | title:" + title + " | icon:" + icon + " | image:" + image);
+                return;
+            }
+            var params = {
+                title: title,
+                icon: icon,
+                image: image,
+                duration: duration
+            };
+            wx.showToast(params);
+        };
+        Toast.hide = function () {
+            if (typeof wx === 'undefined') {
+                console.warn("Toast | hide");
+                return;
+            }
+            wx.hideToast();
+        };
+        Toast.showSuccess = function (title, duration) {
+            if (duration === void 0) { duration = 1500; }
+            this.show(title, null, 'https://res.xingqiu123.com/wxgame/common/success.png', duration);
+        };
+        Toast.showError = function (title, duration) {
+            if (duration === void 0) { duration = 1500; }
+            this.show(title, null, 'https://res.xingqiu123.com/wxgame/common/error.png', duration);
+        };
+        Toast.showWarn = function (title, duration) {
+            if (duration === void 0) { duration = 1500; }
+            this.show(title, null, 'https://res.xingqiu123.com/wxgame/common/warning.png', duration);
+        };
+        Toast.showImage = function (image, duration) {
+            if (duration === void 0) { duration = 1500; }
+            this.show(null, null, image, duration);
+        };
+        /**
+         * 显示loading提示层
+         * @param  title
+         * @param  mask 是否显示透明蒙层，也就是避免用户点击
+         */
+        Toast.showLoading = function (title, mask) {
+            if (title === void 0) { title = ''; }
+            if (mask === void 0) { mask = true; }
+            if (typeof wx === 'undefined') {
+                console.warn("Toast | showLoading");
+                return;
+            }
+            wx.showLoading({
+                title: title,
+                mask: mask
+            });
+        };
+        Toast.hideLoading = function () {
+            if (typeof wx === 'undefined') {
+                console.warn("Toast | hideLoading");
+                return;
+            }
+            wx.hideLoading();
+        };
+        Toast.showModal = function (title, content, confirmText, confirmCallback, cancelText, cancelCallback) {
+            if (title === void 0) { title = '提示'; }
+            if (content === void 0) { content = ''; }
+            if (confirmText === void 0) { confirmText = '知道了'; }
+            if (confirmCallback === void 0) { confirmCallback = null; }
+            if (cancelText === void 0) { cancelText = ""; }
+            if (cancelCallback === void 0) { cancelCallback = null; }
+            if (typeof wx === 'undefined') {
+                return;
+            }
+            var params = {
+                title: title,
+                content: content,
+                showCancel: cancelText ? true : false,
+                cancelText: cancelText,
+                confirmText: confirmText,
+                success: function (res) {
+                    if (res.confirm) {
+                        confirmCallback && confirmCallback();
+                    }
+                    if (res.cancel) {
+                        cancelCallback && cancelCallback();
+                    }
+                }
+            };
+            wx.showModal(params);
+        };
+        return Toast;
+    }());
+    PaoYa.Toast = Toast;
+})(PaoYa || (PaoYa = {}));
+var PaoYa;
+(function (PaoYa) {
+    var PayManager = /** @class */ (function () {
+        function PayManager() {
+        }
+        PayManager.pay = function (buyQuantity, success, fail) {
+            wx.requestMidasPayment({
+                mode: "game",
+                env: this.env,
+                offerId: this.offerId,
+                currencyType: "CNY",
+                buyQuantity: buyQuantity,
+                platform: this.platform,
+                zoneId: "1",
+                success: function (res) {
+                    console.log("PAY | suc | " + JSON.stringify(res));
+                    success && success();
+                },
+                fail: function (res) {
+                    console.log("PAY | fail | " + JSON.stringify(res));
+                    var msg = res.errMsg;
+                    var code = res.errCode;
+                    switch (code) {
+                        case -1:
+                            break;
+                        case -2:
+                            break;
+                        case -15001:
+                            break;
+                        case -15002:
+                            break;
+                        case -15003:
+                            break;
+                        case -15004:
+                            break;
+                        case -15005:
+                            break;
+                        case -15006:
+                            break;
+                        case -15007:
+                            break;
+                        case 1:
+                            break;
+                        case 2:
+                            break;
+                        case 3:
+                            break;
+                        case 4:
+                            break;
+                        case 5:
+                            break;
+                        case 6:
+                            break;
+                        case 1000:
+                            break;
+                        case 1003:
+                            break;
+                    }
+                    fail && fail(code);
+                }
+            });
+        };
+        PayManager.offerId = 0;
+        PayManager.env = 0; // 0 正式版，1 沙箱环境
+        PayManager.platform = 'android';
+        return PayManager;
+    }());
+    PaoYa.PayManager = PayManager;
+})(PaoYa || (PaoYa = {}));
+var PaoYa;
+(function (PaoYa) {
+    var LoginManager = /** @class */ (function () {
+        function LoginManager() {
+        }
+        /**
+        * 调用微信登录
+        */
+        LoginManager.getCode = function (cb) {
+            wx.login({
+                success: function (res) {
+                    cb && cb(res);
+                }
+            });
+        };
+        LoginManager.checkSession = function (o) {
+            wx.checkSession({
+                success: function (res) {
+                    o.success && o.success(res);
+                },
+                fail: function (res) {
+                    o.fail && o.fail(res);
+                }
+            });
+        };
+        /**调用微信获取用户信息接口 */
+        LoginManager.getUserInfo = function (cb) {
+            wx.getUserInfo({
+                withCredentials: true,
+                lang: "zh_CN",
+                success: function (res) {
+                    cb && cb(res);
+                }
+            });
+        };
+        LoginManager.getUserInfoWithoutCredentials = function (cb) {
+            wx.getUserInfo({
+                lang: "zh_CN",
+                success: function (res) {
+                    cb && cb(res);
+                }
+            });
+        };
+        return LoginManager;
+    }());
+    PaoYa.LoginManager = LoginManager;
+})(PaoYa || (PaoYa = {}));
+var PaoYa;
+(function (PaoYa) {
+    var AuthManager = /** @class */ (function () {
+        function AuthManager() {
+        }
+        /**
+         *
+         * @param scope 想要获取授权的标识，可以使用上面已经列举出来的权限
+         * @param suc   授权成功回调
+         * @param fail  授权失败回调
+         * @param alert 当需要打开用户设置界面时，用于可以修改弹窗内容，方便用户确认操作
+         */
+        AuthManager.auth = function (params) {
+            var okHandler = function () {
+                wx.openSetting({
+                    success: function (res) {
+                        var result = res.authSetting[params.scope];
+                        if (result) {
+                            params.success && params.success();
+                        }
+                        else {
+                            params.alert && params.alert(okHandler);
+                        }
+                    },
+                    fail: function () {
+                        params.fail && params.fail();
+                    }
+                });
+            };
+            wx.getSetting({
+                success: function (res) {
+                    var result = res.authSetting[params.scope];
+                    if (result == undefined) { //没有获取过权限
+                        wx.authorize({
+                            scope: params.scope,
+                            success: function (res) {
+                                params.success && params.success();
+                            },
+                            fail: function (res) {
+                                params.alert && params.alert(okHandler);
+                            }
+                        });
+                    }
+                    else if (!result) { //当前权限为否
+                        params.alert && params.alert(okHandler);
+                    }
+                    else {
+                        params.success && params.success();
+                    }
+                }
+            });
+        };
+        AuthManager.scope = {
+            userInfo: "scope.userInfo",
+            userLocation: "scope.userLocation",
+            address: "scope.address",
+            invoiceTitle: "scope.invoiceTitle",
+            werun: "scope.werun",
+            record: "scope.record",
+            writePhotosAlbum: "scope.writePhotosAlbum",
+            camera: "scope.camera"
+        };
+        return AuthManager;
+    }());
+    PaoYa.AuthManager = AuthManager;
+})(PaoYa || (PaoYa = {}));
+var PaoYa;
+(function (PaoYa) {
+    var ConfigList = /** @class */ (function () {
+        function ConfigList() {
+        }
+        return ConfigList;
+    }());
+    PaoYa.ConfigList = ConfigList;
+})(PaoYa || (PaoYa = {}));
+/// <reference path="../../base/EventDispather.ts" />
+var PaoYa;
+/// <reference path="../../base/EventDispather.ts" />
+(function (PaoYa) {
+    var User = /** @class */ (function (_super) {
+        __extends(User, _super);
+        function User(obj) {
+            var _this = _super.call(this) || this;
+            /**性别，值为 (男、女、"") */
+            _this.gender = "男";
+            /**红包 */
+            _this.member_rmb = 1;
+            /**泡豆 */
+            _this.member_gold = 1;
+            /**昵称 */
+            _this.nickname = '';
+            _this.id = 2557087;
+            /**头像 */
+            _this.avstar = "";
+            _this.member_country = "";
+            _this.member_province = '';
+            _this.city = "";
+            _this.gender = obj.gender;
+            _this.member_rmb = obj.member_rmb;
+            _this.member_gold = obj.member_gold;
+            _this.nickname = obj.nickname;
+            _this.id = obj.id;
+            _this.avstar = obj.avstar;
+            _this.member_country = obj.member_country;
+            _this.member_province = obj.member_province;
+            _this.city = obj.member_city || "";
+            return _this;
+        }
+        Object.defineProperty(User.prototype, "gold", {
+            get: function () {
+                return this.member_gold;
+            },
+            set: function (newValue) {
+                this.member_gold = newValue;
+                this.event(User.CHANGE_GOLD, newValue);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(User.prototype, "rmb", {
+            get: function () {
+                return this.member_rmb;
+            },
+            set: function (newValue) {
+                this.member_rmb = newValue;
+                this.event(User.CHANGE_RMB, newValue);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        User.CHANGE_GOLD = 'change.gold';
+        User.CHANGE_RMB = 'change.rmb';
+        return User;
+    }(PaoYa.EventDispatcher));
+    PaoYa.User = User;
+})(PaoYa || (PaoYa = {}));
+/// <reference path="./User.ts" />
+var PaoYa;
+/// <reference path="./User.ts" />
+(function (PaoYa) {
+    var LoginData = /** @class */ (function () {
+        function LoginData(obj) {
+            /**是否正式环境，用于控制支付显示 */
+            this.isProduction = true;
+            /**连续登录天数 */
+            this.login_bonus_day = 1;
+            /**是否已经登录过 */
+            this.login_bonus = 1;
+            this.game_url = "";
+            /**用户登录凭证 */
+            this.token = "";
+            this.isProduction = obj.isProduction;
+            this.login_bonus = obj.login_bonus;
+            this.login_bonus_day = obj.login_bonus_day;
+            this.token = obj.token;
+            this.game_url = obj.game_url;
+            this.user = new PaoYa.User(obj);
+        }
+        return LoginData;
+    }());
+    PaoYa.LoginData = LoginData;
+})(PaoYa || (PaoYa = {}));
+/// <reference path="./ConfigList.ts" />
+/// <reference path="./LoginData.ts" />
+/// <reference path="./User.ts" />
+var PaoYa;
+/// <reference path="./ConfigList.ts" />
+/// <reference path="./LoginData.ts" />
+/// <reference path="./User.ts" />
+(function (PaoYa) {
+    var PrizeType;
+    (function (PrizeType) {
+        PrizeType[PrizeType["Gold"] = 1] = "Gold";
+        PrizeType[PrizeType["Money"] = 2] = "Money";
+    })(PrizeType = PaoYa.PrizeType || (PaoYa.PrizeType = {}));
+    var DataCenter = /** @class */ (function () {
+        function DataCenter() {
+        }
+        /**通过天梯ID获取天梯 */
+        DataCenter.findLadderById = function (id) {
+            var result = this.config.game.ladder_config.filter(function (item) {
+                return item.id == id;
+            });
+            return result[0];
+        };
+        DataCenter.makeLadderIconById = function (id) {
+            var ladder = "";
+            var ladderItem = this.findLadderById(id);
+            if (ladderItem) {
+                ladder = ladderItem.icon.makeIcon();
+            }
+            return ladder;
+        };
+        DataCenter.formatPrize = function (prize) {
+            var allPrize = prize.split(",");
+            if (allPrize.length == 0) {
+                return;
+            }
+            var prizes = [];
+            allPrize.forEach(function (item, index) {
+                var prizeInfo = item.split("-");
+                if (prizeInfo && prizeInfo.length == 2) {
+                    prizes.push({
+                        type: prizeInfo[0],
+                        value: prizeInfo[1]
+                    });
+                }
+            });
+            return prizes;
+        };
+        DataCenter.CDNURL = 'https://res.xingqiu123.com/';
+        return DataCenter;
+    }());
+    PaoYa.DataCenter = DataCenter;
+})(PaoYa || (PaoYa = {}));
+/// <reference path="../../wx/manager/LoginManager.ts" />
+/// <reference path="../../wx/manager/AuthManager.ts" />
+/// <reference path="../../wx/Toast.ts" />
+/// <reference path="../../core/network/Request.ts" />
+/// <reference path="../modal/DataCenter.ts" />
+/// <reference path="../../dataTrack/dataTrack.ts" />
+var PaoYa;
+/// <reference path="../../wx/manager/LoginManager.ts" />
+/// <reference path="../../wx/manager/AuthManager.ts" />
+/// <reference path="../../wx/Toast.ts" />
+/// <reference path="../../core/network/Request.ts" />
+/// <reference path="../modal/DataCenter.ts" />
+/// <reference path="../../dataTrack/dataTrack.ts" />
+(function (PaoYa) {
+    var UserService = /** @class */ (function () {
+        function UserService() {
+        }
+        UserService.getMyInfo = function (cb) {
+            var _this = this;
+            if (this.userInfo) {
+                cb && cb(this.userInfo);
+                return;
+            }
+            PaoYa.LoginManager.getUserInfoWithoutCredentials(function (res) {
+                _this.userInfo = res.data;
+                cb && cb(_this.userInfo);
+            });
+        };
+        UserService.login = function (code, params, suc, fail) {
+            function sendHttpLogin() {
+                params.js_code = code;
+                PaoYa.Request.POST('user_login', params, suc, fail);
+            }
+            function getUserInfo() {
+                var _this = this;
+                var beginTime = (new Date()).valueOf();
+                PaoYa.DataTrack.startTrackTime('u');
+                PaoYa.LoginManager.getUserInfo(function (res) {
+                    PaoYa.DataTrack.stopTrackTime('u');
+                    localStorage.setItem('lastLoginTime', (new Date()).valueOf() + '');
+                    _this.userInfo = res.userInfo;
+                    params.encrypted_data = res.encryptedData;
+                    params.iv = res.iv;
+                    sendHttpLogin();
+                });
+            }
+            if (params.encrypted_data || (code && code.indexOf('app') != -1)) {
+                sendHttpLogin();
+            }
+            else {
+                var beginTime = (new Date()).valueOf();
+                var day7 = 7 * 24 * 60 * 60 * 1000;
+                if ((beginTime - this.lastLoginTime) < day7 && PaoYa.RequestConfig.token) {
+                    sendHttpLogin();
+                    return;
+                }
+                else {
+                    getUserInfo.call(this);
+                }
+            }
+        };
+        UserService.auth = function (obj) {
+            PaoYa.AuthManager.auth({
+                scope: PaoYa.AuthManager.scope.userInfo,
+                success: obj.success,
+                fail: obj.fail,
+                alert: function (cb) {
+                    PaoYa.Toast.showModal('提示', '需要您的授权才能正常使用', '去设置', function () {
+                        cb();
+                    });
+                }
+            });
+        };
+        UserService.lastLoginTime = Number(localStorage.getItem('lastLoginTime') || '');
+        UserService.getCode = PaoYa.LoginManager.getCode;
+        return UserService;
+    }());
+    PaoYa.UserService = UserService;
+})(PaoYa || (PaoYa = {}));
+/// <reference path="./game.ts" />
+/// <reference path="../../wx/Toast.ts" />
+/// <reference path="../../wx/manager/PayManager.ts" />
+/// <reference path="../../core/network/Request.ts" />
+/// <reference path="../../core/network/Socket.ts" />
+/// <reference path="../../core/navigator/Navigator.ts" />
+/// <reference path="../service/UserService.ts" />
+/// <reference path="../modal/DataCenter.ts" />
+/// <reference path="../modal/LoginData.ts" />
+/// <reference path="../modal/User.ts" />
+/// <reference path="../../dataTrack/dataTrack.ts" />
+var PaoYa;
+/// <reference path="./game.ts" />
+/// <reference path="../../wx/Toast.ts" />
+/// <reference path="../../wx/manager/PayManager.ts" />
+/// <reference path="../../core/network/Request.ts" />
+/// <reference path="../../core/network/Socket.ts" />
+/// <reference path="../../core/navigator/Navigator.ts" />
+/// <reference path="../service/UserService.ts" />
+/// <reference path="../modal/DataCenter.ts" />
+/// <reference path="../modal/LoginData.ts" />
+/// <reference path="../modal/User.ts" />
+/// <reference path="../../dataTrack/dataTrack.ts" />
+(function (PaoYa) {
+    var ShareType;
+    (function (ShareType) {
+        ShareType[ShareType["InviteFriend"] = 1] = "InviteFriend";
+        ShareType[ShareType["GroupPK"] = 2] = "GroupPK";
+        ShareType[ShareType["GroupRank"] = 3] = "GroupRank";
+    })(ShareType = PaoYa.ShareType || (PaoYa.ShareType = {}));
+    var Main = /** @class */ (function (_super) {
+        __extends(Main, _super);
+        function Main(params) {
+            var _this_1 = _super.call(this, params) || this;
+            _this_1.params = params;
+            /**是否已登录 */
+            _this_1.isLogined = false;
+            /**已经授权访问用户信息，只在登录之前有用，登录之后该值不再起作用 */
+            _this_1.isAuthed = false;
+            /**当前游戏的ID */
+            _this_1.gameId = 1001;
+            /**登录的code */
+            _this_1.$code = '';
+            if (!params.gameId) {
+                console.error("初始化时必须传入gameId");
+            }
+            if (!params.baseURL) {
+                console.error("初始化时必须传入baseURL");
+            }
+            if (!params.zone) {
+                console.error("初始化时必须传入zone");
+            }
+            _this_1.gameId = params.gameId;
+            PaoYa.SocketConfig.zone = params.zone;
+            PaoYa.PayManager.offerId = params.offerId;
+            _this_1.configHTTP();
+            _this_1.configNavigator();
+            if (onWX) {
+                PaoYa.DataTrack.startTrackTime('c');
+                PaoYa.LoginManager.getCode(function (res) {
+                    PaoYa.DataTrack.stopTrackTime('c');
+                    _this_1.$code = res.code;
+                    _this_1.auth();
+                });
+            }
+            else {
+                _this_1.login();
+            }
+            _this_1.initScene(_this_1.launchOption);
+            if (onWX) {
+                PaoYa.DataTrack.setup(_this_1.launchOption);
+            }
+            return _this_1;
+        }
+        /**
+         * @override
+         */
+        Main.prototype.onShow = function (res) {
+            _super.prototype.onShow.call(this, res);
+            //当通过好友邀请进入游戏时，需要再次调用登录，以获取好友所在的服务器
+            var query = res.query;
+            var type = query.type;
+            if (type == ShareType.InviteFriend || type == ShareType.GroupPK) {
+                this.loginCore(null, false, this.changeClientURL);
+            }
+            else {
+                PaoYa.socket && this.handleOnShowResult(this.launchOption);
+            }
+            PaoYa.navigator.visibleScene && PaoYa.navigator.visibleScene.onShow(res);
+        };
+        Main.prototype.onHide = function (res) {
+            _super.prototype.onHide.call(this, res);
+            PaoYa.navigator.visibleScene && PaoYa.navigator.visibleScene.onHide(res);
+        };
+        Main.prototype.configHTTP = function () {
+            PaoYa.RequestConfig.baseURL = this.params.baseURL;
+            PaoYa.RequestConfig.token = localStorage.getItem('token') || '';
+            if (this.launchOption) {
+                var referrerInfo = this.launchOption.referrerInfo;
+                if (referrerInfo && referrerInfo.extraData && referrerInfo.extraData.token) {
+                    PaoYa.RequestConfig.token = referrerInfo.extraData.token;
+                }
+            }
+            var _this = this;
+            PaoYa.RequestConfig.makeParamsHandler = function (params) {
+                if (!params['user_token'] && PaoYa.RequestConfig.token) {
+                    params['user_token'] = PaoYa.RequestConfig.token;
+                }
+                if (!params['game_id'] && _this.gameId) {
+                    params['game_id'] = _this.gameId;
+                }
+                return { wxparams: JSON.stringify(params) };
+            };
+        };
+        Main.prototype.configNavigator = function () {
+            PaoYa.Navigator.setupViewHandler = function (view) {
+                var stage = Laya.stage;
+                var screenWidth = Laya.Browser.width;
+                var screenHeight = Laya.Browser.height;
+                var width = stage.designWidth;
+                var height = stage.designHeight;
+                var scaleX = screenWidth / width;
+                var y = (screenHeight - height * scaleX >> 1) / scaleX;
+                if (view instanceof Laya.Sprite) {
+                    view.size(stage.width, stage.height);
+                    view.pos(0, Math.floor(y));
+                    stage.addChild(view);
+                }
+                else {
+                    var inst = fairygui.GRoot.inst;
+                    view.setSize(inst.width, inst.height);
+                    view.setXY(0, Math.floor(y));
+                    inst.addChild(view);
+                }
+            };
+            PaoYa.Navigator.activeView = function (view) {
+                view.visible = true;
+            };
+            PaoYa.Navigator.deactiveView = function (view) {
+                view.visible = false;
+            };
+            PaoYa.Scene.destroyHandler = function (scene) {
+                scene.view && scene.view.destroy();
+                Laya.timer.clearAll(scene);
+            };
+        };
+        Main.prototype.auth = function () {
+            var _this = this;
+            PaoYa.UserService.auth({
+                success: function () {
+                    _this.isAuthed = true;
+                    if (_this.params.autoLogin == undefined || _this.params.autoLogin) {
+                        _this.login();
+                    }
+                },
+                fail: function () {
+                    _this.isAuthed = false;
+                }
+            });
+        };
+        Main.prototype.login = function () {
+            var _this_1 = this;
+            this.loginCore(null, true, function (res) {
+                PaoYa.DataCenter.config = res.config_list;
+                if (_this_1.params.useSocket == undefined || _this_1.params.useSocket) {
+                    _this_1.initClient();
+                }
+                _this_1.isLogined = true;
+                _this_1.loginSuccess();
+                PaoYa.NotificationCenter.defaultCenter.event(PaoYa.NotificationName.LoginSuccess);
+            });
+        };
+        /**开始登录逻辑 */
+        Main.prototype.loginCore = function (data, requestConfig, cb) {
+            if (data === void 0) { data = null; }
+            if (requestConfig === void 0) { requestConfig = true; }
+            var params = {
+                type: 5,
+                platform: 5,
+                game_app_id: this.gameId,
+                version: this.params.version || '1.0',
+                release: this.params.release || 0,
+                share_type: 0,
+                share_id: 0,
+                is_config: requestConfig ? 1 : 0
+            };
+            if (onWX) {
+                params['device_info'] = wx.getSystemInfoSync();
+                params["share_id"] = this.launchOption && this.launchOption["query"]["id"] || 0;
+                params["share_type"] = this.launchOption && this.launchOption["query"]["type"] || 0;
+                params['launch_info'] = this.launchOption || '';
+            }
+            if (data) {
+                params.encrypted_data = data.encryptedData;
+                params.iv = data.iv;
+            }
+            function loginIn(code) {
+                var _this_1 = this;
+                PaoYa.DataTrack.startTrackTime('l');
+                PaoYa.UserService.login(code, params, function (res) {
+                    PaoYa.DataTrack.stopTrackTime('l');
+                    PaoYa.DataTrack.uploadLoginCostTime();
+                    PaoYa.DataCenter.rawData = res;
+                    var login = new PaoYa.LoginData(res);
+                    PaoYa.DataCenter.login = login;
+                    PaoYa.DataCenter.user = login.user;
+                    PaoYa.RequestConfig.token = login.token;
+                    localStorage.setItem("token", login.token);
+                    PaoYa.Toast.hideLoading();
+                    cb && cb.call(_this_1, res);
+                }, function (msg, code) {
+                    /**
+                 * {"code":401,"time":1525849533,"message":"您的账号在另一个设备上登录了, 需要重新登录","errorcode":2004}
+                 */
+                    if (code == 2004) { //token不对
+                        PaoYa.RequestConfig.token = "";
+                        _this_1.login(null, cb);
+                    }
+                    else {
+                        PaoYa.Toast.hideLoading();
+                        PaoYa.Toast.showModal('登录失败', msg);
+                    }
+                });
+            }
+            PaoYa.Toast.showLoading();
+            if (onWX) {
+                loginIn.call(this, this.$code);
+            }
+            else if (DEBUG) {
+                loginIn.call(this, 'app,' + this.params.userId);
+            }
+            else {
+                console.error('release 模式下禁止登录');
+            }
+            // LoginManager.checkSession({
+            //     success() {
+            //         console.warn(`T | wx.checkSession | ${(new Date()).valueOf() - beginTime}`)
+            //         loginIn.call(this)
+            //     },
+            //     fail() {
+            //         beginTime = (new Date()).valueOf()
+            //         LoginManager.getCode(res => {
+            //             console.warn(`T | wx.getCode | ${(new Date()).valueOf() - beginTime}`)
+            //             loginIn.call(this,res)
+            //         })
+            //     }
+            // })
+        };
+        Main.prototype.getConfigList = function () {
+            var _this_1 = this;
+            PaoYa.DataTrack.startTrackTime('config_list_new');
+            PaoYa.Request.GET('config_list_new', {}, function (res) {
+                PaoYa.DataTrack.stopTrackTime('config_list_new');
+                PaoYa.DataCenter.config = res;
+                _this_1.getConfigListSuccess();
+                PaoYa.DataTrack.uploadLoginCostTime();
+            }, function () {
+                PaoYa.Toast.showModal('提示', '获取配置失败，请稍候再试');
+            });
+        };
+        /**初始化websocket */
+        Main.prototype.initClient = function () {
+            if (!PaoYa.DataCenter.login.game_url) {
+                console.error("请验证game_url是否正确");
+            }
+            var socket = window.$socket = PaoYa.socket = new PaoYa.Client(PaoYa.DataCenter.login.game_url + this.params.zone);
+            socket.on(Laya.Event.OPEN, this, function () {
+                PaoYa.DataTrack.stopSocketTime();
+                var userId = PaoYa.DataCenter.user.id;
+                if (!userId) {
+                    console.error("user_id不存在，请检查错误");
+                }
+                PaoYa.DataTrack.startSocketLogin();
+                socket.sendMessage("login", { user_id: userId });
+            });
+            socket.on(PaoYa.Client.LOGIN, this, function () {
+                PaoYa.Toast.hideLoading();
+                PaoYa.DataTrack.stopSocketLogin();
+                this.handleOnShowResult(this.launchOption);
+            });
+            socket.connect();
+            this.initService();
+        };
+        Main.prototype.changeClientURL = function () {
+            var url = PaoYa.DataCenter.login.game_url + this.params.zone;
+            if (url != window.$socket.url) {
+                window.$socket.changeUrl(url);
+            }
+            else {
+                if (PaoYa.socket && PaoYa.socket.connected) {
+                    this.handleOnShowResult(this.launchOption);
+                }
+                else {
+                    PaoYa.socket._startReconnect();
+                }
+            }
+        };
+        Main.prototype.handleOnShowResult = function (res) {
+            if (!res) {
+                return;
+            }
+            this.handleOnShow(res);
+            this.launchOption.query = {};
+        };
+        /**以下方法为子类重写 */
+        Main.prototype.loginSuccess = function () {
+        };
+        Main.prototype.getConfigListSuccess = function () {
+        };
+        /**初始化首屏界面 */
+        Main.prototype.initScene = function (launchOption) {
+        };
+        /**初始化业务逻辑 */
+        Main.prototype.initService = function () {
+        };
+        /**监听网络状态变化 */
+        Main.prototype.handleNetworkChange = function (isConnected, isWIFI) {
+        };
+        /**子类重写该方法，用于onShow之后 */
+        Main.prototype.handleOnShow = function (res) {
+        };
+        return Main;
+    }(PaoYa.Game));
+    PaoYa.Main = Main;
+})(PaoYa || (PaoYa = {}));
+var PaoYa;
+(function (PaoYa) {
+    var Loader = /** @class */ (function () {
+        function Loader() {
+        }
+        Loader.load = function (url, caller, completion, p) {
+            if (p === void 0) { p = null; }
+            var completeHandler = Laya.Handler.create(this, function () {
+                completion && completion.call(caller);
+            });
+            var progressHandler = Laya.Handler.create(this, function (progress) {
+                console.log("loading progress" + progress);
+                p && p.call(caller, progress);
+            }, null, false);
+            Laya.loader.load(url, completeHandler, progressHandler);
+        };
+        return Loader;
+    }());
+    PaoYa.Loader = Loader;
+})(PaoYa || (PaoYa = {}));
+/// <reference path="../../base/EventDispather.ts" />
+var PaoYa;
+/// <reference path="../../base/EventDispather.ts" />
+(function (PaoYa) {
+    var TimerService = /** @class */ (function (_super) {
+        __extends(TimerService, _super);
+        function TimerService(duration, interval, up) {
+            if (interval === void 0) { interval = 1; }
+            if (up === void 0) { up = false; }
+            var _this = _super.call(this) || this;
+            _this.duration = duration;
+            _this.interval = interval;
+            _this.up = up;
+            _this.curTime = 0;
+            return _this;
+        }
+        TimerService.prototype.start = function () {
+            if (this.up) {
+                this.curTime = 0;
+            }
+            else {
+                this.curTime = this.duration;
+            }
+            this.update();
+            Laya.timer.loop(this.interval * 1000, this, this.update);
+            this.event(TimerService.START, "");
+        };
+        TimerService.prototype.stop = function () {
+            this.curTime = 0;
+            Laya.timer.clear(this, this.update);
+            this.event(TimerService.STOP, "");
+        };
+        TimerService.prototype.update = function () {
+            if (this.up) {
+                this.curTime++;
+                if (this.curTime >= this.duration) {
+                    this.stop();
+                }
+                else {
+                    this.event(TimerService.PROGRESS, this.curTime);
+                }
+            }
+            else {
+                if (this.curTime > 0) {
+                    this.curTime--;
+                    this.event(TimerService.PROGRESS, this.curTime);
+                }
+                else {
+                    this.stop();
+                }
+            }
+        };
+        TimerService.START = "start_";
+        TimerService.STOP = "stop_";
+        TimerService.TIMEOUT = "timeout_";
+        TimerService.PROGRESS = "progress_";
+        return TimerService;
+    }(PaoYa.EventDispatcher));
+    PaoYa.TimerService = TimerService;
+})(PaoYa || (PaoYa = {}));
+var PaoYa;
+(function (PaoYa) {
+    var LaunchScreenView = /** @class */ (function (_super) {
+        __extends(LaunchScreenView, _super);
+        function LaunchScreenView(icon, name) {
+            var _this = _super.call(this) || this;
+            _this.updateUI();
+            _this.lblName.text = name;
+            return _this;
+            // this.imgIcon.skin = icon
+        }
+        LaunchScreenView.prototype.createChildren = function () {
+            _super.prototype.createChildren.call(this);
+            this.createView(LaunchScreenView.uiView);
+        };
+        LaunchScreenView.prototype.updateUI = function () {
+            if (Laya.Browser.onAndriod) {
+            }
+            else {
+            }
+        };
+        LaunchScreenView.show = function (name, icon) {
+            var view = new LaunchScreenView(icon, name);
+            view.zOrder = 9999;
+            Laya.stage.addChild(view);
+            this.ins = view;
+        };
+        LaunchScreenView.hide = function () {
+            if (this.ins) {
+                this.ins.destroy();
+            }
+        };
+        LaunchScreenView.uiView = { "type": "View", "props": { "width": 750, "height": 1334 }, "child": [{ "type": "Rect", "props": { "y": 0, "x": 0, "width": 750, "lineWidth": 1, "height": 1334, "fillColor": "#ffffff" } }, { "type": "Image", "props": { "y": 697, "x": 300, "var": "imgLoading", "skin": "wxlocal/launchScreen/2.png" } }, { "type": "Image", "props": { "y": 475, "x": 305, "width": 144, "var": "imgIcon", "skin": "wxlocal/launchScreen/icon.png", "height": 144 }, "child": [{ "type": "Sprite", "props": { "renderType": "mask" }, "child": [{ "type": "Circle", "props": { "y": 72, "x": 72, "radius": 72, "lineWidth": 1, "fillColor": "#ff0000" } }] }] }, { "type": "Label", "props": { "y": 649, "x": 216, "width": 318, "var": "lblName", "text": "泡泡打地鼠", "height": 36, "fontSize": 36, "align": "center" } }, { "type": "Label", "props": { "y": 1260, "x": 67, "var": "lblTips", "text": "抵制不良游戏，拒绝盗版游戏。注意自我保护，谨防受骗上当。\\n适度游戏益脑，沉迷游戏伤身。合理安排时间，享受健康生活。", "leading": 5, "fontSize": 22, "color": "#b2b2b2", "bottom": 20 } }, { "type": "Box", "props": { "y": 1178, "x": 299, "var": "gameView" }, "child": [{ "type": "Label", "props": { "y": 18, "x": 67, "text": "小游戏", "fontSize": 28, "color": "#282828" } }, { "type": "Image", "props": { "width": 60, "skin": "wxlocal/launchScreen/minigame-icon.png", "height": 60 } }] }] };
+        return LaunchScreenView;
+    }(Laya.View));
+    PaoYa.LaunchScreenView = LaunchScreenView;
+})(PaoYa || (PaoYa = {}));
+/// <reference path="../../base/NotificationCenter.ts" />
+var PaoYa;
+/// <reference path="../../base/NotificationCenter.ts" />
+(function (PaoYa) {
+    var LoginMaskView = /** @class */ (function (_super) {
+        __extends(LoginMaskView, _super);
+        function LoginMaskView() {
+            var _this = _super.call(this) || this;
+            _this.size(750, 1334);
+            PaoYa.NotificationCenter.defaultCenter.on(PaoYa.NotificationName.LoginSuccess, _this, _this.destroy);
+            _this.on(Laya.Event.CLICK, _this, function () {
+                if (!window.game.isAuthed) {
+                    console.warn('此时用户还没有完成授权');
+                    return;
+                }
+                if (!window.game.isLogined) {
+                    console.warn('此时用户还没有登录成功');
+                    return;
+                }
+                this.destroy();
+            });
+            return _this;
+        }
+        LoginMaskView.showInView = function (view) {
+            var maskView = new LoginMaskView();
+            this.view = maskView;
+            view.addChild(maskView);
+        };
+        LoginMaskView.hide = function () {
+            this.view.destroy();
+        };
+        LoginMaskView.prototype.destroy = function () {
+            PaoYa.NotificationCenter.defaultCenter.off(PaoYa.NotificationName.LoginSuccess, this, this.destroy);
+            this.removeSelf();
+            _super.prototype.destroy.call(this, true);
+        };
+        return LoginMaskView;
+    }(Laya.View));
+    PaoYa.LoginMaskView = LoginMaskView;
+})(PaoYa || (PaoYa = {}));
+/**返回数组中最后一个元素，如果数组为空，返回null */
+Object.defineProperty(Array.prototype, "lastObject", {
+    configurable: false,
+    enumerable: false,
+    get: function () {
+        if (!this.length) {
+            return null;
+        }
+        return this[this.length - 1];
+    }
+});
+/**随机返回数组中一个元素，如果数组为空，返回null */
+Object.defineProperty(Array.prototype, "randomItem", {
+    configurable: false,
+    enumerable: false,
+    get: function () {
+        if (!this.length) {
+            return null;
+        }
+        var index = Math.floor(Math.random() * this.length);
+        return this[index];
+    }
+});
+/**
+ *
+ * @param {时间格式，如“yyyy-mm-dd hh:mm:ss”} format
+ */
+Date.prototype.formatWithStyle = function (format) {
+    var y = this.getFullYear();
+    var m = this.getMonth() + 1;
+    m = m < 10 ? ('0' + m) : m;
+    var d = this.getDate();
+    d = d < 10 ? ('0' + d) : d;
+    var h = this.getHours();
+    h = h < 10 ? ('0' + h) : h;
+    var minute = this.getMinutes();
+    var second = this.getSeconds();
+    minute = minute < 10 ? ('0' + minute) : minute;
+    second = second < 10 ? ('0' + second) : second;
+    format = format.replace("yyyy", y + "");
+    format = format.replace("mm", m + '');
+    format = format.replace("dd", d + '');
+    format = format.replace('hh', h + '');
+    format = format.replace('mm', minute + '');
+    format = format.replace('ss', second + '');
+    return format;
+};
+/**
+ * 格式化秒数，如 1000s = 00:16:40
+ */
+Number.prototype.formatTime = function () {
+    var seconds = this;
+    seconds = Math.floor(seconds);
+    var hour = Math.floor(seconds / 3600);
+    var hourStr = hour < 10 ? ("0" + hour) : hour;
+    var balance = seconds % 3600;
+    var minute = Math.floor(balance / 60);
+    var minuteStr = minute < 10 ? ("0" + minute) : minute;
+    var second = balance % 60;
+    var secondStr = second < 10 ? ("0" + second) : second;
+    return hour + ":" + minute + ":" + second;
+};
+/**用于保留指定长度的字符串，其余用...表示 */
+String.prototype.formatName = function (length) {
+    if (length === void 0) { length = 10; }
+    var r = /[^\x00-\xff]/g;
+    if (this.replace(r, "mm").length <= length) {
+        return this + "";
+    }
+    var m = Math.floor(length / 2);
+    for (var i = m; i < this.length; i++) {
+        if (this.substring(0, i).replace(r, "mm").length >= length) {
+            return this.substring(0, i) + "...";
+        }
+    }
+    return this + "";
+};
+/**只用于显示用户头像 */
+String.prototype.makeIcon = function (width) {
+    if (width === void 0) { width = 96; }
+    if (this == "") {
+        return "wxlocal/Common/avstar.png";
+    }
+    if (this.indexOf('http') === 0) {
+        var items = this.split("/") || [];
+        if (items.length > 1) {
+            var str = items[items.length - 1];
+            if (str === "0") {
+                items[items.length - 1] = width > 100 ? "132" : "96";
+            }
+            return items.join('/');
+        }
+        return this + "";
+    }
+    else {
+        return PaoYa.DataCenter.CDNURL + this + "?imageView2/0/w/" + width;
+    }
+};
+/**用于完全拼接用户的头像地址 */
+String.prototype.makeResourceURL = function () {
+    if (this == "") {
+        return "wxlocal/Common/avstar.png";
+    }
+    if (this.indexOf('https') === 0) {
+        return this + "";
+    }
+    else {
+        return PaoYa.DataCenter.CDNURL + this;
+    }
+};
+/** 计算文字宽度 */
+String.prototype.measureWidth = function () {
+    var measureResult = Laya.Browser.context.measureText(this);
+    return measureResult.width;
+};
+var PaoYa;
+(function (PaoYa) {
+    var Utils = /** @class */ (function () {
+        function Utils() {
+        }
+        /**
+        * 便捷生成图片数组，主要用于名称连续的图片
+        * @param {用来组织图片的格式,用%i占位} format
+        * @param {开始索引} start
+        * @param {结束索引} end
+        */
+        Utils.makeImagesWithFormat = function (format, start, end) {
+            var images = [];
+            for (var i = start; i < end; i++) {
+                images.push(format.replace("%i", String(i)));
+            }
+            return images;
+        };
+        Utils.toQueryString = function (params) {
+            var items = [], queryStr = "";
+            for (var key in params) {
+                items.push(key + "=" + params[key]);
+            }
+            if (items.length) {
+                queryStr = items.join("&");
+            }
+            return queryStr;
+        };
+        Utils.makeGenderIcon = function (gender) {
+            var icon = "wxlocal/Common/gay-white.png";
+            if (gender == "男") {
+                icon = "wxlocal/Common/boy-white.png";
+            }
+            else if (gender == "女") {
+                icon = "wxlocal/Common/girl-white.png";
+            }
+            // switch (gender) {
+            //     case "男":
+            //         icon = "wxlocal/Common/boy-white.png"
+            //         break
+            //     case "女":
+            //         icon = "wxlocal/Common/boy-white.png"
+            //         break
+            //     default:
+            //         icon = "wxlocal/Common/gay-white.png"
+            //         break
+            // }
+            return icon;
+        };
+        Utils.findUserByID = function (users, id) {
+            var result = users.filter(function (user, index) {
+                return user.user_id && (user.user_id == id);
+            });
+            if (result.length) {
+                return result[0];
+            }
+            console.error('');
+            return null;
+        };
+        return Utils;
+    }());
+    PaoYa.Utils = Utils;
+})(PaoYa || (PaoYa = {}));

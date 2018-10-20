@@ -1,0 +1,18 @@
+import GameView from './GameView'
+import clearTime from '../dialog/ReadyGoDialog'
+import SpineConfig from "../SpineConfig";
+export default class GameScene extends PaoYa.Scene {
+    constructor() {
+        super();
+        let gameview = new GameView()
+        this.view = gameview
+    }
+
+    onViewReady() {
+       Laya.Scene.open('scene/dialog/ReadyGo.json');
+        //完成以后再调用
+
+    }
+
+
+}

@@ -1,0 +1,42 @@
+import GameView from './GameView'
+import clearTime from '../dialog/ReadyGoDialog'
+import SpineConfig from "../SpineConfig";
+export default class GameScene extends PaoYa.Scene {
+    constructor() {
+        super();
+        let gameview = new GameView()
+        this.view = gameview
+    }
+
+    onViewReady() {
+        // Laya.Scene.open('scene/dialog/ReadyGo.json');
+        //完成以后再调用
+        var choiceBtn = this.view.choice;
+        console.log("1111",choiceBtn)
+        this.moveChoiceBox = Laya.Tween.to(choiceBtn,{x:500},3000)
+    }
+
+    onViewClick() {
+        this.waterBullet = new Laya.Skeleton(SpineConfig.shui_dan_shou_ji.templet);
+        this.view.addChild(this.waterBullet);
+        this.waterBullet.play(0, false);
+        this.waterBullet.pos(200, 600);
+        this.moveChoiceBox.pause();
+        console.log("999999999999",this.view.choice.x)
+        if(this.view.choice.x){
+            console.log("点击")
+        }
+
+    }
+
+    throwWater(){
+        console.log("扔水弹")
+    }
+    runFast(){
+        console.log("快速前进")
+    }
+    hasShield(){
+        console.log("护盾")
+    }
+
+}

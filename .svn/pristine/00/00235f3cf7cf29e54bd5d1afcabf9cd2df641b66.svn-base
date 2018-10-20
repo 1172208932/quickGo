@@ -1,0 +1,13 @@
+export default class HomeScene extends Laya.Scene {
+    constructor(){
+        super()
+    }
+    onEnable() {
+        this.btnMatch.on(Laya.Event.MOUSE_DOWN, this, function () {
+            Laya.Scene.open('./HomeThenView.scene');
+        })
+        this.btnMoreRole.on(Laya.Event.MOUSE_DOWN, this, function () {
+            Laya.Scene.open('./RoleChange.scene');
+        })
+    }
+} 

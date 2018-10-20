@@ -1,0 +1,103 @@
+export default class GameBg extends Laya.Script {
+    /** @prop {name:ownSpeed,tips:"自身(背景)的速度：0,2,4",type:int,default:2}*/
+    /** @prop {name:oppoSpeed,tips:"对手的速度：0,2,4",type:int,default:2}*/
+    /** @prop {name:endLength,tips:"总长度",type:int,default:8000}*/
+    
+    
+    constructor() {
+        super()
+        this.init();
+    }
+    init() {
+        // 背景速度(自身)
+        this.ownSpeed = 2
+        this.oppoSpeed = 2
+        // 总长度
+        this.endLength = 8000
+        // 百分比
+        this.ownPercent 
+        this.oppoPercent 
+        // 结果
+        this.resOut
+
+
+        this.length = 0
+        this.oppoLength = 0
+        this.sdCan = true
+        this.oppoCan = true
+        this.result = true
+        this.beginGo = false
+    }
+    startMove() {
+        this.beginGo = true
+    }
+    stopMove() {
+        this.beginGo = false
+        // return  [this.ownPercent,this.oppoPercent]
+    }
+    onEnable() {
+        this._box = this.owner.getChildByName('bgBox')
+        this._bgn1 = this.owner.getChildByName('bgn1')
+        this._bgn2 = this.owner.getChildByName('bgn2')
+        this._endLine = this.owner.getChildByName('endLine')
+        this._endLine.skin = 'wxlocal/Game/image_end.png'
+        this._bgn1.skin = 'wxlocal/Game/icon_wave.png'
+        this._bgn2.skin = 'wxlocal/Game/icon_wave1.png'
+        this._endLine.pos(0, -1197)
+        this._bgn1.pos(0, -406)
+        this._bgn2.pos(0, -224)
+    }
+    onUpdate() {
+        this.ownPercent = this.length / this.endLength
+        this.oppoPercent = this.oppoLength / this.endLength
+        if (this.ownSpeed != 2 && this.sdCan) {
+            Laya.timer.once(1500, this, function () {
+                console.log('doale')
+                this.ownSpeed = 2
+                this.sdCan = true
+            })
+            this.sdCan = false
+        }
+        if (this.oppoSpeed != 2 && this.oppoCan) {
+            Laya.timer.once(1500, this, function () {
+                this.oppoSpeed = 2
+                this.oppoCan = true
+            })
+            this.oppoCan = false
+        }
+        if (this._bgn1.y >= 0) {
+            this._box.y = this._box.y - 406;
+            this._bgn1.y = this._bgn1.y - 406;
+            this._bgn2.y = this._bgn2.y - 406;
+        }
+        if (this.beginGo) {
+            this.oppoLength = this.oppoLength + this.oppoSpeed
+            this.length = this.length + this.ownSpeed
+            this._box.y = this._box.y + this.ownSpeed
+            this._bgn1.y = this._bgn1.y + this.ownSpeed
+            this._bgn2.y = this._bgn2.y + this.ownSpeed
+        }
+        if (this.beginGo && this.length >= this.endLength - 1084) {
+            this._endLine.y = this._endLine.y + this.ownSpeed
+        }
+        if (this.length >= this.endLength && this.result) {
+            // Laya.Scene.open('scene/GameResultView.json')
+            if (this.length == this.oppoLength) {
+                this.resOut = 0
+            } else {
+                this.resOut = 1
+            }
+            this.result = false
+            this.beginGo = false
+        }
+        if (this.oppoLength >= this.endLength && this.result) {
+            if (this.length == this.oppoLength) {
+                this.resOut = 0
+            } else {
+                this.resOut = -1
+            }
+            this.result = false
+            this.beginGo = false
+        }
+    }
+}

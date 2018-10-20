@@ -1,0 +1,6 @@
+{
+    "type":"View",
+    "props":{"width":750,"sceneColor":"#000000","sceneBg":"laya/views/game.png","height":1334},
+    "child":[
+        ]
+}

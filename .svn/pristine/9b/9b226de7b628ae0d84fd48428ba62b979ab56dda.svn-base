@@ -1,0 +1,24 @@
+import GameResultView from "./GameResultView";
+import GameScene from "../game/GameScene";
+import HomeThenScene from "../Home/HomeThenScene";
+
+export default class GameResultScene extends PaoYa.Scene {
+    constructor() {
+        super()
+        let GameResultScene = new GameResultView()
+        this.view = GameResultScene
+    }
+    onViewClick(e) {
+        switch (e.target.name) {
+            case 'btnAgain':
+                console.log(1234321)
+                let gameScene = new GameScene()
+                this.navigator.push(gameScene)
+                break
+            case 'backHome':
+            let homethen = new HomeThenScene()
+            this.navigator.push(homethen)
+            break
+        }
+    }
+}

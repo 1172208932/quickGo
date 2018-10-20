@@ -1,0 +1,242 @@
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var CommonAnimation = /** @class */ (function () {
+    function CommonAnimation() {
+    }
+    //type 0:平局 1：胜利 -1：失败
+    CommonAnimation.showResultAnimate = function (result, callback) {
+        var resultDialog = new Laya.Dialog();
+        var resultSkeleton = new Laya.Skeleton();
+        resultSkeleton.load("https://r.callwo.com/wxgame/ladder/win_lose.sk", Laya.Handler.create(this, function () {
+            this.timeStamp = new Date().valueOf();
+            if (result >= 0) {
+                resultSkeleton.play("win", false);
+            }
+            else {
+                resultSkeleton.play("lose", false);
+            }
+        }));
+        resultDialog.addChild(resultSkeleton);
+        resultDialog.popup(true,false);
+        resultSkeleton.on(Laya.Event.STOPPED, this, function () {
+            Laya.timer.once(200, this, function () {
+                resultDialog.close(null,false);
+                callback && callback();
+            });
+        });
+    };
+    ;
+    //type:-1:降星 0：生星 1：升段位
+    CommonAnimation.showStarAnimate = function (type) {
+        var starSpineDialog = new Laya.Dialog();
+        var starSkeleton = new Laya.Skeleton();
+        starSpineDialog.popup();
+        starSpineDialog.addChild(starSkeleton);
+        starSkeleton.on(Laya.Event.STOPPED, this, function () {
+            starSpineDialog.close();
+            starSkeleton.destroy(true);
+        });
+        starSkeleton.load("https://r.callwo.com/wxgame/ladder/jie_suan_tong_yong.sk", Laya.Handler.create(this, function () {
+            if (type == -1) {
+                starSkeleton.play("shi_qu_xing_xing", false);
+            }
+            else if (type == 0) {
+                starSkeleton.play("huo_de_xing_xing", false);
+            }
+            else if (type == 1) {
+                starSkeleton.play("huang_guan", false);
+            }
+        }));
+    };
+    ;
+    return CommonAnimation;
+}());
+var Marquee = /** @class */ (function (_super) {
+    __extends(Marquee, _super);
+    function Marquee(params) {
+        var _this = _super.call(this) || this;
+        _this.index = 0;
+        _this.width = 750;
+        _this.height = 60;
+        _this.defaultX = 648;
+        _this.space = 560;
+        _this.x = 0;
+        _this.y = 1334 - 60;
+        _this._createHorn();
+        _this._createBg();
+        _this._createView();
+        // this.on(Laya.Event.UNDISPLAY, this, this.stop)
+        // this.on(Laya.Event.DISPLAY, this, this.play)
+        if (params) {
+            _this.info = _this.spellToHtml(params);
+            _this.addItem(1, _this.info[_this.index]);
+           // _this.play();
+        }
+        return _this;
+    }
+    Marquee.prototype._createView = function () {
+        this.hornBox = new Laya.Box();
+        var _rectangle = new Laya.Rectangle(0, 0, this.defaultX, 60);
+        this.hornBox.scrollRect = _rectangle;
+        this.hornBox.height = 60;
+        this.hornBox.pos(102, 0);
+        this.hornBox.zOrder = 3;
+        this.html = new Laya.HTMLDivElement();
+        this.html.x = this.defaultX;
+        this.html.contextHeight = 60;
+        this.html.contextWidth = 1180;
+        this.html.style.fontSize = 28;
+        this.html.style.wordWrap = false;
+        this.html.style.lineHeight = 60;
+        this.html.style.align = "left";
+        this.html.style.color = "#fff";
+        this.html.sport = true;
+        this.html.innerHTML = "";
+        this.htmlT = new Laya.HTMLDivElement();
+        this.htmlT.x = this.defaultX;
+        this.htmlT.contextHeight = 60;
+        this.htmlT.contextWidth = 1180;
+        this.htmlT.style.fontSize = 28;
+        this.htmlT.style.wordWrap = false;
+        this.htmlT.style.lineHeight = 60;
+        this.htmlT.style.align = "left";
+        this.htmlT.style.color = "#fff";
+        this.htmlT.sport = false;
+        this.htmlT.innerHTML = "";
+        this.hornBox.addChild(this.html);
+        this.hornBox.addChild(this.htmlT);
+        this.addChild(this.hornBox);
+    };
+    Marquee.prototype._animate = function () {
+        var _w = this.html.width;
+        var _x = this.html.x;
+        var w = this.htmlT.width;
+        var x = this.htmlT.x;
+        //  console.log("长度是：" + this.info.length)
+        if (this.html.sport) {
+            if (_x < -_w) {
+                this.html.x = this.defaultX;
+                this.html.sport = false;
+                this.html.innerHTML = "";
+            }
+            else if (_x + _w < this.space) {
+                if (!this.htmlT.sport) {
+                    this.htmlT.sport = true;
+                    if (this.index == this.info.length - 1) {
+                        this.index = 0;
+                    }
+                    else {
+                        this.index += 1;
+                    }
+                    this.addItem(2, this.info[this.index]);
+                }
+            }
+            this.html.x -= 2;
+        }
+        if (this.htmlT.sport) {
+            if (x < -w) {
+                this.htmlT.x = this.defaultX;
+                this.htmlT.sport = false;
+                this.htmlT.innerHTML = "";
+            }
+            else if (x + w < this.space) {
+                if (!this.html.sport) {
+                    this.html.sport = true;
+                    if (this.index == this.info.length - 1) {
+                        this.index = 0;
+                    }
+                    else {
+                        this.index += 1;
+                    }
+                    this.addItem(1, this.info[this.index]);
+                }
+            }
+            this.htmlT.x -= 2;
+        }
+    };
+    Marquee.prototype.addItem = function (type, html) {
+        if (type == 1) {
+            this.html.appendHTML(html);
+        }
+        if (type == 2) {
+            this.htmlT.appendHTML(html);
+        }
+    };
+    Marquee.prototype.play = function () {
+        this.frameLoop(1, this, this._animate);
+    };
+    Marquee.prototype.stop = function (type) {
+        // this.visible = false
+        this.html.sport = true;
+        this.html.x = this.defaultX;
+        this.htmlT.sport = false;
+        this.htmlT.x = this.defaultX;
+        this.index = 0;
+        this.clearTimer(this, this._animate);
+    };
+    Marquee.prototype.spellToHtml = function (args) {
+        var arr = [];
+        var html = "";
+        for (var i = 0; i < args.length; i++) {
+            switch (args[i].type) {
+                case 1:
+                    html = "<span color='#87CEFF'>" + args[i].name + "</span><span color='#FFFFFF'>在5元红包赛中取得第</span>";
+                    html += "<span color='#FF0000'>1</span><span color='#FFFFFF'>名的好成绩,获得</span>";
+                    html += "<span color='#FFFF00'>" + args[i].rmb + "元红包奖励</span><span color='#FFFFFF'>!!!</span>";
+                    arr.push(html);
+                    break;
+                case 2:
+                    html = "<span color='#87CEFF'>" + args[i].name + "</span><span color='#FFFFFF'>在100元红包赛中取得第</span>";
+                    html += "<span color='#FF0000'>" + args[i].rank + "</span><span color='#FFFFFF'>名的好成绩,获得</span>";
+                    html += "<span color='#FFFF00'>" + args[i].rmb + "元红包奖励</span><span color='#FFFFFF'>!!!</span>";
+                    arr.push(html);
+                    break;
+                case 3:
+                    html = "<span color='#87CEFF'>" + args[i].name + "</span><span color='#FFFFFF'>在天梯竞技场中达到 </span>";
+                    html += "<span color='#FF0000'>" + args[i].ladder_name + "</span><span color='#FFFFFF'>段位,获得</span>";
+                    html += "<span color='#FFFF00'>丰厚的段位奖励</span><span color='#FFFFFF'>!!!</span>";
+                    arr.push(html);
+                    break;
+                case 4:
+                    html = "<span color='#87CEFF'>" + args[i].name + "</span><span color='#FFFFFF'>在天梯竞技场中达到</span>";
+                    html += "<span color='#FF0000'>" + args[i].ladder_name + "</span><span color='#FFFFFF'>段位,获得</span>";
+                    html += "<span color='#FFFF00'>段位礼包</span><span color='#FFFFFF'>,达到该段位,还可刮分</span>";
+                    html += "<span color='#FF0000'>" + args[i].rmb + "元奖金</span><span color='#FFFFFF'>,</span>";
+                    html += "<span color='#EE1289'>大家快快努力加油</span><span color='#FFFFFF'>!!!</span>";
+                    arr.push(html);
+                    break;
+            }
+        }
+        return arr;
+    };
+    /** 创建背景 */
+    Marquee.prototype._createBg = function () {
+        var bg = new Laya.Sprite();
+        bg.graphics.drawPath(0, 0, makeRoundRectPath(750, 60, 0), {
+            fillStyle: "#000000"
+        });
+        bg.pos(0, 0);
+        bg.width = 750;
+        bg.height = 60;
+        bg.alpha = 0.4;
+        bg.zOrder = 1;
+        this.addChild(bg);
+    };
+    /** 创建喇叭 */
+    Marquee.prototype._createHorn = function () {
+        var horn = new Laya.Image();
+        horn.zOrder = 2;
+        horn.loadImage('wxlocal/Common/horn.png');
+        horn.pos(20, 0);
+        this.addChild(horn);
+    };
+    return Marquee;
+}(Laya.View));

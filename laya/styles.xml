@@ -1,0 +1,16 @@
+<res>
+   <item name="wxlocal/Role/icon_picfra3.png" type="Image" compress="0" pack="0" quality="80" props="sizeGrid=15,42,15,42" picType="0" scale="0"/>
+   <item name="wxlocal/Role/icon_picfra2.png" type="Image" compress="0" pack="0" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/Role/icon_picfra1.png" type="Image" compress="0" pack="0" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/Role/icon_picfra_small.png" type="Image" compress="0" pack="0" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/Role/icon_picfra_glow.png" type="Image" compress="0" pack="0" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/Role/mask_small.png" type="Image" compress="0" pack="0" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/Result/text_victory.png" type="Image" compress="0" pack="0" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/Result/text_failure.png" type="Image" compress="0" pack="0" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/Result/text_draw.png" type="Image" compress="0" pack="0" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/Share/icon_fram.png" type="Image" compress="0" pack="0" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/loading/01.png" type="Sprite" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/loading/02.png" type="Sprite" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/loading/image_reprod.jpg" type="Image" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/Game/icon_wave.png" type="Sprite" compress="0" pack="0" quality="80" props="" picType="0" scale="0"/>
+</res>

@@ -1,0 +1,93 @@
+
+export default class PropertyBar extends Laya.View {
+    constructor() {
+        super()
+        this.indector = null
+        this._addChilds();
+        this._startBegin();
+        this.selectBox;
+    }
+
+    _addChilds() {
+        let imgBg = new Laya.Image('wxlocal/Game/selectBox.png')
+        this.addChild(imgBg)
+        let indector = new Laya.Image('wxlocal/Game/icon_choose.png')
+        this.indector = indector
+        this.addChild(indector);
+
+    }
+    _startBegin() {
+        this._propKind();
+        // var cX=600, toX=this.img_me.y+20;
+        // this.selectBox = Laya.TimeLine.to(this.indector, { x: 600 }, 3000,null,null,5000);
+        this.selectBox=Laya.TimeLine.to(this.indector, {x:540}, 3000).to(this.indector, {x:0}, 3000);
+        this.selectBox.play(0, true);
+    }
+    //两个同时随机，定位置
+    _playBlock() {
+        let posArr = [10, 109, 212, 301, 380, 450];
+        let arr = this.randomPos(posArr, posArr.length)
+        return arr
+    }
+    
+    _propKind() {
+        let posArr = this._playBlock();
+        let prop = ["wxlocal/Game/icon_waterbomb.png", "wxlocal/Game/icon_speedup.png", "wxlocal/Game/icon_shild.png"]
+        let arr = this.randomPos(prop, prop.length);
+        let prop1 = new Laya.Image(arr[0]);
+        let prop2 = new Laya.Image(arr[1]);
+
+        prop1.pos(posArr[0], 9);
+        prop2.pos(posArr[1], 9);
+        let array = [];
+        array.push(prop1, prop2)
+        this.array = array;
+        this.addChild(prop1)
+        this.addChild(prop2)
+    }
+
+    handleClick() {
+        let x = this.indector._x;
+        this.selectBox.pause();
+        let min = this.array[0]._x;
+        let max = this.array[0]._x + 87;
+        let min2 = this.array[1]._x;
+        let max2 = this.array[1]._x + 87;
+        let skin = "";
+        var _this = this
+
+        switch (true) {
+            case x >= min && x <= max:
+                _this.skin = this.array[0]._skin;
+                break;
+            case x >= min2 && x <= max2:
+                _this.skin = this.array[1]._skin;
+                break;
+            default:
+            this.selectEmpty()
+                break;
+        }
+        return _this.skin
+    }
+
+    randomPos(arr, length) {
+        let pos1 = arr[Math.floor(Math.random() * length)];
+        let pos2 = arr[Math.floor(Math.random() * length)];
+        if (pos1 = pos2) {
+            pos2 = arr[Math.floor(Math.random() * length)];
+        }
+
+        let posArr = [];
+        posArr.push(pos1, pos2);
+        return posArr
+    }
+
+    selectEmpty(){
+        console.log("我是空")
+        Laya.timer.loop(1500, this, function(){
+            this.selectBox.resume()
+        });
+        ;
+    }
+
+}

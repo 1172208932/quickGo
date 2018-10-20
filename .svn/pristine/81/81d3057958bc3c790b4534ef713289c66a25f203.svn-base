@@ -1,0 +1,24 @@
+var GameResultView = (function(){
+    function  GameResultView(params) {
+        GameResultView.__super.call(this);
+        this.init();
+    }
+    Laya.class(GameResultView, 'ui.GameResultView' , GameResultViewUI);
+    var __proto = GameResultView.prototype;
+    __proto.init = function(){
+
+
+
+        this.btnShare.on(Laya.Event.CLICK, this, function () {
+            this.event(GameResultView.SHARE, null);
+        });
+        this.btnBack.on(Laya.Event.CLICK, this, function () {
+            this.event(GameResultView.BACK, null);
+        });
+    }
+    GameResultView.SHARE = "share";
+    GameResultView.BACK = "back";
+
+
+    return GameResultView;
+})()

@@ -1,0 +1,50 @@
+var MatchGradeView = (function(_super){
+    function MatchGradeView(params){
+        MatchGradeView._super.call(this);
+        this.initView();
+    }
+    Laya.class(MatchGradeView,'ui.MatchGradeView',_super)
+    var __proto = MatchGradeView.prototype;
+    __proto.initView = function () {
+        this.noviceField.on(Laya.Event.CLICK , this , function(){
+            this.event(MatchGradeView.NOVICE , null)
+        })
+        this.middleField.on(Laya.Event.CLICK, this, function () {
+            this.event(MatchGradeView.MIDDLE, null)
+        })
+        this.advanceField.on(Laya.Event.CLICK, this, function () {
+            this.event(MatchGradeView.ADVANCEFIELD, null)
+        })
+        this.quickMatch.on(Laya.Event.CLICK, this, function () {
+            this.event(MatchGradeView.QUICKMATCH, null);
+        })
+        //礼盒
+        this.giftBox.on(Laya.Event.CLICK , this , function(){
+            this.event(MatchGradeView.GIFT , null)
+        })
+        //充值
+        this.goldView.on(Laya.Event.CLICK, this, function () {
+            this.event(MatchGradeView.CHARGE, null);
+        })
+        //提现
+        this.moneyView.on(Laya.Event.CLICK, this, function () {
+            this.event(MatchGradeView.TIXIAN, null);
+        })
+        //返回
+        this.backBtn.clickHandler = Laya.Handler.create(this, function () {
+            this.event(MatchGradeView.BACK, MatchGradeView.BACK);
+        }, null, false);
+
+    }
+
+
+
+    MatchGradeView.NOVICE = "novice";
+    MatchGradeView.MIDDLE = "middle";
+    MatchGradeView.QUICKMATCH = "quickMatch";
+    MatchGradeView.CHARGE = "charge";
+    MatchGradeView.TIXIAN = "tixian";
+    MatchGradeView.BACK = "back";
+    MatchGradeView.GIFT = "gift";
+    return MatchGradeView;
+})()

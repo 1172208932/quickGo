@@ -1,0 +1,1 @@
+{"type":"Dialog","props":{"width":750,"runtime":"dialog/ReadyGoDialog.js","isModal":true,"height":1334},"compId":1,"child":[{"type":"Sprite","props":{"y":565,"x":300,"var":"number1","texture":"wxlocal/Game/iconlbl_3.png"},"compId":2}],"loadList":["wxlocal/Game/iconlbl_3.png"],"loadList3D":[],"components":[]}

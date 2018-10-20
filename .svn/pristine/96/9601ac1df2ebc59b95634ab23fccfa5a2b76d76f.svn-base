@@ -1,0 +1,35 @@
+export default class GameBg extends Laya.Script{
+        /** @prop {name:sdBg,tips:"背景水浪的速度1,2,3",type:int,default:1}*/
+    constructor(){
+        super()
+    }
+    onEnable(){
+        this.sdBg = 1
+        this.beginGo = false
+        Laya.timer.once(5000,this,function(){
+            this.beginGo = true
+        })
+        this._bg1 = this.owner.getChildByName('bg1')
+        this._bg2 = this.owner.getChildByName('bg2')
+        this._bg3 = this.owner.getChildByName('bg3')
+        this._bg4 = this.owner.getChildByName('bg4')
+        this._bg3.skin = this._bg1.skin
+        this._bg4.skin = this._bg2.skin
+        this._bg3.pos(this._bg1.x,this._bg1.y-406)
+        this._bg4.pos(this._bg2.x,this._bg2.y-406)
+    }
+    onUpdate(){
+        if(this._bg3.y == 0){
+            this._bg1.y = 0;
+            this._bg2.y = 182;
+            this._bg3.y = -406;
+            this._bg4.y = -224;                        
+        }
+        if(this.beginGo){
+            this._bg1.y = this._bg1.y + this.sdBg
+            this._bg2.y =this._bg2.y + this.sdBg
+            this._bg3.y =this._bg3.y + this.sdBg
+            this._bg4.y =this._bg4.y + this.sdBg 
+        }
+    }
+}

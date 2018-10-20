@@ -1,0 +1,11 @@
+export default class RoleChangeView extends PaoYa.View{
+    constructor(){
+        super()
+    }
+    onEnable(){
+        
+    }
+    getSceneUrl(){
+        return 'RoleChange.json'
+    }
+}

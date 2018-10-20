@@ -1,0 +1,47 @@
+import SpineConfig from "../SpineConfig";
+
+export default class GameView extends PaoYa.View {
+    constructor() {
+        super()
+    }
+
+    getSceneUrl() {
+        return 'scene/GameView.json'
+    }
+
+    onEnable() {
+        this.skSelf = new Laya.Skeleton(SpineConfig.lan_pao_pao.templet);
+        this.addChild(this.skSelf);
+        this.skSelf.play(0, true);
+        this.skSelf.pos(200, 600)
+
+        this.skDs = new Laya.Skeleton(SpineConfig.lan_pao_pao.templet);
+        this.addChild(this.skDs);
+        this.skDs.play(3, true);
+        this.skDs.pos(600, 600);
+        this.playBlock();
+    }
+    //两个同时随机，定位置
+    playBlock() {
+        var playBlockArray = [];
+        playBlockArray.push(this.speed)
+        playBlockArray.push(this.shield)
+        var out = [];
+        var num =2;
+        while(out.length < num){
+            var temp =(Math.random*playBlockArray >> 0);
+            out.push(playBlockArray.splice(temp,1));
+        }
+        console.log(out)
+        // var img = playBlockArray[num];
+        // img.pos(posArrayX[posNum], 9)
+
+    }
+
+    randomPos() {
+        var posArrayX = [10, 109, 212, 301, 402, 500];
+        var posNum = Math.floor(Math.random() * 6);
+        console.log(posNum)
+        return posArrayX[posNum]
+    }
+}

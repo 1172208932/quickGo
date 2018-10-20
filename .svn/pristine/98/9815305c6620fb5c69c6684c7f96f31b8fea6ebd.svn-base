@@ -1,0 +1,1229 @@
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var VideoAd = /** @class */ (function (_super) {
+    __extends(VideoAd, _super);
+    function VideoAd(adUnitId) {
+        var _this = _super.call(this) || this;
+        _this.adUnitId = adUnitId;
+        _this.errorTimes = 0; //错误次数，如果达到三次，则弹出错误
+        _this.setup(adUnitId);
+        return _this;
+    }
+    VideoAd.prototype.setup = function (adUnitId) {
+        var _this = this;
+        if (!wx.createRewardedVideoAd) {
+            return;
+        }
+        var videoAd = wx.createRewardedVideoAd({
+            adUnitId: adUnitId
+        });
+        videoAd.onLoad(function (res) {
+            _this.errorTimes = 0;
+            _this.event(VideoAd.LOADED);
+        });
+        videoAd.onClose(function (res) {
+            // 用户点击了【关闭广告】按钮
+            // 小于 2.1.0 的基础库版本，res 是一个 undefined
+            if (res && res.isEnded || res === undefined) {
+                // 正常播放结束，可以下发游戏奖励
+                _this.event(VideoAd.COMPLETE);
+            }
+            else {
+                _this.event(VideoAd.CLOSE);
+                // 播放中途退出，不下发游戏奖励
+            }
+            // this.destroy()
+        });
+        videoAd.onError(function (res) {
+            if (_this.errorTimes < 3) {
+                _this.errorTimes++;
+                _this.videoAd.load();
+            }
+            else {
+                //三次重试之后再去发送ERROR错误
+                _this.event(VideoAd.ERROR);
+            }
+        });
+        this.videoAd = videoAd;
+    };
+    // static on(type: string, caller: any, listener: Function, args?: Array<any>): Laya.EventDispatcher{
+    //     return this.notificationCenter.on(type,caller,listener,args)
+    // }
+    // static off(type: string, caller: any, listener: Function, onceOnly?: boolean): Laya.EventDispatcher{
+    //     return this.notificationCenter.off(type,caller,listener,onceOnly)
+    // }
+    VideoAd.prototype.load = function () {
+        var _this = this;
+        if (!wx.createRewardedVideoAd) {
+            Toast.showModal('提示', '当前微信版本不支持广告，请更新至最新版本后重试');
+            return;
+        }
+        this.videoAd.load().then(function () {
+            _this.videoAd.show();
+        }).catch(function () {
+            _this.videoAd.load().then(function () {
+                _this.videoAd.show();
+            });
+        });
+    };
+    VideoAd.prototype.show = function () {
+        this.videoAd.show();
+    };
+    VideoAd.prototype.destroy = function () {
+        this.offAll();
+        this.videoAd.offLoad({});
+        this.videoAd.offClose({});
+        this.videoAd.offError({});
+        this.videoAd = null;
+    };
+    VideoAd.canShowAd = function () {
+        if (!onMiniGame) {
+            return false;
+        }
+        var info = wx.getSystemInfoSync();
+        var lowestVersion = '2.0.4';
+        if (info.SDKVersion >= lowestVersion) {
+            return true;
+        }
+        return false;
+    };
+    VideoAd.LOADED = 'onLoad';
+    VideoAd.CLOSE = 'onClose';
+    VideoAd.COMPLETE = 'onComplete';
+    VideoAd.ERROR = 'onError';
+    return VideoAd;
+}(Laya.EventDispatcher));
+var BannerAd = /** @class */ (function (_super) {
+    __extends(BannerAd, _super);
+    function BannerAd(adUnitId) {
+        var _this = _super.call(this) || this;
+        _this.adUnitId = adUnitId;
+        _this.errorTimes = 0;
+        _this.setup(adUnitId);
+        return _this;
+    }
+    BannerAd.prototype.setup = function (adUnitId) {
+        var _this = this;
+        if (!wx.createBannerAd) {
+            return;
+        }
+        var screenHeight = wx.getSystemInfoSync().screenHeight;
+        var screenWidth = wx.getSystemInfoSync().screenWidth;
+        var WIDTH = screenWidth * 0.8;
+        var HEIGHT = Math.ceil(screenWidth * 0.8 * 0.33);
+        var viewHeight = (screenWidth * Laya.stage.designHeight) / Laya.stage.designWidth;
+        var viewY = (screenHeight - viewHeight) / 2;
+        var bannerAd = wx.createBannerAd({
+            adUnitId: adUnitId,
+            style: {
+                left: 0,
+                top: screenHeight - 200,
+                width: WIDTH,
+                height: HEIGHT
+            }
+        });
+        bannerAd.onResize(function (res) {
+            bannerAd.style.left = (screenWidth - bannerAd.style.realWidth) / 2 + 0.1;
+            bannerAd.style.top = viewHeight + viewY - bannerAd.style.realHeight + 0.1;
+        });
+        bannerAd.onError(function (err) {
+            console.log(err);
+            console.log("拉取广告失败");
+            _this.event(BannerAd.ERROR);
+        });
+        this.bannerAd = bannerAd;
+    };
+    BannerAd.prototype.show = function () {
+        this.bannerAd.show();
+    };
+    BannerAd.prototype.hide = function () {
+        this.bannerAd.hide();
+    };
+    BannerAd.prototype.destroy = function () {
+        this.offAll();
+        this.bannerAd.destroy();
+        this.bannerAd.offResize();
+        this.bannerAd.offError();
+        this.bannerAd = null;
+    };
+    BannerAd.canShowAd = function () {
+        if (!onMiniGame) {
+            return false;
+        }
+        var info = wx.getSystemInfoSync();
+        var lowestVersion = '2.0.4';
+        if (info.SDKVersion >= lowestVersion) {
+            return true;
+        }
+        return false;
+    };
+    BannerAd.ERROR = 'onError';
+    return BannerAd;
+}(Laya.EventDispatcher));
+var AlertDialog = /** @class */ (function (_super) {
+    __extends(AlertDialog, _super);
+    function AlertDialog(title, msg, ok, okHandler, cancel, cancelHandler) {
+        if (ok === void 0) { ok = "知道了"; }
+        if (okHandler === void 0) { okHandler = null; }
+        if (cancel === void 0) { cancel = null; }
+        if (cancelHandler === void 0) { cancelHandler = null; }
+        var _this = _super.call(this) || this;
+        _this.title = title;
+        _this.lblMsg.text = msg;
+        _this.lblTitle.text = title;
+        if (cancel) {
+            _this.btnClose.visible = false;
+            _this.btnOK.label = ok;
+            _this.btnOK.clickHandler = Laya.Handler.create(_this, function () {
+                _this.close();
+                okHandler && okHandler();
+            });
+            _this.btnCancel.label = cancel;
+            _this.btnCancel.clickHandler = Laya.Handler.create(_this, function () {
+                _this.close();
+                cancelHandler && cancelHandler();
+            });
+        }
+        else {
+            _this.btnOK.visible = false;
+            _this.btnCancel.visible = false;
+            _this.btnClose.label = ok;
+            _this.btnClose.clickHandler = Laya.Handler.create(_this, function () {
+                _this.close();
+                okHandler && okHandler();
+            });
+        }
+        return _this;
+    }
+    return AlertDialog;
+}(ui.Common.AlertDialogUI));
+var ChargeView = /** @class */ (function (_super) {
+    __extends(ChargeView, _super);
+    function ChargeView(cb) {
+        if (cb === void 0) { cb = null; }
+        var _this = _super.call(this) || this;
+        _this.cb = cb;
+        _this.init();
+        return _this;
+    }
+    ChargeView.prototype.init = function () {
+        var list = PaoYa.DataCenter.config.item_list;
+        for (var i = 1; i < list.length + 1; i++) {
+            var item = list[i - 1];
+            var box = this.getChildByName(i + "");
+            var children = box._childs;
+            var bg = children[0];
+            var icon = children[1];
+            var lblValue = children[2];
+            var lblMoney = children[3];
+            var imgFree = children[4];
+            var lblFree = imgFree._childs[0];
+            // set UI
+            if (i < 3) {
+                bg.skin = "wxlocal/Charge/b.png";
+            }
+            icon.skin = "wxlocal/Charge/" + i + ".png";
+            lblValue.text = item.pao_gold;
+            lblMoney.text = "￥" + item.price;
+            imgFree.visible = item.free_gold > 0;
+            lblFree.text = "+" + item.free_gold;
+            box.on(Laya.Event.CLICK, this, this.clickHandler, [item]);
+        }
+    };
+    ChargeView.prototype.clickHandler = function (item) {
+        var _this = this;
+        PaoYa.DataCenter.isShare=true;
+        PaoYa.PayManager.pay(item.pao_gold, function () {
+            _this.refreshGold(item.id);
+        }, function (code) {
+            if (code != -2 || code != 1) {
+                Toast.showModal("提示", "支付失败");
+            }
+        });
+    };
+    ChargeView.prototype.refreshGold = function (itemId) {
+        var _this = this;
+        var params = {
+            itemId: itemId,
+            gameAppId: window.game.gameId
+        };
+        Toast.showLoading("");
+        PaoYa.Request.POST("midas_pay", params, function (data) {
+            Toast.hideLoading();
+            PaoYa.DataCenter.user.gold = data.pao_gold;
+            Toast.showModal("恭喜", "充值成功");
+            _this.cb && _this.cb(data.pao_gold);
+        }, function () {
+            Toast.hideLoading();
+        });
+    };
+    return ChargeView;
+}(ui.Common.ChargeViewUI));
+var GoldLackAlert = /** @class */ (function (_super) {
+    __extends(GoldLackAlert, _super);
+    function GoldLackAlert() {
+        var _this = _super.call(this) || this;
+        // this.btnShare.clickHandler = Laya.Handler.create(this,()=>{
+        //     window.game.handleOnShare(0)
+        // },null,false)
+        _this.btnCharge.clickHandler = Laya.Handler.create(_this, function () {
+            Service.goToCharge();
+        }, null, false);
+        _this.btnAds.clickHandler = Laya.Handler.create(_this, function () {
+            Service.goToAds();
+        }, null, false);
+        return _this;
+    }
+    return GoldLackAlert;
+}(ui.Common.GoldLackAlertUI));
+var GoldLackAlertForIOS = /** @class */ (function (_super) {
+    __extends(GoldLackAlertForIOS, _super);
+    function GoldLackAlertForIOS() {
+        var _this = _super.call(this) || this;
+        _this.btnCharge.clickHandler = Laya.Handler.create(_this, function () {
+            Service.ToMiniProgramForReward();
+        }, null, false);
+        _this.btnAds.clickHandler = Laya.Handler.create(_this, function () {
+            Service.goToAds();
+        }, null, false);
+        return _this;
+    }
+    return GoldLackAlertForIOS;
+}(ui.Common.GoldLackAlertForIOSUI));
+var PrizeView = /** @class */ (function (_super) {
+    __extends(PrizeView, _super);
+    function PrizeView(prize) {
+        var _this = _super.call(this) || this;
+        _this.prize = prize;
+        _this.init();
+        return _this;
+    }
+    PrizeView.prototype.init = function () {
+        this.align = Laya.VBox.CENTER;
+        var image = new Laya.Image();
+        image.skin = this.prize.type == PaoYa.PrizeType.Gold ? "wxlocal/Common/icon-bean-ladder.png" : "wxlocal/Common/icon-hb-ladder.png";
+        image.y = -1;
+        this.addChild(image);
+        var label = new Laya.Label();
+        label.color = "#ffffff";
+        label.bold = true;
+        label.fontSize = 35;
+        label.italic = true;
+        label.stroke = 5;
+        label.strokeColor = "#3ecbff";
+        label.text = "X" + this.prize.value;
+        this.addChild(label);
+    };
+    return PrizeView;
+}(Laya.VBox));
+var PrizeShowView = /** @class */ (function (_super) {
+    __extends(PrizeShowView, _super);
+    function PrizeShowView(prizes) {
+        var _this = _super.call(this) || this;
+        _this.prizes = prizes;
+        if (prizes.length) {
+            _this.init();
+        }
+        return _this;
+    }
+    PrizeShowView.prototype.init = function () {
+        var _this = this;
+        this.align = Laya.HBox.MIDDLE;
+        this.prizes.forEach(function (prize, index) {
+            var view = new PrizeView(prize);
+            view.x = index;
+            _this.addChild(view);
+        });
+        if (this.prizes.length == 1) {
+            this.space = 0;
+        }
+        else {
+            this.space = 80;
+        }
+        this.centerX = 0;
+    };
+    return PrizeShowView;
+}(Laya.HBox));
+var customui;
+(function (customui) {
+    var RoundImage = /** @class */ (function (_super) {
+        __extends(RoundImage, _super);
+        function RoundImage() {
+            return _super.call(this) || this;
+            // this.canvas = wx.createCanvas()
+            // this.context = this.canvas.getContext("2d")
+        }
+        RoundImage.prototype.drawImageOnMiniGame = function () {
+            var _this = this;
+            if (this.width == 0 || this.height == 0) {
+                return;
+            }
+            var canvas = wx.createCanvas();
+            canvas.width = this.width;
+            canvas.height = this.height;
+            var context = canvas.getContext("2d");
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            context.beginPath();
+            context.arc(canvas.width / 2, canvas.height / 2, canvas.width / 2, 0, Math.PI * 2);
+            context.clip();
+            var image = wx.createImage();
+            image.src = this._skin;
+            image.onload = function () {
+                context.drawImage(image, 0, 0, canvas.width, canvas.height);
+                var texture = new Laya.Texture(canvas);
+                _this.graphics.clear();
+                _this.graphics.drawTexture(texture);
+            };
+        };
+        Object.defineProperty(RoundImage.prototype, "source", {
+            get: function () {
+                return this._bitmap.source;
+            },
+            set: function (value) {
+                if (!this._bitmap)
+                    return;
+                if (this._bitmap.source == value)
+                    return;
+                if (onMiniGame) {
+                    this.callLater(this.drawImageOnMiniGame);
+                }
+                else {
+                    if (!this.mask) {
+                        var mask = new Laya.Sprite();
+                        var r = Math.ceil(this.width / 2);
+                        mask.graphics.drawCircle(r, r, r, "#ff0000");
+                        this.mask = mask;
+                    }
+                    this.event("loaded");
+                    this._bitmap.source = value;
+                    this.repaint();
+                }
+            },
+            enumerable: true,
+            configurable: true
+        });
+        return RoundImage;
+    }(Laya.Image));
+    customui.RoundImage = RoundImage;
+    // set skin(newSkin) {
+    //     if (this._skin != newSkin) {
+    //         this._skin = newSkin
+    //         if (newSkin) {
+    //             if (onMiniGame) {
+    //                 if (this.lastWidth != this.width){
+    //                     this.lastWidth = this.width
+    //                     this.canvas.width = this.width
+    //                     this.canvas.height = this.height
+    //                     this.context.restore()
+    //                     this.context.clearRect(0,0,this.width,this.height)
+    //                     this.context.beginPath()
+    //                     this.context.arc(this.width / 2, this.height / 2, this.width / 2, 0, Math.PI * 2)
+    //                     this.context.clip()
+    //                 }
+    //                 var image = wx.createImage();
+    //                 image.src = newSkin;
+    //                 image.onload = () => {
+    //                     this.context.drawImage(image, 0, 0, this.width, this.height);
+    //                     var texture = new Laya.Texture(this.canvas);
+    //                     this.graphics.drawTexture(texture);
+    //                 }
+    //             } else {
+    //                 var source = Laya.Loader.getRes(newSkin);
+    //                 if (source) {
+    //                     this.source = source;
+    //                     this.onCompResize();
+    //                 } else Laya.loader.load(this._skin, Laya.Handler.create(this, this.setSource, [this._skin]), null,/*laya.net.Loader.IMAGE*/"image", 1, true, this._group);
+    //             }
+    //         } else {
+    //             this.source = null;
+    //         }
+    //     }
+    // }
+    // get skin() {
+    //     return this._skin
+    // }
+})(customui || (customui = {}));
+var Scene = /** @class */ (function (_super) {
+    __extends(Scene, _super);
+    function Scene() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    Scene.prototype.viewDidLoad = function () {
+        var _this = this;
+        _super.prototype.viewDidLoad.call(this);
+        var view = this.view;
+        if (view && view.goldView) {
+            view.goldView.on(Laya.Event.CLICK, this, function () {
+                _this.chargeHandler();
+            });
+        }
+        if (view && view.moneyView) {
+            view.moneyView.on(Laya.Event.CLICK, this, function () {
+                _this.txHandler();
+            });
+        }
+        this.refreshUserInfo();
+        if (view && view.userView) {
+            if (PaoYa.DataCenter.user) {
+                var user = PaoYa.DataCenter.user;
+                if (user.nickname) {
+                    var label = view.userView.getChildByName("label");
+                    label.text = user.nickname.formatName();
+                    var sprite = view.userView.getChildByName("nameBg");
+                    if (sprite) {
+                        sprite.graphics.clear();
+                        var width = label.text.measureWidth() + 37 + 25;
+                        sprite.graphics.drawPath(0, 0, makeAllCornerRoundRectPath(width, 50, 25), {
+                            fillStyle: "#000000"
+                        });
+                    }
+                }
+                if (user.avstar) {
+                    var icon = view.userView.getChildByName("icon");
+                    icon.skin = user.avstar.makeIcon();
+                }
+            }
+            view.userView.on(Laya.Event.CLICK, this, function () {
+                _this.userViewHandler();
+            });
+        }
+        if (view.btnBack) {
+            view.btnBack.clickHandler = Laya.Handler.create(this, this.backButtonHandler);
+        }
+    };
+    Scene.prototype.refreshUserInfo = function () {
+        if (!this.view) {
+            return;
+        }
+        if (PaoYa.DataCenter.user) {
+            if (this.view.goldView) {
+                var label = this.view.goldView.getChildByName("label");
+                label && (label.text = PaoYa.DataCenter.user.gold + "");
+            }
+            if (this.view.moneyView) {
+                var label = this.view.moneyView.getChildByName("label");
+                label && (label.text = PaoYa.DataCenter.user.rmb + "");
+            }
+        }
+    };
+    Scene.prototype.viewWillAppear = function () {
+        _super.prototype.viewWillAppear.call(this);
+        this.updateChips();
+    };
+    /**充值功能 */
+    Scene.prototype.chargeHandler = function () {
+        var _this = this;
+        Service.goToCharge(function () {
+            _this.refreshUserInfo();
+        });
+    };
+    /**提现功能 */
+    Scene.prototype.txHandler = function () {
+        PaoYa.DataTrack.trackType(PaoYa.DataTrackType.WithDraw)
+        var url = PaoYa.DataCenter.config.common_config.hall_img.split(";").randomItem;
+        var view = new ui.Common.WithDrawAlertUI();
+        view.popup();
+        view.onClosed = function (type) {
+            if (type == Laya.Dialog.OK) {
+                Service.navigateToMiniProgram({
+                    appId: "wx6c6a845c3a61e971",
+                    images: [url],
+                    path: "pages/index?to=1",
+                    envVersion: "release"
+                });
+            }
+        };
+    };
+    /**用户头像点击回调 */
+    Scene.prototype.userViewHandler = function () {
+    };
+    /**返回按钮点击时触发的方法 */
+    Scene.prototype.backButtonHandler = function () {
+        this.navigator.pop();
+    };
+    /**自动更新用户金币数 */
+    Scene.prototype.updateChips = function () {
+        var _this = this;
+        if (!PaoYa.DataCenter.user) {
+            return;
+        }
+        this.GET("update_chips", {}, function (res) {
+            if (res.pao_gold != undefined) {
+                PaoYa.DataCenter.user.gold = res.pao_gold;
+            }
+            if (res.rmb != undefined) {
+                PaoYa.DataCenter.user.rmb = res.rmb;
+            }
+            _this.refreshUserInfo();
+        });
+    };
+    return Scene;
+}(PaoYa.Scene));
+var Service = /** @class */ (function () {
+    function Service() {
+    }
+    Service.ToMiniProgramForReward = function (cb) {
+        if (cb === void 0) { cb = null; }
+        var url_1 = PaoYa.DataCenter.config.common_config.hall_img.split(";").randomItem;
+        Service.navigateToMiniProgram({
+            appId: "wx6c6a845c3a61e971",
+            images: [url_1],
+            path: "pages/index?to=2",
+            envVersion: "release"
+        });
+    };
+    Service.showAlertWhenHasNoMoney = function (cb) {
+        if (cb === void 0) { cb = null; }
+        var view = new GoldLackAlert();
+        view.popup();
+    };
+    Service.showIOSAlertNoMoney = function (cb) {
+        if (cb === void 0) { cb = null; }
+        var view = new GoldLackAlertForIOS();
+        view.popup();
+    };
+    Service.hasEnoughMoney = function (cost) {
+        if (PaoYa.DataCenter.user.gold < cost) {
+            if (Laya.Browser.onIOS) {
+                this.showIOSAlertNoMoney();
+            }
+            else {
+                this.showAlertWhenHasNoMoney();
+            }
+            return false;
+        }
+        return true;
+    };
+    Service.exitMiniProgram=function(){
+        wx.exitMiniProgram({
+            success:function(){
+                console.log("关闭成功");
+            },
+            fail:function(){
+                console.error("关闭失败")
+            }
+        });
+    }
+    /**
+     * {
+     *     appId:'wxxxxxxx',
+     *     path: 'index',
+     *     extraData: {},
+     *     envVersion: 'develop', //'trial' 'release'
+     *     images:['','']
+     * }
+     */
+    Service.navigateToMiniProgram = function (params) {
+        if (!params.appId) {
+            console.error("必须指定appId");
+            return;
+        }
+        if (!Laya.Browser.onMiniGame) {
+            return;
+        }
+        if (wx.navigateToMiniProgram) {
+            wx.navigateToMiniProgram({
+                appId: params.appId,
+                path: params.path || "",
+                extraData: params.extraData || {},
+                envVersion: params.envVersion || "release"
+            });
+        }
+        else {
+            var url = params.images.randomItem.makeResourceURL();
+            wx.previewImage({
+                urls: [url],
+                success: function (res) {
+                    console.log(res);
+                },
+                fail: function (res) {
+                    console.log(res);
+                }
+            });
+        }
+    };
+    Service.goToHall = function () {
+        PaoYa.DataTrack.trackType(PaoYa.DataTrackType.HallBack)
+        if(PaoYa.DataCenter.isFromMiniProgram){
+            window.game.exit();
+            return;
+         }
+         var url=PaoYa.DataCenter.config.common_config.hall_img.split(";").randomItem;
+         Service.navigateToMiniProgram({
+             appId:"wx6c6a845c3a61e971",
+             images:[url]
+         });
+    };
+    Service.goToCharge = function (cb) {
+        if (cb === void 0) { cb = null; }
+        if (PaoYa.DataCenter.rawData.is_review) {
+            Toast.showModal("提示", "该功能尚未上线");
+            return;
+        }
+        if (Laya.Browser.onIOS) {
+            var url = PaoYa.DataCenter.config.common_config.hall_img.split(";").randomItem;
+            var view = new ui.Common.ChargeAlertForIOSUI();
+            view.popup();
+            view.onClosed = function (type) {
+                if (type == Laya.Dialog.OK) {
+                    Service.ToMiniProgramForReward();
+                }
+            };
+        }
+        else {
+            if (!PaoYa.DataCenter.config.item_list) {
+                console.log("PaoYa.DataCenter.config.item_list不存在");
+                return;
+            }
+            if (PaoYa.DataCenter.login.isProduction) {
+                PaoYa.Loader.load("res/atlas/wxlocal/Charge.atlas", this, function () {
+                    var view = new ChargeView(cb);
+                    view.popup();
+                });
+            }
+            else {
+                var view = new ui.Common.ChargeAlertForIOSUI();
+                view.chargeRemind.text = "当前版本暂时无法充值，您可以返回大厅参与其他游戏哦！";
+                view.popup();
+                view.onClosed = function (type) {
+                    if (type == Laya.Dialog.OK) {
+                        Service.goToHall();
+                    }
+                };
+            }
+        }
+    };
+    Service.goToAds = function () {
+        PaoYa.DataCenter.videoAd.load();
+    };
+    Service.setupAd = function (adUnit) {
+        //创建视频广告，需要传入adunitId
+        if (!VideoAd.canShowAd) {
+            var AdDialog = new AlertDialog("提示", "微信版本过低,请更新微信", "跳过", null, "重新观看", function () {
+                console.log("重新观看");
+            });
+            AdDialog.popup();
+            return;
+        }
+        var videoAd = new VideoAd(adUnit);
+        //用户未看完视频
+        videoAd.on(VideoAd.CLOSE, this, function () {
+            /*   var AdDialog = new AlertView("提示","完整看完视频才有豆子奖励哦", ["跳过","重新观看"]);
+              AdDialog.popup();
+              AdDialog.onClosed=function(type){
+                  if (type == Dialog.CANCEL) {
+                     
+                  } else if (type == Dialog.OK) {
+                     broadAd();
+                  }
+              } */
+        });
+        //用户成功看完视频
+        videoAd.on(VideoAd.COMPLETE, this, function () {
+            PaoYa.Request.GET("ads_reward", {}, function (data) {
+                var AdDialog = new AlertDialog("恭喜", "获得" + data.gold + "豆子", "确定");
+                AdDialog.popup();
+                var currentScene=window.$navigator.visibleScene;
+                if(currentScene.updateChips){
+                    currentScene.updateChips();
+                }
+            }, function () {
+                if (Laya.Browser.onIOS) {
+                    var message = "今日广告奖励已达上限，您可以参与其他游戏哦！关注“泡泡游戏”公众号，每周领取豆子礼包！";
+                    var btnText = "领礼包";
+                }
+                else {
+                    var message = "今日视频广告奖励已达上线，您可以直接充值豆子哦！";
+                    var btnText = "去充值";
+                }
+                var AdDialog = new AlertDialog("提示", message, btnText, function () {
+                    if (Laya.Browser.onIOS) {
+                        Service.ToMiniProgramForReward();
+                    }
+                    else {
+                        Service.goToCharge();
+                    }
+                }, "跳过", null);
+                AdDialog.btnCancel.skin = "wxlocal/Common/btnYellow.png";
+                AdDialog.btnOK.skin = "wxlocal/Common/btnBlue.png";
+                AdDialog.popup();
+            });
+        });
+        //用户失败
+        videoAd.on(VideoAd.ERROR, this, function () {
+            var AdDialog = new AlertDialog("提示", "加载失误,稍后再试", "确定");
+            AdDialog.popup();
+        });
+        PaoYa.DataCenter.videoAd = videoAd;
+    };
+    Service.goToBannerAd = function () {
+        PaoYa.DataCenter.videoAd.show();
+    };
+    Service.hideBannerAd = function () {
+        PaoYa.DataCenter.bannerAd.hide();
+    };
+    Service.setBannerAd = function (adUnit) {
+        if (!BannerAd.canShowAd) {
+            var AdDialog = new AlertDialog("提示", "微信版本过低,请更新微信", "跳过", null, "重新观看", function () {
+                console.log("重新观看");
+            });
+            AdDialog.popup();
+            return;
+        }
+        if (!PaoYa.DataCenter.bannerAd) {
+            var bannerAd = new BannerAd(adUnit);
+        }
+        else {
+            PaoYa.DataCenter.bannerAd.destroy();
+            var bannerAd = new BannerAd(adUnit);
+        }
+        bannerAd.on(BannerAd.ERROR, this, function () {
+            var AdDialog = new AlertDialog("提示", "加载失误,稍后再试", "确定");
+            AdDialog.popup();
+        });
+        PaoYa.DataCenter.bannerAd = bannerAd;
+    };
+    return Service;
+}());
+var UserViewStyle;
+(function (UserViewStyle) {
+    UserViewStyle[UserViewStyle["Girl"] = 0] = "Girl";
+    UserViewStyle[UserViewStyle["Boy"] = 1] = "Boy";
+})(UserViewStyle || (UserViewStyle = {}));
+var UserView = /** @class */ (function (_super) {
+    __extends(UserView, _super);
+    function UserView(style) {
+        if (style === void 0) { style = UserViewStyle.Boy; }
+        var _this = _super.call(this) || this;
+        _this.style = style;
+        _this.changeStyle();
+        return _this;
+    }
+    UserView.prototype.changeStyle = function () {
+        switch (this.style) {
+            case UserViewStyle.Girl:
+                this.imgIconMask.skin = "wxlocal/Common/usericon-mask-girl.png";
+                this.imgNameBg.skin = "wxlocal/Common/username-bg-girl.png";
+                break;
+            case UserViewStyle.Boy:
+                break;
+        }
+    };
+    UserView.prototype.setData = function (data) {
+        if (data.icon != undefined) {
+            this.imgIcon.skin = data.icon; //|| "wxlocal/Common/avstar.png"
+        }
+        if (data.name != undefined) {
+            this.lblName.text = data.name; //|| "等待对方入场..."
+        }
+        if (data.city != undefined) {
+            if (data.city) {
+                this.lblCity.visible = true;
+                this.lblCity.text = data.city;
+                this.lblCity.centerX = 0;
+            }
+            else {
+                this.lblCity.visible = false;
+            }
+        }
+        if (data.gender != undefined) {
+            if (data.gender) {
+                this.hBox.space = 8;
+                this.imgSex.visible = true;
+                this.imgSex.skin = data.gender;
+            }
+            else {
+                this.hBox.space = 0;
+                this.imgSex.visible = false;
+            }
+        }
+        this.hBox.centerX = 0;
+        if (data.ladder != undefined) {
+            if (data.ladder) {
+                this.imgLadder.visible = true;
+                this.imgLadder.skin = data.ladder;
+            }
+            else {
+                this.imgLadder.visible = false;
+            }
+        }
+    };
+    return UserView;
+}(ui.Common.UserViewUI));
+var GameRuleView = /** @class */ (function (_super) {
+    __extends(GameRuleView, _super);
+    function GameRuleView(rule) {
+        var _this = _super.call(this) || this;
+        var url = rule.makeResourceURL();
+        Laya.loader.load(url, Laya.Handler.create(_this, function () {
+            var texture = Laya.loader.getRes(url);
+            var width = _this.panel.width;
+            var height = width * texture.height / texture.width;
+            _this.imageView.size(width, height);
+            _this.panel.height = Math.min(height, 626);
+            if (height < 626) {
+                _this.panel.vScrollBarSkin = "";
+            }
+            _this.imageView.skin = url;
+        }, null, false));
+        return _this;
+    }
+    return GameRuleView;
+}(ui.Common.GameRuleViewUI));
+var SettingDialog = /** @class */ (function (_super) {
+    __extends(SettingDialog, _super);
+    function SettingDialog() {
+        var _this = _super.call(this) || this;
+        _this.init();
+        return _this;
+    }
+    SettingDialog.setUp = function () {
+        if (localStorage.getItem("musicSwitchState")) {
+            Laya.SoundManager.musicMuted = true;
+        }
+        else {
+            Laya.SoundManager.musicMuted = false;
+        }
+        if (localStorage.getItem("effectSwitchState")) {
+            Laya.SoundManager.soundMuted = true;
+        }
+        else {
+            Laya.SoundManager.soundMuted = false;
+        }
+    };
+    //1:off;2:on
+    SettingDialog.prototype.init = function () {
+        this.btnCopy.on(Laya.Event.CLICK, this, this.copy);
+        this.musicSwitch.on(Laya.Event.CLICK, this, this.setMusicVolume);
+        this.effectSwitch.on(Laya.Event.CLICK, this, this.setEffectVolume);
+        console.log("存储：");
+        console.log(localStorage.getItem("musicSwitchState"));
+        console.log(localStorage.getItem("effectSwitchState"));
+        if (localStorage.getItem("musicSwitchState")) {
+            this.musicSwitch.skin = "wxlocal/Common/volumeBar0.png";
+            Laya.SoundManager.musicMuted = true;
+        }
+        else {
+            this.musicSwitch.skin = "wxlocal/Common/volumeBar1.png";
+            Laya.SoundManager.musicMuted = false;
+        }
+        if (localStorage.getItem("effectSwitchState")) {
+            this.effectSwitch.skin = "wxlocal/Common/volumeBar0.png";
+            Laya.SoundManager.soundMuted = true;
+        }
+        else {
+            this.effectSwitch.skin = "wxlocal/Common/volumeBar1.png";
+            Laya.SoundManager.soundMuted = false;
+        }
+    };
+    SettingDialog.prototype.copy = function () {
+        wx.setClipboardData({
+            data: "泡泡游戏",
+            success: function () {
+                Toast.showModal("提示", "已复制到粘贴板");
+            }
+        });
+    };
+    SettingDialog.prototype.setMusicVolume = function () {
+        Laya.SoundManager.musicMuted = !Laya.SoundManager.musicMuted;
+        localStorage.setItem("musicSwitchState", Laya.SoundManager.musicMuted);
+        this.musicSwitch.skin = Laya.SoundManager.musicMuted ? "wxlocal/Common/volumeBar0.png" : "wxlocal/Common/volumeBar1.png";
+    };
+    SettingDialog.prototype.setEffectVolume = function () {
+        Laya.SoundManager.soundMuted = !Laya.SoundManager.soundMuted;
+        localStorage.setItem("effectSwitchState", Laya.SoundManager.soundMuted);
+        this.effectSwitch.skin = Laya.SoundManager.soundMuted ? "wxlocal/Common/volumeBar0.png" : "wxlocal/Common/volumeBar1.png";
+    };
+    return SettingDialog;
+}(ui.Common.SettingDialogUI));
+var TaskReward = /** @class */ (function (_super) {
+    __extends(TaskReward, _super);
+    function TaskReward(prizes) {
+        var _this = _super.call(this) || this;
+        _this.prizes = prizes;
+        _this.setPrizes(200, prizes);
+        return _this;
+    }
+    return TaskReward;
+}(ui.Common.TaskRewardUI));
+var TaskViewStatus;
+(function (TaskViewStatus) {
+    TaskViewStatus[TaskViewStatus["noReceive"] = 0] = "noReceive";
+    TaskViewStatus[TaskViewStatus["receive"] = 1] = "receive";
+    TaskViewStatus[TaskViewStatus["received"] = 2] = "received";
+})(TaskViewStatus || (TaskViewStatus = {}));
+var TaskView = /** @class */ (function (_super) {
+    __extends(TaskView, _super);
+    function TaskView(data) {
+        var _this = _super.call(this) || this;
+        _this.data = data;
+        _this.giftBoxes = [];
+        _this.requestLabels = [];
+        _this.boxAnimate = new Laya.Templet();
+        Toast.showLoading("");
+        _this.boxAnimate.loadAni("https://res.xingqiu123.com/wxgame/service/jiang_li.sk");
+        _this.boxAnimate.on(Laya.Event.COMPLETE, _this, function () {
+            Toast.hideLoading();
+            _this.initStatus();
+        });
+        _this.setProgressBar();
+        return _this;
+    }
+    TaskView.prototype.setProgressBar = function () {
+        var progressRatio = this.data.finish_count / this.data.total_count;
+        var maskWidth = this.progressBar.width * progressRatio;
+        var cMask = new Laya.Sprite();
+        cMask.graphics.drawPath(0, 0, makeAllCornerRoundRectPath(maskWidth, 16, 8), {
+            fillStyle: "#ffffff"
+        });
+        this.progressBar.mask = cMask;
+    };
+    TaskView.prototype.initStatus = function () {
+        var list = this.data.list;
+        for (var i = 0; i < list.length; i++) {
+            this.giftBoxes.push(this.giftBoxesInfo._childs[i]._childs[0]);
+            this.requestLabels.push(this.giftBoxesInfo._childs[i]._childs[1]);
+            this.giftBoxes[i].posX = this.giftBoxesInfo._childs[i].x;
+            this.giftBoxes[i].posY = this.giftBoxesInfo._childs[i].y;
+            this.giftBoxes[i].taskId = list[i].task_id;
+            this.giftBoxes[i].status = list[i].status; //0 未完成  1 完成未领取 2 领取
+            this.giftBoxes[i].taskReward = list[i].task_reward;
+            this.requestLabels[i].text = list[i].num + "个人";
+            this.initBoxStatus(this.giftBoxes[i]);
+            this.giftBoxes[i].on(Laya.Event.CLICK, this.giftBoxes[i], this.clickBoxes);
+        }
+        this.numberOk.text = this.data.finish_count + "/" + this.data.total_count;
+    };
+    TaskView.prototype.initBoxStatus = function (box) {
+        switch (box.status) {
+            case TaskViewStatus.noReceive:
+                box.skin = "wxlocal/Task/box-noReceive-" + box.taskId + ".png";
+                break;
+            case TaskViewStatus.receive:
+                box.alpha = 0;
+                var boxSkeleton = this.boxAnimate.buildArmature(0);
+                box.boxSkeleton = boxSkeleton;
+                boxSkeleton.pos(Math.ceil(box.width / 2) + box.posX, Math.ceil(box.height / 2) + box.posY);
+                boxSkeleton.play("jiang_li_" + box.taskId, true);
+                this.giftBoxesInfo.addChild(boxSkeleton);
+                break;
+            case TaskViewStatus.received:
+                box.skin = "wxlocal/Task/box-received-" + box.taskId + ".png";
+                break;
+        }
+    };
+    TaskView.prototype.clickBoxes = function () {
+        var _this = this;
+        switch (this.status) {
+            case TaskViewStatus.noReceive:
+                var view1_1 = new TaskReward(PaoYa.DataCenter.formatPrize(this.taskReward));
+                view1_1.btnOk.label = "确定";
+                view1_1.btnOk.clickHandler = Laya.Handler.create(this, function () {
+                    view1_1.close();
+                });
+                view1_1.popup();
+                console.log("只能能看不能领取");
+                //this.skin="wxlocal/Task/box-noReceive-"+this.task_id+".png"
+                break;
+            case TaskViewStatus.receive:
+                var view2_1 = new TaskReward(PaoYa.DataCenter.formatPrize(this.taskReward));
+                view2_1.btnOk.label = "领取";
+                view2_1.btnOk.clickHandler = Laya.Handler.create(this, function () {
+                    Toast.showLoading("");
+                    PaoYa.Request.POST("share_task_reward", { task_id: _this.taskId }, function (res) {
+                        Toast.hideLoading();
+                        console.log("领取成功拉拉");
+                        _this.boxSkeleton.destroy();
+                        _this.skin = "wxlocal/Task/box-received-" + _this.taskId + ".png";
+                        _this.alpha = 1;
+                        _this.status = 2;
+                        view2_1.close();
+                    }, function () {
+                        Toast.hideLoading();
+                    });
+                });
+                view2_1.popup();
+                break;
+            case TaskViewStatus.received:
+                //this.skin="wxlocal/Task/box-received-"+this.task_id+".png"
+                console.log("已经领取");
+                break;
+        }
+    };
+    TaskView.prototype.destroy = function () {
+        for (var i = 0; i < this.giftBoxes.length; i++) {
+            if (this.giftBoxes[i].boxSkeleton) {
+                this.giftBoxes[i].boxSkeleton.destroy();
+            }
+        }
+        _super.prototype.destroy.call(this);
+    };
+    return TaskView;
+}(ui.Common.TaskViewUI));
+var GameAgainDialog = /** @class */ (function (_super) {
+    __extends(GameAgainDialog, _super);
+    function GameAgainDialog() {
+        return _super.call(this) || this;
+    }
+    GameAgainDialog.prototype.show = function (isSender, name) {
+        this.isSender = isSender;
+        if (isSender) {
+            this.bSender.visible = true;
+            this.lblSender.text = name;
+            this.bReceiver.visible = false;
+            this.btnRefuse.visible = false;
+            this.btnAccept.visible = false;
+            this.btnSend.visible = true;
+            this.btnSend.skin = "wxlocal/Common/btn_normal.png";
+            this.btnSend.label = "取消邀请";
+            this.btnSend.name = Laya.Dialog.CANCEL;
+        }
+        else {
+            this.bReceiver.visible = true;
+            this.lblReceiver.text = name;
+            this.bSender.visible = false;
+            this.btnRefuse.visible = true;
+            this.btnAccept.visible = true;
+            this.btnSend.visible = false;
+        }
+        this.callLater(this.reloadView);
+        this.popup(true);
+        this.startTimer();
+    };
+    GameAgainDialog.prototype.hide = function () {
+        this.stopTimer();
+        this.close("");
+    };
+    GameAgainDialog.prototype.reloadView = function () {
+        if (this.isSender) {
+            this.bSender.refresh();
+            this.bSender.centerX = 0;
+        }
+        else {
+            this.bReceiver.refresh();
+            this.bReceiver.centerX = 0;
+        }
+    };
+    GameAgainDialog.prototype.startTimer = function (duration) {
+        if (duration === void 0) { duration = 30; }
+        this.duration = duration;
+        this.timerHandler();
+        Laya.timer.loop(1000, this, this.timerHandler);
+    };
+    GameAgainDialog.prototype.stopTimer = function () {
+        Laya.timer.clear(this, this.timerHandler);
+    };
+    GameAgainDialog.prototype.timerHandler = function () {
+        if (this.duration >= 0) {
+            this.lblTime.text = this.duration + "s";
+            this.duration--;
+        }
+        else {
+            if (this.isSender) {
+                this.btnSend.skin = "wxlocal/Common/btn_gray.png";
+                this.btnSend.label = "对方未接受";
+                this.btnSend.name = Laya.Dialog.CLOSE;
+            }
+            this.stopTimer();
+            this.close("close");
+        }
+    };
+    return GameAgainDialog;
+}(ui.Common.GameAgainUI));
+var GameAgainService = /** @class */ (function (_super) {
+    __extends(GameAgainService, _super);
+    function GameAgainService(userId, name) {
+        var _this = _super.call(this) || this;
+        _this.userId = userId;
+        _this.name = name;
+        _this.addListener();
+        return _this;
+    }
+    /**显示再来一局弹窗，传入对方的名字 */
+    GameAgainService.prototype.showGameAgain = function (isSender) {
+        var _this = this;
+        if (isSender === void 0) { isSender = true; }
+        if (this.lastTime) {
+            var now = new Date();
+            if (now.valueOf() - this.lastTime.valueOf() < 3000) {
+                var view = new AlertDialog("提示", "操作过快，请稍候重试");
+                view.popup();
+                return;
+            }
+        }
+        this.lastTime = new Date();
+        if (!this.view) {
+            Laya.Dialog.manager = null;
+            Laya.UIConfig.closeDialogOnSide = false;
+            var view = new GameAgainDialog();
+            view.onClosed = function (type) {
+                Laya.UIConfig.closeDialogOnSide = true;
+                if (type == Laya.Dialog.OK) {
+                    _this.sendMessage(PaoYa.Client.AGIAN_SEND, { user_id: _this.userId });
+                }
+                else if (type == Laya.Dialog.NO) {
+                    _this.sendMessage(PaoYa.Client.AGAIN_REJECT, { user_id: _this.userId });
+                }
+                else if (type == Laya.Dialog.CANCEL) {
+                    _this.sendMessage(PaoYa.Client.AGAIN_CANCAL, { user_id: _this.userId });
+                }
+                else {
+                }
+            };
+            this.view = view;
+        }
+        this.view.show(isSender, this.name);
+        if (isSender) {
+            this.sendMessage(PaoYa.Client.AGIAN_SEND, { user_id: this.userId });
+        }
+    };
+    GameAgainService.prototype.addListener = function () {
+        this.onMessage(PaoYa.Client.AGAIN_REJECT, this, this.rejectHandler);
+        this.onMessage(PaoYa.Client.AGIAN_SEND, this, this.receiveHandler);
+        this.onMessage(PaoYa.Client.AGAIN_CANCAL, this, this.cancelHandler);
+        this.onMessage(PaoYa.Client.GAME_START_GAME, this, this.startGameHandler);
+    };
+    /**邀请被拒绝 */
+    GameAgainService.prototype.rejectHandler = function () {
+        if (!this.view || !this.view.isPopup || !this.view.isSender)
+            return;
+        this.view.hide();
+        var view = new AlertDialog("提示", "对方已拒绝");
+        view.popup();
+    };
+    /**邀请被取消 */
+    GameAgainService.prototype.cancelHandler = function () {
+        if (!this.view || !this.view.isPopup || this.view.isSender)
+            return;
+        this.view.hide();
+        var view = new AlertDialog("提示", "对方已取消");
+        view.popup();
+    };
+    /**收到邀请 */
+    GameAgainService.prototype.receiveHandler = function (res) {
+        if (!this.view || !this.view.isPopup) {
+            this.showGameAgain(false);
+        }
+    };
+    GameAgainService.prototype.startGameHandler = function (res) {
+        this.view && this.view.hide();
+        this.event(GameAgainService.START_GAME, res);
+    };
+    GameAgainService.prototype.destroy = function () {
+        if (this.view && this.view.isPopup) {
+            this.view.hide();
+            this.view = null;
+        }
+        _super.prototype.destroy.call(this);
+    };
+    GameAgainService.START_GAME = "start_game";
+    return GameAgainService;
+}(PaoYa.Scene));

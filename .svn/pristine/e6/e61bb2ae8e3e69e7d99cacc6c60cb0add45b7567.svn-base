@@ -1,0 +1,80 @@
+import SpineConfig from "../SpineConfig";
+import PropertyBar from "./PropertyBar";
+
+export default class GameView extends PaoYa.View {
+    constructor() {
+        super()
+    }
+    getSceneUrl() {
+        return 'scene/GameView.json'
+    }
+
+    onEnable() {
+
+        let propertyBar = new PropertyBar()
+        this.propertyBar = propertyBar
+        propertyBar.pos(82, 815)
+        this.addChild(propertyBar)
+
+        this.boxSelf = new Laya.Box();
+        this.skSelf = new Laya.Skeleton(SpineConfig.lan_pao_pao.templet);
+        this.skSelf.play(0, true);
+        this.boxSelf.pos(200, 600)
+        this.boxSelf.addChild(this.skSelf);
+        this.addChild(this.boxSelf);
+
+        this.otherSelf = new Laya.Box();
+        this.skDs = new Laya.Skeleton(SpineConfig.lan_pao_pao.templet);
+        this.skDs.play(3, true);
+        this.addChild(this.skDs);
+        this.otherSelf.pos(500, 600);
+        this.otherSelf.addChild(this.skDs);
+        this.addChild(this.otherSelf)
+    }
+    onClick(event) {
+
+        let value = this.propertyBar.handleClick()
+        console.log(value)
+        if (value == 2) {
+            console.log("没有点到")
+            this.stopRun();
+        } else if (value == "wxlocal/Game/icon_waterbomb.png") {
+            console.log('击中水弹')
+            this.throwWater();
+        } else if (value == "wxlocal/Game/icon_speedup.png") {
+            console.log('击中加速')
+            this.runFast();
+        } else if (value == "wxlocal/Game/icon_shild.png") {
+            console.log('击中护盾')
+            this.hasShield();
+        }
+    }
+    throwWater() {
+        console.log("扔水弹")
+        this.waterBullet = new Laya.Skeleton(SpineConfig.shui_dan_shou_ji.templet);
+        this.skSelf.addChild(this.waterBullet);
+        this.waterBullet.play(0, false);
+        let removeY = this.otherSelf._y - 200;
+        Laya.Tween.to(this.otherSelf, { y: removeY }, 1500);
+    }
+    runFast() {
+        console.log("快速前进")
+        this.runQuick = new Laya.Skeleton(SpineConfig.lan_ship.templet);
+        this.boxSelf.addChildAt(this.runQuick, 0)
+        this.runQuick.play(1, false);
+        let removeY = this.otherSelf._y + 200;
+        //需要获取到当前的y值，然后每次减或者 增加 相同的距离 
+        Laya.Tween.to(this.otherSelf, { y: removeY }, 1500,null,);
+    }
+    hasShield() {
+        console.log("护盾")
+        this.shield = new Laya.Skeleton(SpineConfig.hu_dun.templet);
+        this.boxSelf.addChildAt(this.shield, 0)
+        this.shield.play(0, true);
+
+    }
+
+    stopRun() {
+    }
+
+}

@@ -1,0 +1,8 @@
+<res>
+   <item name="wxlocal/MatchGrade/quickMatch.png" type="Image" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/Result/result-bg.png" type="Image" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/Result/title-failure.png" type="Image" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/Result/title-success.png" type="Image" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/loading/01.png" type="Image" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/loading/02.png" type="Image" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
+</res>

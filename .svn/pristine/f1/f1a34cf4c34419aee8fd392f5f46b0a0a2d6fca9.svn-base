@@ -1,0 +1,15 @@
+export default class ReadyGoDialog extends Laya.Dialog {
+    constructor() { super() }
+    onEnable(){
+        let numn = 3
+        Laya.timer.loop(1000,this,()=>{
+            numn -- 
+            if(numn==0){
+                Laya.timer.clearAll(this)
+                Laya.Scene.close('dialog/ReadyGo.json');
+            }else{
+                this.number1.texture = `wxlocal/Game/iconlbl_${numn}.png`;
+            }
+        })
+    }
+}

@@ -1,0 +1,65 @@
+var HomeView = (function () {
+    function HomeView() {
+        HomeView.__super.call(this);
+        this.init();
+    }
+    Laya.class(HomeView, 'ui.HomeView', HomeViewUI);
+    var __proto = HomeView.prototype;
+    __proto.init = function () {
+        var __this = this;
+        this.btnFriend.on(Laya.Event.CLICK, this, function () {
+            __this.event(HomeView.BATTLE);
+        })
+        this.btnMatch.on(Laya.Event.CLICK, this, function () {
+            __this.event(HomeView.MATCH);
+        })
+        //排行榜
+        this.btnRank.on(Laya.Event.CLICK, this, function () {
+            __this.event(HomeView.RANK);
+        })
+        //设置
+        this.btnSet.on(Laya.Event.CLICK, this, function () {
+            __this.event(HomeView.SETMUSIC);
+        })
+        //规则
+        this.btnRules.on(Laya.Event.CLICK, this, function () {
+            __this.event(HomeView.RULES);
+        })
+        //跳转大厅
+        this.btnJump.on(Laya.Event.CLICK, this, Service.goToHall);
+    }
+
+    __proto.setUser = function (icon, name) {
+        this.imgIcon.skin = icon;
+        this.lblName.changeText(name);
+        this.drawNameBackground(name.measureWidth() + 37 + 25);
+    }
+
+    __proto.setGold = function (gold) {
+        this.lblGold.changeText(gold + "");
+    }
+
+    __proto.setMoney = function (money) {
+        this.lblMoney.changeText(money + "");
+    }
+
+    __proto.drawNameBackground = function (width) {
+        this.nameBg.graphics.clear();
+        this.nameBg.graphics.drawPath(0, 0, makeAllCornerRoundRectPath(width, 50, 25), {
+            fillStyle: "#000000"
+        })
+    }
+
+
+
+
+    HomeView.BATTLE = "battle";
+    HomeView.MATCH = "match"
+    HomeView.RANK = "rank";
+    HomeView.SETMUSIC = "setMusic";
+    HomeView.RULES = "rules";
+
+
+
+    return HomeView;
+})();

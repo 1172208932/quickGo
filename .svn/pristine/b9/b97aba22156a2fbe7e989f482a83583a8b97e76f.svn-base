@@ -1,0 +1,24 @@
+import HomeThenView from './HomeThenView'
+import GetPropDialog from '../dialog/GetPropDialog'
+import GameView from '../game/GameScene'
+export default class HomeThenScene extends PaoYa.Scene {
+    constructor() {
+        super()
+        let HomeThen = new HomeThenView()
+        this.view = HomeThen
+    }
+onViewClick(e){
+    switch(e.target.name){
+        case 'btnGetProp':
+        Laya.Scene.open('dialog/GetPropDialog.json')
+        break
+        case 'btnQuick':
+        let gameview = new GameView()
+        this.navigator.push(gameview)
+        break
+        case 'btnBack':
+        this.navigator.pop()
+        break
+    }
+}
+}

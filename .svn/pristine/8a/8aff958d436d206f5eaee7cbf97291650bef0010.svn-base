@@ -1,0 +1,440 @@
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var OpenCtxMainActionType;
+(function (OpenCtxMainActionType) {
+    OpenCtxMainActionType[OpenCtxMainActionType["Friend"] = 10] = "Friend";
+    OpenCtxMainActionType[OpenCtxMainActionType["Group"] = 11] = "Group";
+    OpenCtxMainActionType[OpenCtxMainActionType["Destroy"] = 12] = "Destroy";
+})(OpenCtxMainActionType || (OpenCtxMainActionType = {}));
+var OpenCtxMain = /** @class */ (function () {
+    function OpenCtxMain(container, width, height) {
+        this.container = container;
+        this.width = width;
+        this.height = height;
+        if (!onMiniGame) {
+            return;
+        }
+        this.context = wx.getOpenDataContext();
+        this.canvas = this.context.canvas;
+        this.canvas.width = width;
+        this.canvas.height = height;
+        this.setupRender();
+    }
+    /**数据请求相关 */
+    OpenCtxMain.prototype.sendMessage = function (params) {
+        if (!this.context) {
+            return;
+        }
+        this.context.postMessage(params);
+    };
+    OpenCtxMain.prototype.setupRank = function (params) {
+        if (!this.context) {
+            return;
+        }
+        this.context.postMessage(params);
+    };
+    OpenCtxMain.prototype.requestRankList = function (params) {
+        if (!this.context) {
+            return;
+        }
+        this.context.postMessage(params);
+    };
+    /**渲染相关 */
+    OpenCtxMain.prototype.setupRender = function () {
+        if (!this.canvas) {
+            return;
+        }
+        var texture = new Laya.Texture(this.canvas);
+        this.texture = texture;
+        this.container.graphics.drawTexture(texture, 0, 0);
+    };
+    OpenCtxMain.prototype.refreshRender = function () {
+        this.container.graphics.clear();
+        var texture = new Laya.Texture(this.canvas);
+        this.container.graphics.drawTexture(texture, 0, 0);
+    };
+    OpenCtxMain.prototype.clearRender = function () {
+        this.container.graphics.clear();
+    };
+    OpenCtxMain.prototype.startRender = function () {
+        if (!this.texture) {
+            return;
+        }
+        this.texture.bitmap.alwaysChange = true; //小游戏使用，非常费，每帧刷新
+    };
+    OpenCtxMain.prototype.stopRender = function () {
+        if (!this.texture) {
+            return;
+        }
+        this.texture.bitmap.alwaysChange = false; //小游戏使用，非常费，每帧刷新
+    };
+    OpenCtxMain.prototype.destroy = function () {
+        if (!this.context) {
+            return;
+        }
+        // this.context.postMessage({ type: OpenCtxMainActionType.Destroy })
+        this.texture.bitmap.alwaysChange = false;
+        this.texture.destroy(true);
+        this.texture = null;
+        this.context = null;
+        this.canvas = null;
+    };
+    OpenCtxMain.set = function (KVDataList) {
+        if (!onMiniGame) {
+            return;
+        }
+        var time = new Date().valueOf();
+        var timeInterval = Number(time) / 1000;
+        KVDataList.push({ key: "update_time", value: timeInterval + "" });
+        wx.setUserCloudStorage({
+            KVDataList: KVDataList,
+            success: function (res) {
+                console.log("OD | SET | SUC | " + JSON.stringify(res));
+            },
+            fail: function (res) {
+                console.log("OD | SET | FAIL | " + JSON.stringify(res));
+            }
+        });
+    };
+    OpenCtxMain.remove = function (keys) {
+        wx.removeUserCloudStorage({
+            keyList: keys,
+            success: function (res) {
+                console.log("OD | REMOVE | SUC | " + JSON.stringify(res));
+            },
+            fail: function (res) {
+                console.log("OD | REMOVE | FAIL | " + JSON.stringify(res));
+            }
+        });
+    };
+    return OpenCtxMain;
+}());
+var RankCell = /** @class */ (function (_super) {
+    __extends(RankCell, _super);
+    function RankCell() {
+        var _this = _super.call(this) || this;
+        _this.init();
+        return _this;
+    }
+    RankCell.prototype.init = function () {
+        this.graphics.drawRect(0, 0, this.width, this.height, "#ffffff");
+    };
+    RankCell.prototype.setItem = function (item) {
+        this.lblRank.text = item.rank;
+        this.imgIcon.skin = item.icon;
+        this.lblName.text = item.name;
+        this.lblCount.text = item.des;
+    };
+    return RankCell;
+}(ui.Rank.RankCellUI));
+var RankMyView = /** @class */ (function (_super) {
+    __extends(RankMyView, _super);
+    function RankMyView() {
+        return _super.call(this) || this;
+    }
+    RankMyView.prototype.initialize = function () {
+        this.graphics.drawRect(0, 0, this.width, this.height, "#1aaaf3");
+    };
+    RankMyView.prototype.setItem = function (item) {
+        this.lblRank.text = item.rank;
+        this.imgIcon.skin = item.icon;
+        this.lblName.text = item.name;
+        this.lblCount.text = item.des;
+    };
+    return RankMyView;
+}(ui.Rank.RankMyViewUI));
+var RankView = /** @class */ (function (_super) {
+    __extends(RankView, _super);
+    function RankView(params) {
+        var _this = _super.call(this) || this;
+        _this.params = params;
+        _this.init();
+        return _this;
+    }
+    RankView.prototype.init = function () {
+        var _this = this;
+        this.btnLeft.label = this.params.btnLeftTitle;
+        this.content.visible = false;
+        this.configListView();
+        this.btnBack.clickHandler = Laya.Handler.create(this, function () {
+            _this.event(RankView.BACK);
+        });
+        this.btnGroup.clickHandler = Laya.Handler.create(this, function () {
+            _this.event(RankView.GROUP_RANK);
+        }, null, false);
+        this.btnLeft.clickHandler = Laya.Handler.create(this, this.changeBtnHandler, [0], false);
+        this.btnRight.clickHandler = Laya.Handler.create(this, this.changeBtnHandler, [1], false);
+        this.addMyRankView();
+    };
+    RankView.prototype.configListView = function () {
+        var listView = this.listView;
+        listView.graphics.drawRect(0, 0, listView.width, listView.height, "#ffffff");
+        listView.vScrollBarSkin = "";
+        listView.itemRender = RankCell;
+        listView.renderHandler = Laya.Handler.create(this, function (cell, index) {
+            var item = listView.array[index];
+            cell.setItem(item);
+            if (index == 0) {
+                cell.lblRank.color = "#ff7e00";
+                cell.lblRank.bold = true;
+            }
+            else if (index == 1 || index == 2) {
+                cell.lblRank.color = "#404040";
+                cell.lblRank.bold = true;
+            }
+            else {
+                cell.lblRank.color = "#7c7c7c";
+                cell.lblRank.bold = false;
+            }
+        }, null, false);
+    };
+    RankView.prototype.reloadData = function (list) {
+        this.listView.repeatY = list.length > 5 ? 5 : list.length;
+        this.listView.array = list;
+        this.listView.refresh();
+    };
+    RankView.prototype.reloadMyRankViewData = function (data) {
+        var view = this.myRankView;
+        view.setItem(data);
+    };
+    RankView.prototype.addMyRankView = function () {
+        var view = new RankMyView();
+        view.pos(40, 920);
+        this.addChild(view);
+        this.myRankView = view;
+    };
+    RankView.prototype.changeBtnHandler = function (index) {
+        if (index == 0) {
+            this.btnLeft.selected = true;
+            this.listView.visible = true;
+            this.myRankView.visible = true;
+            this.content.visible = false;
+        }
+        else {
+            this.btnLeft.selected = false;
+            this.listView.visible = false;
+            this.myRankView.visible = false;
+            this.content.visible = true;
+        }
+        this.btnRight.selected = !this.btnLeft.selected;
+        this.event(RankView.SELECT, index);
+    };
+    RankView.BACK = "back";
+    RankView.GROUP_RANK = "group.rank";
+    RankView.SELECT = "btn.change";
+    return RankView;
+}(ui.Rank.RankViewUI));
+var RankScene = /** @class */ (function (_super) {
+    __extends(RankScene, _super);
+    function RankScene(params) {
+        var _this = _super.call(this) || this;
+        _this.params = params;
+        _this.init();
+        return _this;
+    }
+    RankScene.prototype.init = function () {
+        var _this = this;
+        var view = new RankView(this.params);
+        view.on(RankView.BACK, this, function () {
+            _this.navigator.pop();
+        });
+        view.on(RankView.SELECT, this, function (index) {
+            if (index == 0) {
+                _this.openCtx.stopRender();
+            }
+            else if (index == 1) {
+                _this.openCtx.startRender();
+            }
+        });
+        view.on(RankView.GROUP_RANK, this, function () {
+            var title = PaoYa.DataCenter.config.game.share_list.randomItem;
+            PaoYa.ShareManager.shareTitle(title, { type: PaoYa.ShareType.GroupRank }, function () {
+            });
+        });
+        view.reloadData([]);
+        this.view = view;
+        var content = view.content;
+        this.openCtx = new OpenCtxMain(content, content.width, content.height);
+        this.openCtx.sendMessage({
+            type: 1,
+            subType: 0,
+            params: {}
+        });
+    };
+    RankScene.prototype.viewDidLoad = function () {
+        _super.prototype.viewDidLoad.call(this);
+        this.openCtx.sendMessage({
+            type: 1,
+            subType: 10,
+            params: {}
+        });
+        this.requestRankList(0);
+    };
+    RankScene.prototype.requestRankList = function (index) {
+        var _this = this;
+        if (index == 0) {
+            this.GET("ranking_list", { type: this.params.type || RankType.SCORE, game_id: window.game.gameId }, function (res) {
+                if (!res.list) {
+                    return;
+                }
+                var list = [];
+                res.list.forEach(function (item, index) {
+                    var i = {
+                        name: item.member_nick.formatName(),
+                        icon: item.member_avstar.makeIcon(),
+                        rank: "NO." + (index + 1),
+                        des: item.score_with_unit
+                    };
+                    list.push(i);
+                });
+                var view = _this.view;
+                view.reloadData(list);
+                var info = {
+                    name: res.member_nick.formatName(),
+                    icon: res.member_avstar.makeIcon(),
+                    rank: (!res.ranking || (res.ranking <= 0)) ? "未上榜" : ("NO." + res.ranking),
+                    des: res.score_with_unit
+                };
+                view.reloadMyRankViewData(info);
+            }, function () {
+            });
+        }
+    };
+    RankScene.prototype.destroy = function () {
+        this.openCtx.sendMessage({
+            type: 1,
+            subType: 1,
+            params: {}
+        });
+        this.openCtx.destroy();
+        this.openCtx = null;
+        _super.prototype.destroy.call(this);
+    };
+    return RankScene;
+}(PaoYa.Scene));
+var RankGroupView = /** @class */ (function (_super) {
+    __extends(RankGroupView, _super);
+    function RankGroupView() {
+        return _super.call(this) || this;
+    }
+    RankGroupView.prototype.initialize = function () {
+        var _this = this;
+        this.titleSprite.graphics.drawPath(0, 0, makeRoundRectPath(650, 64, 20, RectCorner.RectCornerTopLeft | RectCorner.RectCornerTopRight), {
+            fillStyle: "#36baff"
+        });
+        this.btnBack.clickHandler = Laya.Handler.create(this, function () {
+            _this.event(RankGroupView.BACK);
+        });
+        this.btnPlay.clickHandler = Laya.Handler.create(this, function () {
+            _this.event(RankGroupView.BACK);
+        });
+    };
+    RankGroupView.BACK = "back";
+    return RankGroupView;
+}(ui.Rank.RankGroupViewUI));
+var RankGroupScene = /** @class */ (function (_super) {
+    __extends(RankGroupScene, _super);
+    function RankGroupScene(params) {
+        var _this = _super.call(this) || this;
+        _this.params = params;
+        _this.init();
+        return _this;
+    }
+    RankGroupScene.prototype.init = function () {
+        var _this = this;
+        var view = new RankGroupView();
+        view.on(RankGroupView.BACK, this, function () {
+            _this.navigator.popToRootScene();
+        });
+        this.view = view;
+        var content = view.content;
+        this.openCtx = new OpenCtxMain(content, content.width, content.height);
+        this.openCtx.sendMessage({
+            type: 1,
+            subType: 0,
+            params: {}
+        });
+    };
+    RankGroupScene.prototype.viewDidLoad = function () {
+        var _this = this;
+        _super.prototype.viewDidLoad.call(this);
+        this.openCtx.sendMessage({
+            type: 1,
+            subType: 11,
+            params: {
+                shareTicket: this.params.shareTicket
+            }
+        });
+        Laya.timer.once(200, this, function () {
+            _this.openCtx.startRender();
+        });
+    };
+    RankGroupScene.prototype.destroy = function () {
+        this.openCtx.sendMessage({
+            type: 1,
+            subType: 1,
+            params: {}
+        });
+        this.openCtx.destroy();
+        this.openCtx = null;
+        _super.prototype.destroy.call(this);
+    };
+    return RankGroupScene;
+}(PaoYa.Scene));
+var RankType;
+(function (RankType) {
+    RankType[RankType["SCORE"] = 1] = "SCORE";
+    RankType[RankType["LADDER"] = 2] = "LADDER";
+})(RankType || (RankType = {}));
+var RankService = /** @class */ (function () {
+    function RankService(params) {
+        this.params = params;
+    }
+    RankService.prototype.handleOnShow = function (res) {
+        var query = res.query;
+        if (query.type == PaoYa.ShareType.GroupRank) {
+            var scene = window.$navigator.scenes.lastObject;
+            if (res.shareTicket) {
+                if (scene instanceof RankGroupScene) {
+                }
+                else {
+                    this.showRankGroupView(res.shareTicket);
+                }
+            }
+            else {
+                if (scene instanceof RankScene) {
+                }
+                else {
+                    this.showRankView();
+                }
+            }
+        }
+    };
+    RankService.prototype.showRankView = function () {
+        var _this = this;
+        PaoYa.Loader.load(this.params.rank.res, this, function () {
+            var params = _this.params.rank;
+            var rankGroupScene = new RankScene(params);
+            window.$navigator.push(rankGroupScene);
+        });
+    };
+    RankService.prototype.showRankGroupView = function (shareTicket) {
+        var _this = this;
+        PaoYa.Loader.load(this.params.groupRank.res, this, function () {
+            var params = _this.params.groupRank;
+            params.shareTicket = shareTicket;
+            var rankGroupScene = new RankGroupScene(params);
+            window.$navigator.push(rankGroupScene);
+        });
+    };
+    return RankService;
+}());
+ 

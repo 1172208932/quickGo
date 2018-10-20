@@ -1,0 +1,8 @@
+export default class GameView extends PaoYa.View {
+    constructor() {
+        super()
+    }
+    getSceneUrl() {
+        return 'GameView.json'
+    }
+}

@@ -1,0 +1,77 @@
+export default class GameBg extends Laya.Script {
+    /** @prop {name:sdBg,tips:"背景水浪的速度1,2,3",type:int,default:1}*/
+    constructor() {
+        super()
+    }
+    onEnable() {
+        /**状态（正常：0，加速：1,中弹:2） */
+        this.state = 0
+        // 总长度
+        this.endLength = 8000
+        // 当前长度
+        this.length = 0
+        this.oppoLength = 0
+        // 背景速度
+        this.sdBg = 2
+        this.oppoSudo = 0
+        this.result = true
+        this.beginGo = false
+        Laya.timer.once(5000, this, function () {
+            this.beginGo = true
+        })
+        for (let i = 1; i < 9; i++) {
+            eval(`this._bg${i}=this.owner.getChildByName('bg${i}')`)
+        }
+        this._owne = this.owner.getChildByName('owne')
+        this._oppo = this.owner.getChildByName('oppo')        
+        this._bgn1 = this.owner.getChildByName('bgn1')
+        this._bgn2 = this.owner.getChildByName('bgn2')
+        this._endLine = this.owner.getChildByName('endLine')
+        this._endLine.skin = 'wxlocal/Game/image_end.png'
+        this._endLine.pos(0, -1197)
+        this._bgn1.skin = this._bg1.skin
+        this._bgn2.skin = this._bg2.skin
+        this._bgn1.pos(this._bg1.x, this._bg1.y - 406)
+        this._bgn2.pos(this._bg2.x, this._bg2.y - 406)
+    }
+    onUpdate() {
+        this._owne.y = 691-490*(this.length/this.endLength)
+        this._oppo.y = 691-490*(this.oppoLength/this.endLength)
+        if (this._bgn1.y >= 0) {
+            for (let i = 1; i < 9; i++) {
+                eval(`this._bg${i}.y=this._bg${i}.y-406`)
+            }
+            this._bgn1.y = this._bgn1.y - 406;
+            this._bgn2.y = this._bgn2.y - 406;
+        }
+        if (this.beginGo) {
+
+            switch (this.oppoSudo){
+                case 4 :
+                this.oppoLength = this.oppoLength + this.oppoSudo
+                Laya.timer.once(1500,this,function(){this.oppoSudo=2} )
+                break
+                case 0:
+                this.oppoLength = this.oppoLength + this.oppoSudo
+                Laya.timer.once(1500,this,function(){this.oppoSudo=2} )
+                default:
+                this.oppoLength = this.oppoLength + this.oppoSudo                
+                break             
+            }           
+            this.length = this.length + this.sdBg
+            for (let a = 1; a < 9; a++) {
+                eval(`this._bg${a}.y = this._bg${a}.y+ this.sdBg`)
+            }
+            this._bgn1.y = this._bgn1.y + this.sdBg
+            this._bgn2.y = this._bgn2.y + this.sdBg
+        }
+        if (this.beginGo && this.length >= this.endLength - 1084) {
+            this._endLine.y = this._endLine.y + this.sdBg
+        }
+        if (this.length >= this.endLength && this.result) {
+            Laya.Scene.open('scene/dialog/GameResultDialog.json')  
+            this.result = false          
+            this.beginGo = false
+        }
+    }
+}

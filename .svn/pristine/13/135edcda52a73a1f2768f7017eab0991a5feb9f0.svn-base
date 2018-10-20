@@ -1,0 +1,3 @@
+var DEBUG = false; //发布正式版的时候这个必须要修改
+var VERSION = "1.0";
+var BUILD_NUMBER = 3;

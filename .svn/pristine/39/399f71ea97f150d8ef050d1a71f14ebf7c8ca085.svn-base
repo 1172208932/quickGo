@@ -1,0 +1,15 @@
+import GameView from './GameView'
+import clearTime from '../dialog/ReadyGoDialog'
+export default class GameScene extends PaoYa.Scene {
+    constructor() {
+        super();
+        let gameview = new GameView()
+        this.view = gameview
+
+    }
+    viewDidLoad() {
+        console.log('4444444444444444444444')
+        Laya.Scene.open('dialog/ReadyGo.json')
+    }
+
+}

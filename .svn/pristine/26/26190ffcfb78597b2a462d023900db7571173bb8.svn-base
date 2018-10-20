@@ -1,0 +1,14 @@
+export default class HomeThenScene extends Laya.Scene{
+    onEnable(){
+        this.btnNoob.on(Laya.Event.MOUSE_DOWN,this,this.toGameView)
+        this.btnMiddle.on(Laya.Event.MOUSE_DOWN,this,this.toGameView)
+        this.btnSuper.on(Laya.Event.MOUSE_DOWN,this,this.toGameView)
+        this.btnQuick.on(Laya.Event.MOUSE_DOWN,this,this.toGameView)
+        this.btnGetProp.on(Laya.Event.MOUSE_DOWN, this, function () {
+            Laya.Scene.open('./dialog/GetPropDialog.scene');
+        })
+    }
+    toGameView(){
+        Laya.Scene.open('./GameView.scene');
+    }
+}

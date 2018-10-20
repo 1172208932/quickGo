@@ -1,0 +1,275 @@
+var CLASS$=Laya.class;
+var STATICATTR$=Laya.static;
+var View=laya.ui.View;
+var Dialog=laya.ui.Dialog;
+var SettingDialogUI=(function(_super){
+		function SettingDialogUI(){
+			
+		    this.btnCopy=null;
+		    this.musicSwitch=null;
+		    this.effectSwitch=null;
+
+			SettingDialogUI.__super.call(this);
+		}
+
+		CLASS$(SettingDialogUI,'ui.Common.SettingDialogUI',_super);
+		var __proto__=SettingDialogUI.prototype;
+		__proto__.createChildren=function(){
+		    
+			laya.ui.Component.prototype.createChildren.call(this);
+			this.createView(SettingDialogUI.uiView);
+
+		}
+
+		SettingDialogUI.uiView={"type":"Dialog","props":{"width":540,"height":770},"child":[{"type":"Image","props":{"y":3,"x":0,"width":540,"skin":"wxlocal/Common/bgSet.png","sizeGrid":"38,39,40,40","height":635}},{"type":"Button","props":{"y":673,"x":221,"stateNum":1,"skin":"wxlocal/Common/btn_closeT.png","name":"close"}},{"type":"Image","props":{"y":56,"x":227,"skin":"wxlocal/Common/setText.png"}},{"type":"Image","props":{"y":343,"x":197,"skin":"wxlocal/Common/custom.png"}},{"type":"Image","props":{"y":105,"x":50,"width":440,"skin":"wxlocal/Common/bgMusicSet.png","sizeGrid":"10,12,11,12","height":186}},{"type":"Image","props":{"y":142,"x":156,"skin":"wxlocal/Common/textMusic.png"}},{"type":"Image","props":{"y":216,"x":156,"skin":"wxlocal/Common/effect.png"}},{"type":"Image","props":{"y":392,"x":50,"width":440,"skin":"wxlocal/Common/bgMusicSet.png","sizeGrid":"10,12,11,12","height":186}},{"type":"Image","props":{"y":420,"x":117,"skin":"wxlocal/Common/guanzhupaopao.png"}},{"type":"Label","props":{"y":472,"x":212,"text":"泡泡游戏","fontSize":28,"color":"#e49c83","bold":true}},{"type":"Image","props":{"y":506,"x":188,"var":"btnCopy","skin":"wxlocal/Common/btnCopy.png"},"child":[{"type":"Label","props":{"y":25,"x":53,"text":"复  制","fontSize":22,"color":"#ffffff","borderColor":"#fa765a","bold":true}}]},{"type":"Image","props":{"y":125,"x":279,"var":"musicSwitch","skin":"wxlocal/Common/volumeBar1.png"}},{"type":"Image","props":{"y":202,"x":279,"var":"effectSwitch","skin":"wxlocal/Common/volumeBar0.png"}}]};
+		return SettingDialogUI;
+	})(Dialog);
+var GameResultViewUI=(function(_super){
+		function GameResultViewUI(){
+			
+		    this.imgTitle=null;
+		    this.winner=null;
+		    this.myGender=null;
+		    this.myName=null;
+		    this.myAdress=null;
+		    this.lblScoreWinner=null;
+		    this.hitPercent=null;
+		    this.lblPercent=null;
+		    this.priceContent=null;
+		    this.lblTips=null;
+		    this.lblGold=null;
+		    this.loser=null;
+		    this.otherGender=null;
+		    this.otherName=null;
+		    this.otherAdress=null;
+		    this.lblScoreLoser=null;
+		    this.btnBack=null;
+		    this.btnShare=null;
+		    this.btnAgain=null;
+		    this.moreGame=null;
+		    this.btnJump=null;
+
+			GameResultViewUI.__super.call(this);
+		}
+
+		CLASS$(GameResultViewUI,'ui.GameResultViewUI',_super);
+		var __proto__=GameResultViewUI.prototype;
+		__proto__.createChildren=function(){
+		    			View.regComponent("customui.RoundImage",customui.RoundImage);
+
+			laya.ui.Component.prototype.createChildren.call(this);
+			this.createView(GameResultViewUI.uiView);
+
+		}
+
+		GameResultViewUI.uiView={"type":"View","props":{"width":750,"height":1334,"cacheAs":"normal"},"child":[{"type":"Box","props":{"y":0,"x":0},"child":[{"type":"Sprite","props":{},"child":[{"type":"Rect","props":{"y":0,"x":0,"width":750,"lineWidth":1,"height":1334,"fillColor":"#8585e9"}}]},{"type":"Image","props":{"y":0,"x":0,"width":750,"skin":"wxlocal/Home/bg.png","height":1334}}]},{"type":"Image","props":{"y":402,"x":69,"skin":"wxlocal/Result/result-bg.png"}},{"type":"Image","props":{"y":139,"x":89,"var":"imgTitle","skin":"wxlocal/Result/title-success.png"}},{"type":"Box","props":{"y":473,"x":125,"width":120,"var":"winner","height":150},"child":[{"type":"Image","props":{"y":-13,"x":5,"width":120,"skin":"wxlocal/Common/avstar.png","runtime":"customui.RoundImage","name":"icon","height":120}},{"type":"HBox","props":{"y":117,"x":27},"child":[{"type":"Image","props":{"var":"myGender","skin":"wxlocal/Common/girl.png"}},{"type":"Label","props":{"y":0,"x":0,"var":"myName","text":"果果","fontSize":23,"font":"SimHei","color":"#ffffff","align":"center"}}]},{"type":"Label","props":{"y":150,"x":-16,"var":"myAdress","text":"浙江省  台州市","fontSize":23,"font":"SimHei","color":"#FFFFFF","align":"center"}}]},{"type":"Label","props":{"y":503,"x":274,"width":173,"var":"lblScoreWinner","valign":"middle","text":"28秒","height":102,"fontSize":65,"font":"Microsoft YaHei","color":"#ffff00","bold":false,"align":"center"}},{"type":"Box","props":{"y":543,"x":408,"var":"hitPercent","cacheAs":"normal"},"child":[{"type":"Label","props":{"y":3,"x":27,"text":"击败了全国","fontSize":16,"color":"#ffffff"}},{"type":"Label","props":{"y":3,"x":93,"width":60,"var":"lblPercent","text":"10%","height":19,"fontSize":16,"color":"#ffff00","align":"center"}},{"type":"Label","props":{"y":3,"x":140,"width":53,"text":"的玩家","height":20,"fontSize":16,"color":"#ffffff"}}]},{"type":"Box","props":{"y":570,"x":410,"width":248,"var":"priceContent","height":27,"cacheAs":"normal"},"child":[{"type":"Label","props":{"y":2,"x":24,"width":64,"var":"lblTips","text":"恭喜获得","height":27,"fontSize":16,"font":"Microsoft YaHei","color":"#ffff00","bold":true}},{"type":"Image","props":{"y":-2,"x":90,"width":27,"skin":"wxlocal/Home/dz.png","height":27}},{"type":"Label","props":{"y":-1,"x":136,"width":43,"var":"lblGold","valign":"middle","text":"+100","height":28,"fontSize":16,"color":"#ffff00","bold":true}}]},{"type":"Box","props":{"y":706,"x":134,"width":120,"var":"loser","height":150},"child":[{"type":"Image","props":{"y":-31,"x":-9,"width":120,"skin":"wxlocal/Common/avstar.png","runtime":"customui.RoundImage","name":"icon","height":120}},{"type":"HBox","props":{"y":91,"x":19},"child":[{"type":"Image","props":{"var":"otherGender","skin":"wxlocal/Common/girl.png"}},{"type":"Label","props":{"y":5,"x":22,"var":"otherName","text":"果果","fontSize":23,"font":"SimHei","color":"#ffffff","align":"center"}}]},{"type":"Label","props":{"y":118,"x":-25,"var":"otherAdress","text":"浙江省 杭州市","fontSize":23,"font":"SimHei","color":"#FFFFFF","align":"center"}}]},{"type":"Label","props":{"y":707,"x":281,"width":159,"var":"lblScoreLoser","valign":"middle","text":"31秒","height":81,"fontSize":65,"font":"Microsoft YaHei","color":"#ffff00","bold":false,"align":"center"}},{"type":"Button","props":{"y":42,"x":0,"width":120,"var":"btnBack","stateNum":1,"labelSize":30,"height":74},"child":[{"type":"Image","props":{"y":18,"x":49,"width":22,"skin":"wxlocal/Common/btn_back.png","height":37}}]},{"type":"Button","props":{"y":1115,"x":86,"var":"btnShare","stateNum":1,"skin":"wxlocal/Common/btn_share.png","labelStroke":0,"labelSize":34,"labelPadding":"0,0,4,0","labelColors":"#ffffff","labelAlign":"center"}},{"type":"Button","props":{"y":1116,"x":432,"var":"btnAgain","stateNum":1,"skin":"wxlocal/Common/btn_again.png"}},{"type":"Image","props":{"y":1028,"x":109,"width":87,"visible":false,"var":"moreGame","skin":"wxlocal/Common/moreGame.png","height":83}},{"type":"Image","props":{"y":44,"x":15,"visible":false,"var":"btnJump","skin":"wxlocal/Common/btn_back.png"}}]};
+		return GameResultViewUI;
+	})(View);
+var GameViewUI=(function(_super){
+		function GameViewUI(){
+			
+		    this.body1=null;
+		    this.body2=null;
+		    this.selectBox=null;
+		    this.waterBullet=null;
+		    this.quickRun=null;
+		    this.shield=null;
+		    this.myName=null;
+		    this.myStatus=null;
+		    this.otherName=null;
+		    this.otherStatus=null;
+		    this.rateProgress=null;
+		    this.body1Status=null;
+		    this.body2Status=null;
+
+			GameViewUI.__super.call(this);
+		}
+
+		CLASS$(GameViewUI,'ui.GameViewUI',_super);
+		var __proto__=GameViewUI.prototype;
+		__proto__.createChildren=function(){
+		    
+			laya.ui.Component.prototype.createChildren.call(this);
+			this.createView(GameViewUI.uiView);
+
+		}
+
+		GameViewUI.uiView={"type":"View","props":{"width":750,"height":1334},"child":[{"type":"Image","props":{"skin":"wxlocal/Game/bg.png"}},{"type":"Image","props":{"y":1092,"x":469,"var":"body1","skin":"wxlocal/Game/body1.png"}},{"type":"Image","props":{"y":1087,"x":165,"var":"body2","skin":"wxlocal/Game/body2.png"}},{"type":"Box","props":{"y":954,"x":102},"child":[{"type":"Image","props":{"y":0,"x":0,"var":"selectBox","skin":"wxlocal/Game/selectBox.png"}},{"type":"Image","props":{"y":10,"x":426,"var":"waterBullet","skin":"wxlocal/Game/waterBullet.png"}},{"type":"Image","props":{"y":10,"x":58,"var":"quickRun","skin":"wxlocal/Game/quickRun.png"}},{"type":"Image","props":{"y":9,"x":248,"var":"shield","skin":"wxlocal/Game/shield.png"}}]},{"type":"Box","props":{"y":118,"x":14},"child":[{"type":"Image","props":{"y":0,"x":0,"skin":"wxlocal/Game/user_bg.png"}},{"type":"Label","props":{"y":32,"x":95,"width":106,"var":"myName","text":"海绵一号","height":41,"fontSize":25,"font":"Microsoft YaHei","color":"#ffffff","align":"center"}},{"type":"Image","props":{"y":11,"x":242,"var":"myStatus","skin":"wxlocal/Game/shieldState.png"}},{"type":"Image","props":{"width":86,"skin":"wxlocal/Common/avstar.png","height":86}}]},{"type":"Box","props":{"y":217,"x":258},"child":[{"type":"Image","props":{"y":-8,"x":-246,"skin":"wxlocal/Game/user_bg.png"}},{"type":"Label","props":{"y":23,"x":-144,"width":100,"var":"otherName","text":"海绵二号","height":29,"fontSize":25,"font":"Microsoft YaHei","color":"#ffffff","bold":false}},{"type":"Image","props":{"var":"otherStatus","skin":"wxlocal/Game/quickRunState.png"}},{"type":"Image","props":{"y":-6,"x":-241,"width":86,"skin":"wxlocal/Common/avstar.png","height":86}}]},{"type":"Box","props":{"y":174,"x":688},"child":[{"type":"Image","props":{"y":0,"x":11,"var":"rateProgress","skin":"wxlocal/Game/rate_of_progress.png"}},{"type":"Image","props":{"y":377,"x":1,"var":"body1Status","skin":"wxlocal/Game/body1Status.png"}},{"type":"Image","props":{"y":444,"x":3,"var":"body2Status","skin":"wxlocal/Game/body2Status.png"}}]}]};
+		return GameViewUI;
+	})(View);
+var HomeViewUI=(function(_super){
+		function HomeViewUI(){
+			
+		    this.goldView=null;
+		    this.lblGold=null;
+		    this.moneyView=null;
+		    this.lblMoney=null;
+		    this.nameBg=null;
+		    this.imgIcon=null;
+		    this.lblName=null;
+		    this.btnJump=null;
+		    this.skeletonBox=null;
+		    this.btnFriend=null;
+		    this.btnMatch=null;
+		    this.btnBegin=null;
+		    this.btnRank=null;
+		    this.btnSet=null;
+		    this.btnRules=null;
+
+			HomeViewUI.__super.call(this);
+		}
+
+		CLASS$(HomeViewUI,'ui.HomeViewUI',_super);
+		var __proto__=HomeViewUI.prototype;
+		__proto__.createChildren=function(){
+		    			View.regComponent("customui.RoundImage",customui.RoundImage);
+
+			laya.ui.Component.prototype.createChildren.call(this);
+			this.createView(HomeViewUI.uiView);
+
+		}
+
+		HomeViewUI.uiView={"type":"View","props":{"y":0,"x":0,"width":750,"height":1334},"child":[{"type":"Image","props":{"y":0,"x":0,"skin":"wxlocal/Home/bg.png"}},{"type":"Box","props":{"y":161,"x":286,"width":200,"var":"goldView","height":50,"cacheAs":"normal"},"child":[{"type":"Sprite","props":{"y":0,"x":0,"alpha":0.5},"child":[{"type":"Rect","props":{"y":0,"x":25,"width":148,"lineWidth":1,"height":50,"fillColor":"#000000"}}]},{"type":"Image","props":{"y":0,"x":0,"skin":"wxlocal/Home/dz.png"}},{"type":"Image","props":{"y":-4,"x":149,"skin":"wxlocal/Home/add.png"}},{"type":"Label","props":{"y":0,"x":53,"width":93,"var":"lblGold","valign":"middle","text":0,"height":50,"fontSize":20,"color":"#ffffff","bold":true,"align":"center"}}]},{"type":"Box","props":{"y":160,"x":498,"width":210,"var":"moneyView","height":51,"cacheAs":"normal"},"child":[{"type":"Sprite","props":{"y":0,"x":0,"alpha":0.5},"child":[{"type":"Rect","props":{"y":0,"x":25,"width":148,"lineWidth":1,"height":50,"fillColor":"#000000"}}]},{"type":"Image","props":{"y":0,"x":0,"skin":"wxlocal/Home/hb.png"}},{"type":"Image","props":{"y":-4,"x":138,"skin":"wxlocal/Home/tx.png"}},{"type":"Label","props":{"y":0,"x":53,"width":80,"var":"lblMoney","valign":"middle","text":0,"height":50,"fontSize":20,"color":"#ffffff","bold":true,"align":"center"}}]},{"type":"Box","props":{"y":140,"x":20,"cacheAs":"normal"},"child":[{"type":"Sprite","props":{"y":20,"x":61,"width":212,"var":"nameBg","height":50,"alpha":0.5}},{"type":"Image","props":{"y":0,"x":0,"width":90,"visible":true,"var":"imgIcon","skin":"wxlocal/Common/avstar.png","runtime":"customui.RoundImage","height":90}},{"type":"Label","props":{"y":20,"x":98,"width":164,"var":"lblName","valign":"middle","height":50,"fontSize":25,"color":"#ffffff","bold":true,"align":"left"}}]},{"type":"Image","props":{"y":25,"x":0,"var":"btnJump","skin":"wxlocal/Home/jump-hall.png"}},{"type":"Box","props":{"y":13,"x":268,"var":"skeletonBox"}},{"type":"Image","props":{"y":246,"x":-12,"var":"btnFriend","skin":"wxlocal/Home/btn-friend.png"}},{"type":"Image","props":{"y":659,"x":20,"var":"btnMatch","skin":"wxlocal/Home/btn-ladder.png"},"child":[{"type":"Image","props":{"y":334,"x":397,"var":"btnBegin","skin":"wxlocal/Home/btn-begin.png"}}]},{"type":"HBox","props":{"y":1131,"x":117,"space":75,"align":"bottom"},"child":[{"type":"Image","props":{"var":"btnRank","skin":"wxlocal/Home/btnRank.png"}},{"type":"Image","props":{"x":396,"var":"btnSet","skin":"wxlocal/Home/btnSet.png"}},{"type":"Button","props":{"y":1,"x":196,"var":"btnRules","stateNum":1,"skin":"wxlocal/Home/btn_rules.png"}}]}]};
+		return HomeViewUI;
+	})(View);
+var IFHostViewUI=(function(_super){
+		function IFHostViewUI(){
+			
+		    this.btnBack=null;
+		    this.btnStart=null;
+		    this.lblTitle=null;
+		    this.btnInvite=null;
+
+			IFHostViewUI.__super.call(this);
+		}
+
+		CLASS$(IFHostViewUI,'ui.InviteFriend.IFHostViewUI',_super);
+		var __proto__=IFHostViewUI.prototype;
+		__proto__.createChildren=function(){
+		    
+			laya.ui.Component.prototype.createChildren.call(this);
+			this.createView(IFHostViewUI.uiView);
+
+		}
+
+		IFHostViewUI.uiView={"type":"View","props":{"width":750,"height":1334,"cacheAs":"normal"},"child":[{"type":"Box","props":{"y":0,"x":0,"width":750,"height":1334,"cacheAs":"normal"},"child":[{"type":"Image","props":{"y":0,"x":0,"skin":"wxlocal/Common/bg.png"}},{"type":"Image","props":{"y":260,"x":36,"skin":"wxlocal/Common/invite-friend-center.png"}},{"type":"Image","props":{"y":42,"x":28,"width":22,"skin":"wxlocal/Common/btnBack.png","height":37}},{"type":"Button","props":{"y":32,"x":28,"width":120,"var":"btnBack","stateNum":1,"labelSize":30,"height":60}},{"type":"Button","props":{"y":988,"x":243,"width":263,"var":"btnStart","stateNum":2,"skin":"wxlocal/Common/btnStart.png","labelSize":34,"labelColors":"#ffffff,#ffffff","labelBold":true,"height":91}},{"type":"HBox","props":{"y":254,"space":8,"centerX":0,"align":"top"},"child":[{"type":"Label","props":{"var":"lblTitle","valign":"middle","text":"敌军即将抵达战场...","height":57,"fontSize":34,"color":"#ffffff","bold":true,"align":"center"}},{"type":"Image","props":{"skin":"wxlocal/Common/expressIcon.png"}}]}]},{"type":"Button","props":{"y":506,"x":531,"var":"btnInvite","stateNum":2,"skin":"wxlocal/Common/inviteFriend.png"}}]};
+		return IFHostViewUI;
+	})(View);
+var IFMemberViewUI=(function(_super){
+		function IFMemberViewUI(){
+			
+		    this.lblTitle=null;
+		    this.btnAgree=null;
+		    this.btnCancel=null;
+
+			IFMemberViewUI.__super.call(this);
+		}
+
+		CLASS$(IFMemberViewUI,'ui.InviteFriend.IFMemberViewUI',_super);
+		var __proto__=IFMemberViewUI.prototype;
+		__proto__.createChildren=function(){
+		    
+			laya.ui.Component.prototype.createChildren.call(this);
+			this.createView(IFMemberViewUI.uiView);
+
+		}
+
+		IFMemberViewUI.uiView={"type":"View","props":{"width":750,"height":1334,"cacheAs":"normal"},"child":[{"type":"Image","props":{"y":0,"x":0,"skin":"wxlocal/Common/bg.png"}},{"type":"Label","props":{"y":323,"x":155,"width":440,"var":"lblTitle","valign":"middle","text":"向你发起游戏","height":76,"fontSize":34,"color":"#ffffff","bold":true,"align":"center"}},{"type":"Button","props":{"y":926,"x":207,"var":"btnAgree","stateNum":2,"skin":"wxlocal/Common/btn_agree.png"}},{"type":"Button","props":{"y":1053,"x":207,"var":"btnCancel","stateNum":2,"skin":"wxlocal/Common/btn_cancel.png"}}]};
+		return IFMemberViewUI;
+	})(View);
+var loadingUI=(function(_super){
+		function loadingUI(){
+			
+		    this.loadbar=null;
+		    this.sMask=null;
+		    this.lblProgress=null;
+
+			loadingUI.__super.call(this);
+		}
+
+		CLASS$(loadingUI,'ui.load.loadingUI',_super);
+		var __proto__=loadingUI.prototype;
+		__proto__.createChildren=function(){
+		    
+			laya.ui.Component.prototype.createChildren.call(this);
+			this.createView(loadingUI.uiView);
+
+		}
+
+		loadingUI.uiView={"type":"Dialog","props":{"width":750,"height":1334},"child":[{"type":"Image","props":{"skin":"wxlocal/Home/bg.png"}},{"type":"Image","props":{"y":155,"x":103,"width":352,"skin":"wxlocal/Rank/logo.png","scaleY":1.7,"scaleX":1.7,"height":200}},{"type":"Image","props":{"y":1200,"x":42,"skin":"wxlocal/loading/01.png"}},{"type":"Image","props":{"y":1201,"x":42,"var":"loadbar","skin":"wxlocal/loading/02.png"},"child":[{"type":"Sprite","props":{"var":"sMask","renderType":"mask"},"child":[{"type":"Rect","props":{"width":0,"lineWidth":1,"height":77,"fillColor":"#ff0000"}}]}]},{"type":"Label","props":{"y":1235,"x":95,"text":"小提示：邀请好友可以获得好多好多红包哦！","fontSize":28,"color":"#45ab32"}},{"type":"Label","props":{"y":1203,"x":654,"width":53,"var":"lblProgress","text":"100%","height":23,"fontSize":20,"color":"#ffffff"}}]};
+		return loadingUI;
+	})(Dialog);
+var MatchGradeViewUI=(function(_super){
+		function MatchGradeViewUI(){
+			
+		    this.nameBg=null;
+		    this.imgIcon=null;
+		    this.lblName=null;
+		    this.backBtn=null;
+		    this.goldView=null;
+		    this.lblGold=null;
+		    this.moneyView=null;
+		    this.lblMoney=null;
+		    this.noviceField=null;
+		    this.middleField=null;
+		    this.advanceField=null;
+		    this.quickMatch=null;
+		    this.winReward=null;
+		    this.peopleNum=null;
+		    this.goldLimit=null;
+		    this.giftBox=null;
+
+			MatchGradeViewUI.__super.call(this);
+		}
+
+		CLASS$(MatchGradeViewUI,'ui.MatchGrade.MatchGradeViewUI',_super);
+		var __proto__=MatchGradeViewUI.prototype;
+		__proto__.createChildren=function(){
+		    			View.regComponent("customui.RoundImage",customui.RoundImage);
+
+			laya.ui.Component.prototype.createChildren.call(this);
+			this.createView(MatchGradeViewUI.uiView);
+
+		}
+
+		MatchGradeViewUI.uiView={"type":"View","props":{"width":750,"height":1334},"child":[{"type":"Image","props":{"y":0,"x":0,"skin":"wxlocal/Home/bg.png"}},{"type":"Box","props":{"y":142,"x":10,"cacheAs":"normal"},"child":[{"type":"Sprite","props":{"y":20,"x":61,"width":212,"var":"nameBg","height":50,"alpha":0.5}},{"type":"Image","props":{"y":0,"x":0,"width":90,"visible":true,"var":"imgIcon","skin":"wxlocal/Common/avstar.png","runtime":"customui.RoundImage","height":90}},{"type":"Label","props":{"y":20,"x":98,"width":164,"var":"lblName","valign":"middle","height":50,"fontSize":25,"color":"#ffffff","bold":true,"align":"left"}}]},{"type":"Button","props":{"y":41,"x":0,"width":120,"var":"backBtn","stateNum":1,"labelSize":30,"height":74},"child":[{"type":"Image","props":{"skin":"wxlocal/Home/jump-hall.png"}}]},{"type":"Box","props":{"y":162,"x":285,"width":200,"var":"goldView","height":50,"cacheAs":"normal"},"child":[{"type":"Sprite","props":{"y":0,"x":0,"alpha":0.5},"child":[{"type":"Rect","props":{"y":0,"x":25,"width":148,"lineWidth":1,"height":50,"fillColor":"#000000"}}]},{"type":"Image","props":{"y":0,"x":0,"skin":"wxlocal/Home/dz.png"}},{"type":"Image","props":{"y":-4,"x":149,"skin":"wxlocal/Home/add.png"}},{"type":"Label","props":{"y":0,"x":53,"width":93,"var":"lblGold","valign":"middle","text":0,"height":50,"fontSize":20,"color":"#ffffff","bold":true,"align":"center"}}]},{"type":"Box","props":{"y":162,"x":498,"width":210,"var":"moneyView","height":50,"cacheAs":"normal"},"child":[{"type":"Sprite","props":{"y":0,"x":0,"alpha":0.5},"child":[{"type":"Rect","props":{"y":0,"x":25,"width":148,"lineWidth":1,"height":50,"fillColor":"#000000"}}]},{"type":"Image","props":{"y":0,"x":0,"skin":"wxlocal/Home/hb.png"}},{"type":"Image","props":{"y":-4,"x":138,"skin":"wxlocal/Home/tx.png"}},{"type":"Label","props":{"y":0,"x":53,"width":80,"var":"lblMoney","valign":"middle","text":0,"height":50,"fontSize":20,"color":"#ffffff","bold":true,"align":"center"}}]},{"type":"Image","props":{"y":314,"x":30,"var":"noviceField","skin":"wxlocal/MatchGrade/noviceField.png"}},{"type":"Image","props":{"y":309,"x":382,"var":"middleField","skin":"wxlocal/MatchGrade/middleField.png"}},{"type":"Image","props":{"y":662,"x":74,"var":"advanceField","skin":"wxlocal/MatchGrade/advanceField.png"}},{"type":"Image","props":{"y":1021,"x":80,"var":"quickMatch","skin":"wxlocal/MatchGrade/quickMatch.png"}},{"type":"Box","props":{"y":587,"x":113,"var":"winReward"},"child":[{"type":"Label","props":{"y":1,"x":61,"text":"label","fontSize":23,"font":"Microsoft YaHei","color":"#ffffff","bold":true,"align":"center"}},{"type":"Label","props":{"y":-5,"x":419,"text":"label","fontSize":23,"font":"Microsoft YaHei","color":"#ffffff","bold":true}},{"type":"Label","props":{"y":155,"x":466,"text":8888,"fontSize":26,"font":"Microsoft YaHei","color":"#ffffff","bold":true,"align":"center"}}]},{"type":"Box","props":{"y":597,"x":123,"var":"peopleNum"},"child":[{"type":"Label","props":{"y":33,"x":-7,"text":"label","fontSize":23,"font":"Microsoft YaHei","color":"#ffffff","bold":true,"align":"center"}},{"type":"Label","props":{"y":29,"x":345,"text":"label","fontSize":23,"font":"Microsoft YaHei","color":"#ffffff","bold":true}},{"type":"Label","props":{"y":289,"x":461,"text":8888,"fontSize":26,"font":"Microsoft YaHei","color":"#ffffff","bold":true,"align":"center"}}]},{"type":"Box","props":{"y":607,"x":133,"var":"goldLimit"},"child":[{"type":"Label","props":{"y":23,"x":97,"text":"label","fontSize":23,"font":"Microsoft YaHei","color":"#ffffff","bold":true,"align":"center"}},{"type":"Label","props":{"y":19,"x":449,"text":"label","fontSize":23,"font":"Microsoft YaHei","color":"#ffffff","bold":true}},{"type":"Label","props":{"y":187,"x":408,"width":34,"text":8888,"rotation":1,"height":68,"fontSize":26,"font":"Microsoft YaHei","color":"#ffffff","bold":true,"align":"center"}}]},{"type":"Box","props":{"y":216,"x":494,"var":"giftBox"},"child":[{"type":"Image","props":{"skin":"wxlocal/MatchGrade/outBox.png"}},{"type":"Image","props":{"y":18,"x":12,"skin":"wxlocal/MatchGrade/giftBox.png"}}]}]};
+		return MatchGradeViewUI;
+	})(View);
+var RankCellUI=(function(_super){
+		function RankCellUI(){
+			
+
+			RankCellUI.__super.call(this);
+		}
+
+		CLASS$(RankCellUI,'ui.Rank.RankCellUI',_super);
+		var __proto__=RankCellUI.prototype;
+		__proto__.createChildren=function(){
+		    
+			laya.ui.Component.prototype.createChildren.call(this);
+			this.createView(RankCellUI.uiView);
+
+		}
+
+		RankCellUI.uiView={"type":"View","props":{"width":750,"height":1334}};
+		return RankCellUI;
+	})(View);
+var RankViewUI=(function(_super){
+		function RankViewUI(){
+			
+
+			RankViewUI.__super.call(this);
+		}
+
+		CLASS$(RankViewUI,'ui.Rank.RankViewUI',_super);
+		var __proto__=RankViewUI.prototype;
+		__proto__.createChildren=function(){
+		    
+			laya.ui.Component.prototype.createChildren.call(this);
+			this.createView(RankViewUI.uiView);
+
+		}
+
+		RankViewUI.uiView={"type":"View","props":{"width":750,"height":1334},"child":[{"type":"Image","props":{"skin":"wxlocal/Home/bg.png"}},{"type":"Image","props":{"skin":"wxlocal/Common/mask.png"}},{"type":"Button","props":{"y":43,"x":14,"stateNum":1,"skin":"wxlocal/Common/btn_back.png"}},{"type":"Image","props":{"y":1117,"x":262,"skin":"wxlocal/Rank/rank_list.png"}},{"type":"Image","props":{"y":333,"x":63,"skin":"wxlocal/Rank/bg.png"}},{"type":"Image","props":{"y":136,"x":119,"skin":"wxlocal/Rank/logo.png"}}]};
+		return RankViewUI;
+	})(View);
