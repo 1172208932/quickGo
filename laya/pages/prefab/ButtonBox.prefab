@@ -2,6 +2,7 @@
     "x":0,
     "type":"HBox",
     "selectedBox":1,
+    "selecteID":3,
     "props":{"y":0,"x":0,"space":75,"presetID":1,"preset":"laya/pages/prefab/ButtonBox.prefab","isPresetRoot":true,"align":"bottom"},
     "nodeParent":-1,
     "label":"HBox(ButtonBox)",
@@ -27,7 +28,7 @@
         {
             "x":15,
             "type":"Image",
-            "props":{"x":396,"var":"btnSet","skin":"wxlocal/Home/btnSet.png","presetID":3,"preset":"laya/pages/prefab/ButtonBox.prefab"},
+            "props":{"x":396,"skin":"wxlocal/Home/btnSet.png","presetID":3,"preset":"laya/pages/prefab/ButtonBox.prefab","name":"btnSet"},
             "nodeParent":1,
             "label":"btnSet",
             "isDirectory":false,

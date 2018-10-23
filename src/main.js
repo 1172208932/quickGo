@@ -5,11 +5,11 @@ class Main extends PaoYa.Main{
 	constructor() {
 		let params={
 			/**游戏 ID */
-            gameId: 1004,
+            gameId: 1017,
             /**API 接口地址 */
             baseURL: 'http://47.96.1.255:8080/ServiceCore/',
             /**socket 游戏 zone */
-            zone: 'river',
+            zone: 'surfing',
             /**米大师支付 */
             offerId: '1450017004',
             /**是否自动登录，如果为 false 则需要手动调用login方法，默认为true */
@@ -43,8 +43,14 @@ class Main extends PaoYa.Main{
             var loadingScene = new LoadScene(this.loadComplete.bind(this));
 			this.loadingScene=loadingScene;
 			this.navigator.show(loadingScene)
-        })
+		})
+		this.ifService = new InviteService();
+		this.ifService.on(InviteService.START_GAME, this, function (data, data2) {
+			//收到服务端发送的游戏开始命令的回掉
+			//用于数据的处理并且构建游戏界面
+		});
 	};
+
 	
 	loadComplete(){
 		var homeScene=new HomeScene();

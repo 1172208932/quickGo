@@ -1,0 +1,38 @@
+import HomeView from "./HomeView";
+import RoleChangeScene from "../role/RoleChangeScene";
+import SelectGameScene from "./SelectGameScene";
+
+export default class HomeScene extends PaoYa.Scene {
+    constructor() {
+        super();
+        let homeView = new HomeView();
+        this.view = homeView
+    }
+    viewDidLoad(){
+        console.log('2432')
+        var a=70;
+        console.log('4444444', new Number(90).formatTime())
+    }
+    onViewClick(e) {
+        switch (e.target.name) {
+            // case '':
+            // console.log('kongkong')
+            // break
+            case 'friendhoho':
+                this.tofriend()
+                break
+            case 'morepeople':
+                let rolechange = new RoleChangeScene()
+                this.navigator.push(rolechange)
+                break
+            case 'btnToThen':
+                console.log('3333333')
+                let homethen = new SelectGameScene()
+                this.navigator.push(homethen)
+                break
+        }
+    }
+    tofriend() {
+        console.log(33333333)
+    }
+}

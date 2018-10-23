@@ -1,0 +1,161 @@
+import MatchView from "./MatchView";
+import HomeScene from "../Home/HomeScene";
+
+export default class MatchScene extends PaoYa.Scene {
+    constructor(params) {
+        super();
+        this.matchTypeId = params.matchTypeId;
+        this.view = new MatchView(params);
+        
+    }
+
+    viewDidLoad(){
+        this.view.on(MatchView.BACK, this, this.backHandler);
+        this.view.on(MatchView.MATCH_AGAIN, this, this.matchAgain);
+        this.view.on(MatchView.MATCH_CANCEL, this, this.backHandler);
+        this.view.onEnable();
+        this.init()
+        this.view.backBtn.visible = false;
+    }
+
+    viewDidDisappear() {
+        if (this.warnDialog) {
+            this.warnDialog.close();
+            this.warnDialog = null;
+        }
+        Laya.timer.clear(this, this.setBtnVisible);
+    }
+
+    onHide(res) {
+        console.log("再匹配页面触发onHide");
+        if (res.mode != "hide") {
+            console.log("匹配页面离开发送leaveRoom");
+            this.sendMessage(PaoYa.Client.LEAVE_ROOM, {});
+        }
+    }
+
+    init() {
+        var _this = this;
+        this.sendMessage(PaoYa.Client.LEAVE_ROOM, {});
+        this.startMatch();
+        this.onMessage(PaoYa.Client.MATCH_SUCCESS, this, this.matchSuccess);
+        this.onMessage(PaoYa.Client.MATCH_FAIL, this, this.matchFail);
+        this.onMessage(PaoYa.Client.MATCH_JOIN, this, function (value, code, msg) {
+            if (!this.isActive) {
+                return
+            }
+            if (code == 2012) {
+                _this.stopMatch(false);
+                Service.showAlertWhenHasNoMoney(function () {
+                    _this.startMatch();
+                });
+            }
+        });
+
+        this.onMessage(PaoYa.Client.GAME_START_GAME, this, function (value, code, msg) {
+            var data1 = this.matchData;
+            var data2 = value;
+            this.stopMatchTimeout();
+            HomeScene.goGame(data1, data2);
+        });
+
+    }
+
+    backHandler() {
+        var _this = this;
+        if (this.matchState) {
+            if (PaoYa.DataCenter.isFromMiniProgram) {
+                //跳回大厅
+                Service.goToHall();
+            } else {
+                var warn = new AlertDialog("提示", "是否结束游戏并返回首页", "确定", function () {
+                    _this.stopMatch();
+                    Laya.timer.clearAll(this);
+                    _this.navigator.pop();
+                    _this.sendMessage(PaoYa.Client.LEAVE_ROOM, {});
+                });
+            }
+        } else {
+            var warn = new AlertDialog("提示", "很快就能匹配到对手哦~", "不等了", function () {
+                _this.stopMatch();
+                Laya.timer.clearAll(this);
+                _this.navigator.pop();
+                _this.sendMessage(PaoYa.Client.LEAVE_ROOM, {});
+            }, "再等等", function () {
+
+            });
+        }
+        this.warn = warn;
+        warn.popup(true, false);
+        this.warnDialog = warn;
+    }
+
+    matchAgain() {
+        this.startMatch();
+
+    }
+
+    startMatch() {
+        Laya.timer.clearAll(this);
+        this.view.startMatch();
+        this.sendMessage(PaoYa.Client.MATCH_JOIN, {match_type_id: this.matchTypeId });
+        this.startMatchTimeout();
+    }
+
+    startMatchTimeout() {
+        Laya.timer.once(30000, this, this.matchTimeout);
+        console.log('startMatchTimeout')
+    }
+
+    matchTimeout() {
+        console.log('matchTimeout')
+        var _this = this;
+        var view = new AlertDialog("提示", "啊哦~你的实力太强竟没人敢应战~", "决战到底", function () {
+            _this.matchAgain();
+        }, "暂且休战", function () {
+            _this.navigator.pop();
+        });
+        view.popup();
+    }
+
+    stopMatchTimeout() {
+        Laya.timer.clear(this, this.matchTimeout);
+    };
+
+    matchSuccess(value, code, msg) {
+        if (this.warn) {
+            this.warn.close(null, false);
+        }
+        if (!this.isActive) {
+            return
+        }
+        if (this.view.backBtn) {
+            this.view.backBtn.visible = false;
+        }
+        Laya.timer.once(3000, this, this.setBtnVisible);
+        this.matchState = true;//记录匹配状态
+        var _this = this;
+        this.stopMatchTimeout();
+        this.matchData = value;
+        this.stopMatchTimeout();
+        this.view.matchSuccess(value, function () {
+            _this.sendMessage(PaoYa.Client.GAME_START_MATCH, { room_name: value.room_name, match_type_id: _this.matchTypeId });
+        });
+    };
+
+    stopMatch(sendCancelCmd) {
+        if (sendCancelCmd === void 0) { sendCancelCmd = true; }
+        var _this = this;
+        this.stopMatchTimeout();
+        if (sendCancelCmd) {
+            this.sendMessage(PaoYa.Client.MATCH_CANCEL, { game_id: window.game.gameId, match_type_id: _this.matchTypeId });
+        }
+        this.view.stopMatch();
+    }
+
+    setBtnVisible() {
+        this.view.backBtn.visible = true;
+    }
+};
+
+MatchScene.MATCH_SUCCESS = "matchSuc";

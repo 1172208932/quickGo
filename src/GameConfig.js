@@ -3,6 +3,7 @@ import GameResultDialog from "./dialog/GameResultDialog"
 import ReadyGoDialog from "./dialog/ReadyGoDialog"
 import ShareDialog from "./dialog/ShareDialog"
 import GameBg from "./common/GameBg"
+import Infon from "./common/Infon"
 
 export default class GameConfig {
     static init() {
@@ -12,6 +13,7 @@ export default class GameConfig {
 		reg("dialog/ReadyGoDialog.js",ReadyGoDialog);
 		reg("dialog/ShareDialog.js",ShareDialog);
 		reg("common/GameBg.js",GameBg);
+		reg("common/Infon.js",Infon);
     }
 }
 GameConfig.width = 750;
@@ -20,7 +22,7 @@ GameConfig.scaleMode ="fixedwidth";
 GameConfig.screenMode = "none";
 GameConfig.alignV = "top";
 GameConfig.alignH = "left";
-GameConfig.startScene = "scene/HomeThenView.scene";
+GameConfig.startScene = "scene/GameResultView.scene";
 GameConfig.sceneRoot = "";
 GameConfig.debug = false;
 GameConfig.stat = false;

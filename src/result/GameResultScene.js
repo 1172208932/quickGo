@@ -1,6 +1,7 @@
 import GameResultView from "./GameResultView";
 import GameScene from "../game/GameScene";
-import HomeThenScene from "../Home/HomeThenScene";
+import MatchGradeScene from '../MatchGrade/MatchGradeScene'
+// import SelectGameScene from "../Home/SelectGameScene";
 
 export default class GameResultScene extends PaoYa.Scene {
     constructor(e) {
@@ -28,11 +29,12 @@ export default class GameResultScene extends PaoYa.Scene {
         switch (e.target.name) {
             case 'btnAgain':
                 console.log(1234321)
-                let gameScene = new GameScene()
-                this.navigator.replaceSceneWith(gameScene)
+                this.goMatchScene()
+                // let gameScene = new GameScene()
+                // this.navigator.replaceSceneWith(gameScene)
                 break
             case 'btnBack':
-                let scene = this.navigator.findSceneWithClass(HomeThenScene)
+                let scene = this.navigator.findSceneWithClass(SelectGameScene)
                 this.navigator.popToScene(scene)
                 break
             case 'btnShowy':
@@ -42,5 +44,20 @@ export default class GameResultScene extends PaoYa.Scene {
                 console.log('更改')
         }
     }
-
+    goMatchScene(){
+        var type = PaoYa.DataCenter.config.game.match_type;
+        switch (MatchGradeScene.matchTypeId) {
+            case type[0].id:
+                // this.event(MatchGradeScene.goNovice)
+                MatchGradeScene.goNovice();
+                break;
+            case type[1].id:
+                MatchGradeScene.goPrimary();
+                break;
+            case type[2].id:
+                // this.event(MatchGradeScene.MIDDLE,{})
+                MatchGradeScene.goMiddle();
+                break;
+    }
+    }
 }

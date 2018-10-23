@@ -14,5 +14,7 @@ loadLib("libs/laya.ani.js")
 loadLib("libs/laya.ui.js")
 loadLib("libs/laya.physics.js")
 loadLib("libs/paoya.core.js")
+loadLib("libs/paoya.common.js")
+loadLib("libs/paoya.inviteFriend.js")
 //-----libs-end-------
 loadLib("js/bundle.js");

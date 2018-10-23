@@ -1,0 +1,275 @@
+import SpineConfig from "../SpineConfig";
+import PropertyBar from "./PropertyBar";
+import GameBg from "../common/GameBg";
+
+
+export default class GameView extends PaoYa.View {
+    constructor() {
+        super()
+    }
+    getSceneUrl() {
+        return 'scene/GameView.json'
+    }
+
+    onEnable() {
+        this.monitor()
+        let propertyBar = new PropertyBar()
+        this.propertyBar = propertyBar;
+        this.controlPanel.visible = false;
+
+        propertyBar.pos(82, 815)
+        Laya.timer.once(5000, this, function () {
+            this.addChild(propertyBar);
+            this.controlPanel.visible = true;
+        })
+
+        this.boxSelf = new Laya.Box();
+        this.skSelf = new Laya.Skeleton(SpineConfig.lan_pao_pao.templet);
+        this.skateboardBoy = new Laya.Image("wxlocal/Game/icon_skateboard_boy.png")
+
+        this.skSelf.play(1, true);
+        this.boxSelf.pos(200, 600)
+
+
+        this.boxSelf.addChild(this.skateboardBoy);
+        this.boxSelf.addChild(this.skSelf);
+        this.skateboardBoy.pos(-70, -100)
+        this.addChild(this.boxSelf);
+
+        this.boxOther = new Laya.Box();
+        this.skDs = new Laya.Skeleton(SpineConfig.lan_pao_pao.templet);
+        this.skDs.play(1, true);
+        this.addChild(this.skDs);
+        this.boxOther.pos(500, 600);
+        this.boxOther.addChild(this.skDs);
+        this.addChild(this.boxOther)
+
+
+    }
+    monitor() {
+        this.a = this.panel.getComponent(GameBg);
+        Laya.timer.once(1000, this, function () {
+            this.a.startMove()
+        })
+        Laya.timer.loop(100, this, function () {
+            this.owne.y = 691 - 490 * this.a.ownPercent
+            this.oppo.y = 691 - 490 * this.a.oppoPercent
+            if (this.a.resOut == 0) {
+                // 2平局 4 胜利 1失败
+                this.toReslut(2)
+                Laya.timer.clearAll(this)
+            }
+            if (this.a.resOut == 1) {
+                this.toReslut(4)
+                Laya.timer.clearAll(this)
+            }
+            if (this.a.resOut == -1) {
+                this.toReslut(1)
+                Laya.timer.clearAll(this)
+            }
+
+        })
+    }
+
+    toReslut(e) {
+        this._clearAnimation();
+        Laya.Tween.clearAll(this.boxOther);
+        this.shield = new Laya.Skeleton(SpineConfig.win_lose.templet);
+        this.shield.pos(0, 350)
+        this.shield.play(e, false);
+        this.addChild(this.shield);
+        this.shield.on(Laya.Event.STOPPED, this, function () {
+            this.owner.gameOver(e)
+        })
+    }
+
+    onClick(event) {
+        console.log(event.type)
+        let  type = event.type;
+        if(type == "click"){
+            this.controlPanel.visible = false;
+            Laya.timer.loop(5000, this, function () {
+               this.controlPanel.visible = true;
+            });
+        }else{
+            this.controlPanel.visible = true;
+            
+        }
+        
+        let value = this.propertyBar.handleClick()
+        console.log(value)
+        if (value == "wxlocal/Game/icon_waterbomb.png") {
+            console.log('击中水弹')
+            this.throwWater();
+        } else if (value == "wxlocal/Game/icon_speedup.png") {
+            console.log('击中加速')
+            this.runFast();
+        } else if (value == "wxlocal/Game/icon_shild.png") {
+            console.log('击中护盾')
+            this.hasShield();
+        }
+    }
+
+    throwWater(x) {
+        this.waterBullet = new Laya.Skeleton(SpineConfig.shui_dan_shou_ji.templet);
+        this.waterbombIcon = new Laya.Image('wxlocal/Game/skills_waterbomb.png');
+        this.waterbombIcon.name = "waterbombIcon";
+
+        if (x == "otherWater") {
+            this._throwProject(this.skDs, this.skSelf)
+            this._addOtherIcon(this.waterbombIcon, "waterbombIcon");
+            this._dropBehind(this.waterbombIcon)
+            this.a.ownSpeed = 0;
+        } else {
+            this._throwProject(this.skSelf, this.skDs)
+            this.a.oppoSpeed = 0
+            this._addMyIcon(this.waterbombIcon, "waterbombIcon");
+            this._dropBehind(this.waterbombIcon,"other")
+        }
+
+    }
+
+    _throwProject(throwTo, attacked) {
+        throwTo.play(0, false);
+        throwTo.addChild(this.waterBullet);
+        this.waterBullet.play(0, false);
+        attacked.addChild(this.waterBullet);
+        attacked.play(3, false);
+        this.waterBullet.play(1, false);
+        this.addChild(this.waterbombIcon)
+    }
+
+    runFast(x) {
+        console.log("快速前进")
+        let removeY = "";
+        this.runQuick = new Laya.Skeleton(SpineConfig.lan_ship.templet);
+        this.speedUpIcon = new Laya.Image('wxlocal/Game/skills_speedup.png');
+        this.speedUpIcon.name = "speedUpIcon";
+
+        if (x == "otherWater") {
+            this.a.oppoSpeed = 4;
+            this.runQuick.play(1, false);
+            this.skDs.play(2, true);
+            this._dropBehind(this.speedUpIcon)
+            removeY = this.boxOther._y - 200;
+            this.boxOther.addChildAt(this.runQuick, 0);
+            this.addChild(this.speedUpIcon);
+            this._addOtherIcon(this.speedUpIcon, "speedUpIcon");
+        } else {
+            this.boxSelf.addChildAt(this.runQuick, 0);
+            this.a.ownSpeed = 4;
+            this.runQuick.play(1, false);
+            this.skSelf.play(2, true);
+            this.addChild(this.speedUpIcon);
+            this._addMyIcon(this.speedUpIcon, "speedUpIcon");
+
+            removeY = this.boxOther._y + 200;
+        }
+
+        Laya.Tween.to(this.boxOther, { y: removeY }, 1500, null, Laya.Handler.create(this, function () {
+            this.boxSelf.removeChild(this.runQuick);
+            this.skSelf.play(1, false);
+            this.skDs.play(1, false);
+        }));
+
+
+    }
+
+    _runFastProject(speed, quickerBox, quicker) {
+        this.addChild(this.speedUpIcon);
+        this.quickerBox.addChildAt(this.runQuick, 0);
+        this.runQuick.play(1, false);
+        this.quicker.play(2, false);
+        speed = 4;
+    }
+
+    hasShield(x) {
+        console.log("护盾")
+        this.shield = new Laya.Skeleton(SpineConfig.hu_dun.templet);
+        this.shield.name = "shield";
+        this.shildIcon = new Laya.Image('wxlocal/Game/skills_shild.png');
+        this.shildIcon.name = "shildIcon";
+        if (x == "otherWater") {
+            this._shildProjcet(this.boxOther, 238, 235)
+        } else {
+            this._shildProjcet(this.boxSelf, 238, 120)
+        }
+
+    }
+
+    _shildProjcet(x, posX, posY) {
+        if (x.getChildByName("shield") == undefined) {
+            x.addChildAt(this.shield, 0)
+            this.shield.play(0, true);
+            //添加icon图标
+            this.addChild(this.shildIcon)
+            this.shildIcon.pos(posX, posY)
+        }
+    }
+
+
+    _shot(x) {
+        this.removeChildByName(shildIcon);
+        if (x) {
+            this.boxSelf.removeChild(this.shield);
+        } else {
+            this.boxSelf.removeChild(this.shield);
+        }
+    }
+
+    _clearAnimation() {
+        this.propertyBar.visible = false;
+        this.controlPanel.visible = false;
+        this.skDs && this.skDs.destroy();
+        this.skSelf && this.skSelf.destroy();
+        this.boxSelf && this.boxSelf.destroy();
+        Laya.Tween.clearAll(this.boxOther);
+        Laya.Tween.clearAll(this.skDs)
+        Laya.Tween.clearAll(this.skSelf)
+    }
+
+    _addMyIcon(x, name) {
+        if (this.getChildByName("shildIcon")) {
+            x.pos(358, 120);
+            Laya.timer.once(1500, this, function () {
+                this.removeChildByName(name);
+            })
+        } else {
+            x.pos(238, 120);
+            Laya.timer.once(1500, this, function () {
+                this.removeChildByName(name);
+            })
+        }
+
+    }
+
+    _addOtherIcon(x, name) {
+        if (this.getChildByName("shildIcon")) {
+            x.pos(358, 235);
+            Laya.timer.once(1500, this, function () {
+                this.removeChildByName(name);
+            })
+        } else {
+            x.pos(238, 235);
+            Laya.timer.once(1500, this, function () {
+                this.removeChildByName(name);
+            })
+        }
+    }
+
+    _dropBehind(x, person) {
+        let removeY;
+        let name = x.name;
+        if (person == "other") {
+            removeY = this.boxOther._y + 200;
+        } else {
+            removeY = this.boxOther._y - 200;
+        }
+        Laya.Tween.to(this.boxOther, { y: removeY }, 1500, null, Laya.Handler.create(this, function (name) {
+            this.skSelf.removeChild(name);
+            this.skSelf.play(1, true);
+            this.skDs.play(1, true);
+        }));
+    }
+
+}

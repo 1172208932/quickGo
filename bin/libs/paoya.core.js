@@ -1227,6 +1227,9 @@ var Game = /** @class */ (function (_super) {
         Laya.loader.retryDelay = 2000;
         Laya.loader.maxLoader = 8;
         Laya.URL.formatURL = function (url) {
+            if(!url){
+                return;
+            }
             if (url.indexOf('wxlocal') >= 0 || url.indexOf('http') >= 0) {
                 return url;
             }
@@ -1876,7 +1879,7 @@ var Utils = /** @class */ (function () {
             return icon + "";
         }
         else {
-            if (_game_modal_DataCenter__WEBPACK_IMPORTED_MODULE_0__["default"].CDNURL) {
+            if (!_game_modal_DataCenter__WEBPACK_IMPORTED_MODULE_0__["default"].CDNURL) {
                 console.error('you must assign value to [PaoYa.DataCenter.CDNURL]');
                 return;
             }

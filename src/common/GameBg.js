@@ -13,7 +13,7 @@ export default class GameBg extends Laya.Script {
         this.ownSpeed = 2
         this.oppoSpeed = 2
         // 总长度
-        this.endLength = 2000
+        this.endLength = 8000
         // 百分比
         this.ownPercent 
         this.oppoPercent 

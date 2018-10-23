@@ -1,8 +1,7 @@
 {
-    "x":0,
     "type":"Scene",
     "selectedBox":1,
-    "selecteID":53,
+    "selecteID":65,
     "props":{"width":750,"sceneColor":"#000000","height":1334},
     "nodeParent":-1,
     "label":"Scene",
@@ -13,7 +12,6 @@
     "compId":1,
     "child":[
         {
-            "x":15,
             "type":"Image",
             "props":{"y":0,"x":0,"skin":"wxlocal/Home/image_reprod.jpg"},
             "nodeParent":1,
@@ -26,7 +24,250 @@
                 ]
         },
         {
-            "x":15,
+            "type":"Box",
+            "selectedBox":2,
+            "selecteID":5,
+            "props":{"y":155,"x":21,"var":"infoBox"},
+            "nodeParent":1,
+            "label":"infoBox",
+            "isOpen":true,
+            "isDirectory":true,
+            "isAniNode":true,
+            "hasChild":true,
+            "compId":65,
+            "child":[
+                {
+                    "type":"Box",
+                    "props":{"y":-0.5,"var":"nameView","cacheAs":"normal"},
+                    "nodeParent":65,
+                    "label":"nameView",
+                    "isOpen":true,
+                    "isDirectory":true,
+                    "isAniNode":true,
+                    "hasChild":true,
+                    "compId":66,
+                    "child":[
+                        {
+                            "type":"Sprite",
+                            "props":{"y":20,"x":61,"width":212,"var":"nameBg","height":50,"alpha":0.5},
+                            "nodeParent":66,
+                            "label":"nameBg",
+                            "isOpen":true,
+                            "isDirectory":true,
+                            "isAniNode":true,
+                            "hasChild":true,
+                            "compId":3,
+                            "child":[
+                                {
+                                    "type":"Rect",
+                                    "props":{"y":0,"x":28,"width":148,"lineWidth":1,"height":50,"fillColor":"#000000"},
+                                    "nodeParent":3,
+                                    "label":"Rect",
+                                    "isOpen":true,
+                                    "isDirectory":false,
+                                    "isAniNode":true,
+                                    "hasChild":false,
+                                    "compId":4,
+                                    "child":[
+                                        ]
+                                }]
+                        },
+                        {
+                            "type":"Image",
+                            "props":{"y":0,"x":0,"width":90,"visible":true,"skin":"wxlocal/Common/avstar.png","name":"imgIcon","height":90},
+                            "nodeParent":66,
+                            "label":"imgIcon",
+                            "isDirectory":false,
+                            "isAniNode":true,
+                            "hasChild":false,
+                            "compId":5,
+                            "child":[
+                                ]
+                        },
+                        {
+                            "type":"Label",
+                            "props":{"y":20,"x":98,"width":164,"var":"lblName","valign":"middle","height":50,"fontSize":25,"color":"#ffffff","bold":true,"align":"left"},
+                            "nodeParent":66,
+                            "label":"lblName",
+                            "isDirectory":false,
+                            "isAniNode":true,
+                            "hasChild":false,
+                            "compId":6,
+                            "child":[
+                                ]
+                        }]
+                },
+                {
+                    "type":"Box",
+                    "props":{"y":18.5,"x":498,"width":210,"var":"moneyView","height":51,"cacheAs":"normal"},
+                    "nodeParent":65,
+                    "label":"moneyView",
+                    "isOpen":false,
+                    "isDirectory":true,
+                    "isAniNode":true,
+                    "hasChild":true,
+                    "compId":7,
+                    "child":[
+                        {
+                            "type":"Sprite",
+                            "props":{"y":0,"x":0,"alpha":0.5},
+                            "nodeParent":7,
+                            "label":"Sprite",
+                            "isOpen":true,
+                            "isDirectory":true,
+                            "isAniNode":true,
+                            "hasChild":true,
+                            "compId":8,
+                            "child":[
+                                {
+                                    "type":"Rect",
+                                    "props":{"x":38,"width":148,"lineWidth":1,"height":50,"fillColor":"#000000"},
+                                    "nodeParent":8,
+                                    "label":"Rect",
+                                    "isOpen":true,
+                                    "isDirectory":false,
+                                    "isAniNode":true,
+                                    "hasChild":false,
+                                    "compId":9,
+                                    "child":[
+                                        ]
+                                }]
+                        },
+                        {
+                            "type":"Image",
+                            "props":{"y":0,"x":0,"skin":"wxlocal/Common/hb.png"},
+                            "nodeParent":7,
+                            "label":"Image",
+                            "isDirectory":false,
+                            "isAniNode":true,
+                            "hasChild":false,
+                            "compId":10,
+                            "child":[
+                                ]
+                        },
+                        {
+                            "type":"Image",
+                            "props":{"y":-4,"x":138,"skin":"wxlocal/Common/tx.png"},
+                            "nodeParent":7,
+                            "label":"Image",
+                            "isDirectory":false,
+                            "isAniNode":true,
+                            "hasChild":false,
+                            "compId":11,
+                            "child":[
+                                ]
+                        },
+                        {
+                            "type":"Label",
+                            "props":{"y":0,"x":53,"width":80,"var":"lblMoney","valign":"middle","text":0,"height":50,"fontSize":20,"color":"#ffffff","bold":true,"align":"center"},
+                            "nodeParent":7,
+                            "label":"lblMoney",
+                            "isDirectory":false,
+                            "isAniNode":true,
+                            "hasChild":false,
+                            "compId":12,
+                            "child":[
+                                ]
+                        }]
+                },
+                {
+                    "type":"Box",
+                    "props":{"y":19.5,"x":286,"width":200,"var":"goldView","height":50,"cacheAs":"normal"},
+                    "nodeParent":65,
+                    "label":"goldView",
+                    "isOpen":false,
+                    "isDirectory":true,
+                    "isAniNode":true,
+                    "hasChild":true,
+                    "compId":13,
+                    "child":[
+                        {
+                            "type":"Sprite",
+                            "props":{"y":0,"x":0,"alpha":0.5},
+                            "nodeParent":13,
+                            "label":"Sprite",
+                            "isOpen":null,
+                            "isDirectory":true,
+                            "isAniNode":true,
+                            "hasChild":true,
+                            "compId":14,
+                            "child":[
+                                {
+                                    "type":"Rect",
+                                    "props":{"y":0,"x":25,"width":148,"lineWidth":1,"height":50,"fillColor":"#000000"},
+                                    "nodeParent":14,
+                                    "label":"Rect",
+                                    "isDirectory":false,
+                                    "isAniNode":true,
+                                    "hasChild":false,
+                                    "compId":15,
+                                    "child":[
+                                        ]
+                                }]
+                        },
+                        {
+                            "type":"Image",
+                            "props":{"y":0,"x":0,"skin":"wxlocal/Common/dz.png"},
+                            "nodeParent":13,
+                            "label":"Image",
+                            "isDirectory":false,
+                            "isAniNode":true,
+                            "hasChild":false,
+                            "compId":16,
+                            "child":[
+                                ]
+                        },
+                        {
+                            "type":"Image",
+                            "props":{"y":-4,"x":149,"skin":"wxlocal/Common/add.png"},
+                            "nodeParent":13,
+                            "label":"Image",
+                            "isDirectory":false,
+                            "isAniNode":true,
+                            "hasChild":false,
+                            "compId":17,
+                            "child":[
+                                ]
+                        },
+                        {
+                            "type":"Label",
+                            "props":{"y":0,"x":53,"width":93,"var":"lblGold","valign":"middle","text":0,"height":50,"fontSize":20,"color":"#ffffff","bold":true,"align":"center"},
+                            "nodeParent":13,
+                            "label":"lblGold",
+                            "isDirectory":false,
+                            "isAniNode":true,
+                            "hasChild":false,
+                            "compId":18,
+                            "child":[
+                                ]
+                        }]
+                },
+                {
+                    "type":"Script",
+                    "switchAble":true,
+                    "source":"src/common/Infon.js",
+                    "removeAble":true,
+                    "props":{},
+                    "nodeParent":65,
+                    "label":"Infon",
+                    "isDirectory":false,
+                    "isAniNode":true,
+                    "hasChild":false,
+                    "compId":19,
+                    "child":[
+                        ]
+                }],
+            "animations":[
+                {
+                    "nodes":[
+                        ],
+                    "name":"ani1",
+                    "id":1,
+                    "frameRate":24,
+                    "action":0
+                }]
+        },
+        {
             "type":"Image",
             "props":{"y":25,"x":0,"skin":"wxlocal/Common/jump-hall.png"},
             "nodeParent":1,
@@ -40,20 +281,6 @@
                 ]
         },
         {
-            "x":15,
-            "type":"Box",
-            "props":{"y":13,"x":268},
-            "nodeParent":1,
-            "label":"Box",
-            "isDirectory":false,
-            "isAniNode":true,
-            "hasChild":false,
-            "compId":48,
-            "child":[
-                ]
-        },
-        {
-            "x":15,
             "type":"Sprite",
             "props":{"y":263,"x":14,"texture":"wxlocal/Home/icon_frendsplay.png","name":"friendhoho","mouseEnabled":true},
             "nodeParent":1,
@@ -66,7 +293,6 @@
                 ]
         },
         {
-            "x":15,
             "type":"Sprite",
             "props":{"y":263,"x":391,"texture":"wxlocal/Home/icon_morerole.png","name":"morepeople","mouseEnabled":true},
             "nodeParent":1,
@@ -79,7 +305,6 @@
                 ]
         },
         {
-            "x":15,
             "type":"Sprite",
             "props":{"y":518,"x":20,"texture":"wxlocal/Home/icon_startgame.png","name":"btnToThen","mouseEnabled":true},
             "nodeParent":1,
@@ -92,7 +317,6 @@
                 ]
         },
         {
-            "x":15,
             "type":"Sprite",
             "props":{"y":346,"x":280,"texture":"wxlocal/Home/icon_getbean.png"},
             "nodeParent":1,
@@ -105,54 +329,39 @@
                 ]
         },
         {
-            "x":15,
             "type":"HBox",
             "selectedBox":1,
-            "props":{"y":1121,"x":115,"presetID":1,"preset":"laya/pages/prefab/ButtonBox.prefab"},
+            "selecteID":3,
+            "props":{"y":1142,"x":115,"space":75,"align":"bottom"},
             "nodeParent":1,
-            "label":"HBox(ButtonBox)",
-            "isOpen":false,
+            "label":"HBox",
+            "isOpen":true,
             "isDirectory":true,
             "isAniNode":true,
             "hasChild":true,
-            "compId":53,
+            "compId":71,
             "child":[
                 {
-                    "x":30,
                     "type":"Image",
-                    "props":{"presetID":2,"preset":"laya/pages/prefab/ButtonBox.prefab"},
-                    "nodeParent":53,
-                    "label":"Image(ButtonBox)",
+                    "props":{"var":"btnRank","skin":"wxlocal/Home/btnRank.png"},
+                    "nodeParent":71,
+                    "label":"btnRank",
                     "isDirectory":false,
                     "isAniNode":true,
                     "hasChild":false,
-                    "compId":54,
+                    "compId":72,
                     "child":[
                         ]
                 },
                 {
-                    "x":30,
-                    "type":"Image",
-                    "props":{"presetID":3,"preset":"laya/pages/prefab/ButtonBox.prefab"},
-                    "nodeParent":53,
-                    "label":"Image(ButtonBox)",
-                    "isDirectory":false,
-                    "isAniNode":true,
-                    "hasChild":false,
-                    "compId":3,
-                    "child":[
-                        ]
-                },
-                {
-                    "x":30,
                     "type":"Button",
-                    "props":{"presetID":4,"preset":"laya/pages/prefab/ButtonBox.prefab"},
-                    "nodeParent":53,
-                    "label":"Button(ButtonBox)",
+                    "props":{"y":1,"x":196,"var":"btnRules","stateNum":1,"skin":"wxlocal/Home/btn_rules.png"},
+                    "nodeParent":71,
+                    "label":"btnRules",
                     "isDirectory":false,
                     "isAniNode":true,
                     "hasChild":false,
-                    "compId":4,
+                    "compId":74,
                     "child":[
                         ]
                 }],
@@ -165,6 +374,18 @@
                     "frameRate":24,
                     "action":0
                 }]
+        },
+        {
+            "type":"Image",
+            "props":{"y":1142,"x":511,"skin":"wxlocal/Home/btnSet.png","name":"btnSet","mouseEnabled":true},
+            "nodeParent":1,
+            "label":"btnSet",
+            "isDirectory":false,
+            "isAniNode":true,
+            "hasChild":false,
+            "compId":73,
+            "child":[
+                ]
         }],
     "animations":[
         {

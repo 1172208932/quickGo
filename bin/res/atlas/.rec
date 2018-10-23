@@ -1,5 +1,16 @@
 D .
 D wxlocal
+D wxlocal/Charge
+P DAFBB4A3 1.png
+P 84FD8DB9 2.png
+P 2A15C390 3.png
+P DC365F34 4.png
+P 1FEB0E6F 5.png
+P 0503E27C 6.png
+P 11F4A99D a.png
+P 3941260F b.png
+P CF0CA545 bq.png
+R 85C1AE41 top.png
 D wxlocal/Common
 P 222B5511 22.png
 P 580D835B add.png
@@ -7,34 +18,72 @@ P 654FEADE avstar.png
 R FE11DCED bg.png
 P 64783D8D bgMusicSet.png
 P BFC25418 bgSet.png
+P 05DDA392 boy-white.png
 P BB385161 boy.png
+P 8107048E btn-alert-ok.png
+P 9A7C6636 btn-blue.png
+P 9CDE091F btn-yellow.png
 P B7AFCD5D btn_again.png
 P 51830468 btn_agree.png
 P 47A0DD7C btn_back.png
 P 5AF91EB6 btn_cancel.png
+P 8694E85A btn_close.png
 P 6054E3EC btn_closeT.png
+P D3C300E2 btn_gray.png
+P EB022186 btn_normal.png
+P B45A7BC9 btn_ok.png
 P 66B0DC0F btn_share.png
+P 4E33C4B4 btn_yellow.png
 P 34492D3C btnBack.png
+P D11ED5B8 btnBlue.png
 P 98480D8A btnCopy.png
+P 424F69AD btnGray.png
+P 7095401C btnGreen.png
 P 5F6A000B btnStart.png
+P AC72FF57 btnYellow.png
+P 64DAEB15 bubble.png
+P 51F8C153 corner.png
 P C135C3F0 custom.png
 P 94E847C2 dz.png
 P 12CD14D7 effect.png
 P 08396752 expressIcon.png
+P A82C889C finger0.png
+P D081729B finger1.png
+P CE57EFFB friend.png
+P 5B31CFD8 gay-white.png
+P 7A6782F1 girl-white.png
 P 42BC75DA girl.png
 P 123C8DFD guanzhupaopao.png
 P FA293BDA hb.png
 P 50B81428 horn.png
+P BC44D698 icon-bean-ladder.png
 P EFA22402 icon-beans.png
+P ECF992B4 icon-hb-ladder.png
 R A39CAB46 invite-friend-center.png
 P D8AB4445 inviteFriend.png
 P 49DEEB8A jump-hall.png
 R 6CCC0946 mask.png
+P 4C90886A moreGame.png
+R 7235C073 pop-bg.png
+P 6A5AFBC3 public-qr.png
+R 76B9BF48 result-bg.png
 P A0943F34 setText.png
 P 8A9C5379 textMusic.png
+P 7E3D8B1C timer-circle.png
+P F52F5423 tiXian-alert-bg.png
 P 03FF6B00 tx.png
+P A83F14E7 usericon-mask-boy.png
+P E123FC64 usericon-mask-girl.png
+P 4C7AF889 username-bg-boy.png
+P CF151C0B username-bg-girl.png
 P 82515388 volumeBar0.png
 P A09E4F61 volumeBar1.png
+P 52107B89 vscroll$bar.png
+P E26B933E vscroll$down.png
+P B9680947 vscroll$up.png
+P 7E990267 vscroll.png
+P 87422219 weixin.png
+R 7A6F3E25 yindao1.png
 D wxlocal/comp
 P D12221A9 bg.png
 P 9401CC40 blank.png
@@ -69,6 +118,18 @@ P B9680947 vscroll$up.png
 P 7E990267 vscroll.png
 P E466EB1C vslider$bar.png
 P 2BFF7046 vslider.png
+D wxlocal/continuWin
+P 00A52D44 1.png
+P 9F601858 10.png
+P FC5E5B7F 11.png
+P 1CE45EE5 2.png
+P 1578615F 3.png
+P 805E31F4 4.png
+P 0C5D0D86 5.png
+P 0561592A 6.png
+P 2BBF978E 7.png
+P BF90FB3A 8.png
+P 622F8951 9.png
 D wxlocal/Game
 P A155DC1E body1.png
 P 40258BA1 body2.png
@@ -103,10 +164,10 @@ R 100B81D2 selectBox.png
 P D75D7DF8 skills_shild.png
 P DD45024B skills_speedup.png
 P 7DCEF116 skills_waterbomb.png
-R F6246C3E text_dizzy.png
-R 84F9B67D text_shild.png
-R 9E43301A text_speedup.png
-R E6798C7E text_waterbomb.png
+P F6246C3E text_dizzy.png
+P 84F9B67D text_shild.png
+P 9E43301A text_speedup.png
+P E6798C7E text_waterbomb.png
 D wxlocal/Home
 P 39FC6051 btn_rules.png
 P 55DD3555 btnRank.png
@@ -128,6 +189,16 @@ D wxlocal/loading
 P 32C25575 01.png
 P E73904DF 02.png
 P 1836A2F6 image_reprod.jpg
+D wxlocal/match
+P 264DDDF3 boy.png
+R FAD33151 circle1.png
+R B7B1D2E9 circle2.png
+R 4DF90315 circle3.png
+R D5062EC6 circle4.png
+R BBEE4DF6 d.png
+P D09BBA35 gay.png
+P A1899864 girl.png
+P 553340CE vs.png
 D wxlocal/MatchGrade
 P 2DCB9CB4 outBox.png
 D wxlocal/Rank
@@ -186,6 +257,18 @@ P 8D3A6624 effect_light.png
 P BA8BD954 icon_bean.png
 P F68D2266 icon_fram.png
 P 1A26BFFE image_botfra.png
+D wxlocal/Task
+P 1E82FDFF box-noReceive-1.png
+P A5E9C709 box-noReceive-2.png
+P B6410E41 box-noReceive-3.png
+P 14C87C94 box-receive-1.png
+P 045B5451 box-receive-2.png
+P A19844CD box-receive-3.png
+P 1CD6FCA7 box-received-1.png
+P 380FF5A2 box-received-2.png
+P F9E65944 box-received-3.png
+R C0079690 icon_prog_n.png
+P 2A69DD91 prog_bot.png
 D wxlocal/Rank/Rank
 P 0F67DCC3 btn-left.png
 P B5096EF9 btn-right.png
