@@ -1,5 +1,5 @@
 import RoleChangeView from './RoleChangeView'
- export default class RoleChangeScene extends PaoYa.Scene{
+ export default class RoleChangeScene extends Scene{
      constructor(){
          super()
          let roleChangeView = new RoleChangeView()

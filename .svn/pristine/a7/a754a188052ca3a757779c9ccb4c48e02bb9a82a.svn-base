@@ -1,0 +1,70 @@
+import HomeView from "./HomeView";
+import RoleChangeScene from "../role/RoleChangeScene";
+import GameScene from "../game/GameScene";
+import MatchGradeScene from "../MatchGrade/MatchGradeScene";
+
+export default class HomeScene extends Scene {
+    constructor() {
+        super();
+        let homeView = new HomeView();
+        this.view = homeView
+    }
+    viewWillAppear() {
+        console.log(PaoYa.DataCenter.login)
+        let userData = PaoYa.DataCenter.user
+        console.log(userData)
+        var a = 70;
+        console.log('4444444', new Number(90).formatTime())
+    }
+    onViewClick(e) {
+        switch (e.target.name) {
+            // case '':
+            // console.log('kongkong')
+            // break
+            case 'friendhoho':
+                this.tofriend()
+                break
+            case 'morepeople':
+                let rolechange = new RoleChangeScene()
+                this.navigator.push(rolechange)
+                break
+            case 'btnToThen':
+                console.log('3333333')
+                let homethen = new MatchGradeScene()
+                this.navigator.push(homethen)
+                break
+            case 'btnSet':
+                console.log(32)
+                var setdialog = new SettingDialog();
+                setdialog.popup();
+                break
+        }
+    }
+    tofriend() {
+        console.log(33333333)
+        PaoYa.Game.ins.ifService.createRoom();
+    }
+    static goGame(data1, data2) {
+        console.log('比赛数据：', data1, data2);
+        var gameScene = new GameScene()
+        PaoYa.Game.ins.navigator.push(gameScene);
+    }
+}
+// HomeScene.goGame = function (data1, data2) {
+//     console.log('比赛数据：', data1, data2);
+//     // var params = { self: null, other: null };
+//     // if (data1.match_list[0].user_id == PaoYa.DataCenter.user.id) {
+//     //     params.self = data1.match_list[0];
+//     //     params.other = data1.match_list[1];
+//     // } else {
+//     //     params.self = data1.match_list[1];
+//     //     params.other = data1.match_list[0];
+//     // }
+//     // params.self.user_icon = params.self.user_icon.makeIcon();
+//     // params.other.user_icon = params.other.user_icon.makeIcon();
+//     // params.main_menu_array=data2.main_menu_array;
+//     // params.round_user_id=data2.round_user_id;
+
+//     var gameScene = new GameScene()
+//     this.navigator.push(gameScene);
+// }

@@ -4,8 +4,11 @@ import GameBg from "../common/GameBg";
 
 
 export default class GameView extends PaoYa.View {
-    constructor() {
-        super()
+    constructor(params) {
+        super();
+        this.params = params;
+        this.watering = 0 ; 
+        this.shielding = 0
     }
     getSceneUrl() {
         return 'scene/GameView.json'
@@ -23,11 +26,15 @@ export default class GameView extends PaoYa.View {
             this.controlPanel.visible = true;
         })
 
+        this.waterBullet = this.waterBulletDS = new Laya.Skeleton(SpineConfig.shui_dan_shou_ji.templet, );
+        // this.waterBomb = new Laya.Skeleton(SpineConfig.shui_dan_shou_ji.templet, 1);
+
 
         this.boxSelf = new Laya.Box();
         this.boxSelf.name = "boxSelf"
         this.skSelf = new Laya.Skeleton(SpineConfig.lan_pao_pao.templet);
         this.boxSelf.addChild(this.skSelf);
+        this.skSelf.addChild(this.waterBullet);
         this.skSelf.play(1, true);
 
         this.runQuick = new Laya.Skeleton(SpineConfig.lan_ship.templet);
@@ -43,13 +50,27 @@ export default class GameView extends PaoYa.View {
         this.skDs = new Laya.Skeleton(SpineConfig.lan_pao_pao.templet);
         this.skDs.play(1, true);
         this.addChild(this.skDs);
+        this.skDs.addChild(this.waterBulletDS)
         this.boxOther.pos(500, 600);
         this.boxOther.addChild(this.skDs);
         this.addChild(this.boxOther)
 
-
+        this.userInfo()
 
     }
+    userInfo() {
+        console.log("this.params", this.params)
+        this.txtNameSelf.text = PaoYa.Utils.formatName(this.params.self.user_name, 5)
+        this.txtNameOther.text = PaoYa.Utils.formatName(this.params.other.user_name, 5)
+        this.myUserId = this.params.user_id;
+
+        this.imgHeadSelf.skin = this.params.self.user_icon;
+        this.imgHeadOther.skin = this.params.other.user_icon;
+        this.MyGender.skin = this.getGenderUrl(this.params.self.gender);
+        this.otherGender.skin = this.getGenderUrl(this.params.other.gender);
+
+    }
+
     monitor() {
         this.a = this.panel.getComponent(GameBg);
         Laya.timer.once(1000, this, function () {
@@ -60,33 +81,25 @@ export default class GameView extends PaoYa.View {
             this.oppo.y = 691 - 490 * this.a.oppoPercent
             if (this.a.resOut == 0) {
                 // 2平局 4 胜利 1失败
-                this.toReslut(2)
+                // this.toReslut(2)
+                this.event(GameView.RESULT)
                 Laya.timer.clearAll(this)
             }
             if (this.a.resOut == 1) {
-                this.toReslut(4)
+                //this.toReslut(4)
+                this.event(GameView.RESULT)
                 Laya.timer.clearAll(this)
             }
             if (this.a.resOut == -1) {
-                this.toReslut(1)
+                // this.toReslut(1)
+                this.event(GameView.RESULT)
                 Laya.timer.clearAll(this)
             }
 
         })
     }
 
-    toReslut(e) {
-        Laya.Tween.clearAll(this.boxOther);
-        this._clearAnimation();
-        this.shield = new Laya.Skeleton(SpineConfig.win_lose.templet);
-        this.shield.pos(0, 350)
-        this.shield.play(e, false);
-        this.addChild(this.shield);
-        this.shield.on(Laya.Event.STOPPED, this, function () {
-            this.shield && this.shield.destroy();
-            this.owner.gameOver(e)
-        })
-    }
+
 
     onClick(event) {
         console.log(event.type)
@@ -103,84 +116,100 @@ export default class GameView extends PaoYa.View {
 
         let value = this.propertyBar.handleClick()
         console.log(value)
+        this.event(GameView.robotSendBet, { user_bets: { is_finish: 0, distance: this.a.length, user_id: this.myUserId } });
         if (value == "wxlocal/Game/icon_waterbomb.png") {
             console.log('击中水弹')
+            this.watering = 0;//0代表自己扔水单
             this.throwWater();
         } else if (value == "wxlocal/Game/icon_speedup.png") {
             console.log('击中加速')
             this.runFast();
         } else if (value == "wxlocal/Game/icon_shild.png") {
             console.log('击中护盾')
-            this.hasShield();
+            this.shielding = 0;
+            this.protectShield();
         }
     }
+
+
     //扔水弹
-    throwWater(x) {
-        this.waterBullet = new Laya.Skeleton(SpineConfig.shui_dan_shou_ji.templet, );
-        this.waterBomb = new Laya.Skeleton(SpineConfig.shui_dan_shou_ji.templet, 1);
+    throwWater() {
         this.waterbombIcon = new Laya.Image('wxlocal/Game/skills_waterbomb.png');
         this.waterbombIcon.name = "waterbombIcon";
-        if (x == "otherWater") {
-            this._throwOut(this.skDs)
-            if (this._hasShieldOrNot()) {
-                this._attacked(this.skSelf, 1)
-            } else {
-                this.a.ownSpeed = 0;
-                this._attacked(this.skSelf, 3)
-                this._dropBehind(this.waterbombIcon)
-            }
+        // this._throwOut();
+        this._throwWaterHandle(this.watering);
+    }
+
+    _throwWaterHandle(watering) {
+        this.addChild(this.waterbombIcon);
+        var target, boxTarget, dropBehindName, hasShield;
+        if (watering == 1) {//对手扔了水弹出来
+            this.skDs.play(0, false)//人物变成 扔水弹状态
+            this.waterBulletDS.play(0, false);//水弹变成扔出去的状态
+            target = this.skSelf;//被攻击的人是我
+            boxTarget = this.boxSelf;//攻击人的box
+            this._addMyIcon(this.waterbombIcon, "waterbombIcon")//给我加icon
         } else {
-            this._throwOut(this.skSelf)
-            //如果有护盾的情况下，被攻击的人 前进动画 效果不变
-            if (this._hasShieldOrNot()) {
-                this._attacked(this.skDs, 1)
+            this.skSelf.play(0, false)
+            this.waterBullet.play(0, false);
+            target = this.skDs;
+            boxTarget = this.boxOther;
+            dropBehindName = 'other';
+            this._addOtherIcon(this.waterbombIcon, "waterbombIcon")
+        }
+
+        hasShield = this._hasShieldOrNot(boxTarget);
+        var playStatus = 1;
+        if (!hasShield) {
+            playStatus = 3;
+            this._dropBehind(this.waterbombIcon, dropBehindName)
+            if (watering == 1) {
+                this.a.ownSpeed = 0
             } else {
-                //如果没有护盾的情况下，被攻击的人 向后退
                 this.a.oppoSpeed = 0
-                this._attacked(this.skDs, 3)
-                this._dropBehind(this.waterbombIcon, "other")
             }
         }
 
-    }
-    //扔水弹的人
-    _throwOut(throwTo) {
-        throwTo.play(0, false);
-        throwTo.addChild(this.waterBullet);
-        this.waterBullet.play(0, false);
-    }
-    //受到攻击的人
-    _attacked(attacked, playStatus) {
-        this.skDs.play(3, true);
-        attacked.addChild(this.waterBomb);
-        this.waterBomb.play(1, false);
-        this.waterBomb.on(Laya.Event.STOPPED, this, function () {
-            this._shot(attacked)
+        Laya.timer.once(750, this, function () {
+            target.play(playStatus, true);
+            this.waterBullet.play(1, false);
+        })
+
+        this.waterBullet.on(Laya.Event.STOPPED, this, function () {
+            this._shot(target)
             this.skDs.play(1, true)
             this.skSelf.play(1, true)
         })
-        this.addChild(this.waterbombIcon)
     }
 
+    //扔水弹的人
+    // _throwOut() {
+    //     if (this.watering == 1) {
+    //         this.skDs.play(0, false)
+    //         this.waterBullet.play(0, false);
+
+    //     } else {
+    //         this.skSelf.play(0, false)
+    //         this.waterBulletDS.play(0, false);
+    //     }
+
+    //     // throwTo.addChild(this.waterBullet);
+    // }
+
     runFast(x) {
-        let removeY = "";
+        let removeY = 0;
         this.speedUpIcon = new Laya.Image('wxlocal/Game/skills_speedup.png');
         this.speedUpIcon.name = "speedUpIcon";
 
         //对方的数据
         if (x == "otherRunFast") {
             this.a.oppoSpeed = 4;
-            removeY = this.runFastProject(this.skDs, this.boxOther, removeY)
+            removeY = this.runFastProject(this.skDs, this.boxOther)
         } else {
             this.a.ownSpeed = 4;
-            removeY = this.runFastProject(this.skSelf, this.boxSelf, removeY)
+            removeY = this.runFastProject(this.skSelf, this.boxSelf)
         }
         Laya.Tween.to(this.boxOther, { y: removeY }, 1500, null, Laya.Handler.create(this, function () {
-            if (x == "otherRunFast") {
-                this.boxOther.removeChild(this.runQuick);
-            } else {
-                this.boxSelf.removeChild(this.runQuick);
-            }
             this.skSelf.play(1, false);
             this.skDs.play(1, false);
             this.runQuick.play(0, true)
@@ -188,7 +217,8 @@ export default class GameView extends PaoYa.View {
 
     }
 
-    runFastProject(x, boxName, removeY) {
+    runFastProject(x, boxName) {
+        let removeY = 0;
         x.play(2, true);
         this.runQuick.play(1, false);
         this.addChild(this.speedUpIcon);
@@ -202,8 +232,7 @@ export default class GameView extends PaoYa.View {
         return removeY
     }
 
-    hasShield(x) {
-        console.log("护盾")
+    protectShield() {
         this.shield = new Laya.Skeleton(SpineConfig.hu_dun.templet, 2);
         this.shield.name = "shield";
         this.shield.alpha = 0.9;
@@ -211,44 +240,56 @@ export default class GameView extends PaoYa.View {
 
         this.shildIcon = new Laya.Image('wxlocal/Game/skills_shild.png');
         this.shildIcon.name = "shildIcon";
-
-        if (x == "otherShield") {
-            this._shildProjcet(this.boxOther, 238, 235)
+console.log(this.shielding)
+        if (this.shielding == 1) {
+            this._shildProjcet(this.boxOther, this.otherInfo, 0, 0)
         } else {
-            this._shildProjcet(this.boxSelf, 238, 120)
+            this._shildProjcet(this.boxSelf, this.myInfo, 240,0)
         }
 
     }
 
-    _shildProjcet(x, posX, posY) {
-        console.log(x)
-        if (x.getChildByName("shield") == undefined) {
-            x.addChild(this.shield)
+    _shildProjcet(target, boxTarget, posX, posY) {
+        if (target.getChildByName("shield") == undefined) {
+            target.addChild(this.shield)
             this.shield.play(0, true);
             //添加icon图标
-            this.addChild(this.shildIcon)
+            boxTarget.addChild(this.shildIcon)
             this.shildIcon.pos(posX, posY)
         }
     }
     //是否有护盾
-    _hasShieldOrNot() {
-        let shieldBox;
-        if (this.boxOther.getChildByName("shield") == undefined) {
+    _hasShieldOrNot(target) {
+        if (target.getChildByName("shield") == undefined) {
+            return false;
+        }
+        return true
+    }
+    //检测是否有加速
+    _hasRunOrNot() {
+        let runBox;
+        if (this.boxOther.getChildByName("runQuick") == undefined) {
+            console.log("对手没有护盾")
+            runBox = false;
+        } else if (this.boxSelf.getChildByName("shield") == undefined) {
             console.log("我没有护盾")
-            shieldBox = false;
+            runBox = false;
         } else {
             console.log("我有护盾")
-            shieldBox = true;
+            runBox = true;
         }
-        return shieldBox
+        return runBox
     }
-
     _shot(x) {
-        this.removeChildByName("shildIcon");
+        console.log(x)
+
         if (x == this.skDs) {
+            console.log("我是对手")
             this.boxOther.removeChild(this.shield);
+            this.removeChildByName("shildIcon");
         } else {
             this.boxSelf.removeChild(this.shield);
+            this.removeChildByName("shildIcon");
         }
     }
 
@@ -297,6 +338,7 @@ export default class GameView extends PaoYa.View {
     }
 
     _clearAnimation() {
+        console.log('清除')
         this.propertyBar.visible = false;
         this.controlPanel.visible = false;
         this.skDs && this.skDs.destroy();
@@ -310,4 +352,15 @@ export default class GameView extends PaoYa.View {
 
     }
 
+    getGenderUrl(params) {
+        if (!params) {
+            return "wxlocal/match/gay.png";
+        } else if (params == "男") {
+            return "wxlocal/match/boy.png";
+        } else {
+            return "wxlocal/match/girl.png";
+        }
+    }
+
 }
+GameView.RESULT = "result";

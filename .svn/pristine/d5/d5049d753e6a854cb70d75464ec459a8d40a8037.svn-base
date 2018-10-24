@@ -1,0 +1,32 @@
+export default class GetPropDialog extends Laya.Dialog {
+    constructor() {
+        super()
+    }
+    onEnable() {
+        this.btnGetProp.on(Laya.Event.CLICK, this, function () {
+            this.changeDialog()
+        })
+    }
+    changeDialog() {
+        this.btnGetProp.skin = 'wxlocal/Share/btn_imuse.png'
+        this.title.text = '恭喜获得'
+        this.propName.visible = true
+        let num = parseInt(3 * Math.random()) + 1
+        switch (num) {
+            case 1:
+                this.propName.text = '泡泡水弹'
+                this.propIcon.width = 160
+                this.propIcon.height = 160
+                this.propIcon.texture = 'wxlocal/Game/icon_waterbomb.png'
+                break
+            case 2:
+                this.propName.text = '加速冲刺'
+                this.propIcon.texture = 'wxlocal/Game/icon_speedup.png'
+                break
+            case 3:
+                this.propName.text = '泡泡护盾'
+                this.propIcon.texture = 'wxlocal/Game/icon_shild.png'
+                break
+        }
+    }
+}

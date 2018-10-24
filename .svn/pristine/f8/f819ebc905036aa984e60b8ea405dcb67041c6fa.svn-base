@@ -1,0 +1,63 @@
+import GameResultView from "./GameResultView";
+import GameScene from "../game/GameScene";
+import MatchGradeScene from '../MatchGrade/MatchGradeScene'
+// import SelectGameScene from "../Home/SelectGameScene";
+
+export default class GameResultScene extends PaoYa.Scene {
+    constructor(e) {
+        super()
+        this.po = e
+        this.view = new GameResultView()
+    }
+    viewDidLoad() {     
+        switch(this.po){
+            case 1://失败
+            this.view.result.skin ='wxlocal/Result/text_failure.png'
+            this.view.btnChangeLuck.visible = true
+            break
+            case 2://平局
+            this.view.result.skin ='wxlocal/Result/text_draw.png'
+            this.view.btnAgain.visible = true                        
+            break
+            case 4://胜利
+            this.view.result.skin = 'wxlocal/Result/text_victory.png'
+            this.view.btnAgain.visible = true            
+            break
+        }
+    }
+    onViewClick(e) {
+        switch (e.target.name) {
+            case 'btnAgain':
+                console.log(1234321)
+                this.goMatchScene()
+                // let gameScene = new GameScene()
+                // this.navigator.replaceSceneWith(gameScene)
+                break
+            case 'btnBack':
+                let scene = this.navigator.findSceneWithClass(MatchGradeScene)
+                this.navigator.popToScene(scene)
+                break
+            case 'btnShowy':
+                console.log('炫耀')
+                break
+            case 'btnChangeLuck':
+                console.log('更改')
+        }
+    }
+    goMatchScene(){
+        var type = PaoYa.DataCenter.config.game.match_type;
+        switch (MatchGradeScene.matchTypeId) {
+            case type[0].id:
+                // this.event(MatchGradeScene.goNovice)
+                MatchGradeScene.goNovice();
+                break;
+            case type[1].id:
+                MatchGradeScene.goPrimary();
+                break;
+            case type[2].id:
+                // this.event(MatchGradeScene.MIDDLE,{})
+                MatchGradeScene.goMiddle();
+                break;
+    }
+    }
+}

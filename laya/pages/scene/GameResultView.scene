@@ -2,7 +2,7 @@
     "x":0,
     "type":"Scene",
     "selectedBox":1,
-    "selecteID":3,
+    "selecteID":50,
     "props":{"width":750,"sceneColor":"#000000","isModal":true,"height":1334},
     "nodeParent":-1,
     "label":"Scene",
@@ -107,45 +107,6 @@
             "isAniNode":true,
             "hasChild":false,
             "compId":37,
-            "child":[
-                ]
-        },
-        {
-            "x":15,
-            "type":"Image",
-            "props":{"y":176,"x":699,"width":41,"skin":"wxlocal/Game/icon_end.png","sizeGrid":"39,0,8,0","height":530},
-            "nodeParent":1,
-            "label":"Image",
-            "isDirectory":false,
-            "isAniNode":true,
-            "hasChild":false,
-            "compId":38,
-            "child":[
-                ]
-        },
-        {
-            "x":15,
-            "type":"Image",
-            "props":{"y":200,"x":690,"skin":"wxlocal/Game/icon_girl1.png"},
-            "nodeParent":1,
-            "label":"Image",
-            "isDirectory":false,
-            "isAniNode":true,
-            "hasChild":false,
-            "compId":39,
-            "child":[
-                ]
-        },
-        {
-            "x":15,
-            "type":"Image",
-            "props":{"y":200,"x":708,"skin":"wxlocal/Game/icon_boy1.png"},
-            "nodeParent":1,
-            "label":"Image",
-            "isDirectory":false,
-            "isAniNode":true,
-            "hasChild":false,
-            "compId":40,
             "child":[
                 ]
         },
@@ -257,133 +218,40 @@
         },
         {
             "x":15,
-            "type":"Label",
-            "props":{"y":712,"x":411,"width":105,"text":"未完成","height":45,"fontSize":34,"font":"Microsoft YaHei","color":"#42C0C5","bold":true},
+            "type":"Box",
+            "props":{"y":625,"x":479,"var":"ownBeanBox"},
             "nodeParent":1,
-            "label":"Label",
-            "isDirectory":false,
+            "label":"ownBeanBox",
+            "isOpen":null,
+            "isDirectory":true,
             "isAniNode":true,
-            "hasChild":false,
-            "compId":9,
+            "hasChild":true,
+            "compId":58,
             "child":[
-                ]
-        },
-        {
-            "x":15,
-            "type":"Label",
-            "props":{"y":784,"x":318,"width":186,"text":"非常遗憾：","height":45,"fontSize":34,"font":"Microsoft YaHei","color":"#42C0C5","bold":true},
-            "nodeParent":1,
-            "label":"Label",
-            "isDirectory":false,
-            "isAniNode":true,
-            "hasChild":false,
-            "compId":10,
-            "child":[
-                ]
-        },
-        {
-            "x":15,
-            "type":"Sprite",
-            "props":{"y":785,"x":491,"texture":"wxlocal/Common/dz.png"},
-            "nodeParent":1,
-            "label":"Sprite",
-            "isDirectory":false,
-            "isAniNode":true,
-            "hasChild":false,
-            "compId":11,
-            "child":[
-                ]
-        },
-        {
-            "x":15,
-            "type":"Label",
-            "props":{"y":786,"x":541,"width":80,"text":"-200","height":46,"fontSize":35,"font":"Microsoft YaHei","color":"#fff","bold":true},
-            "nodeParent":1,
-            "label":"Label",
-            "isDirectory":false,
-            "isAniNode":true,
-            "hasChild":false,
-            "compId":12,
-            "child":[
-                ]
-        },
-        {
-            "x":15,
-            "type":"Sprite",
-            "props":{"y":624,"x":479,"texture":"wxlocal/Common/dz.png"},
-            "nodeParent":1,
-            "label":"Sprite",
-            "isDirectory":false,
-            "isAniNode":true,
-            "hasChild":false,
-            "compId":14,
-            "child":[
-                ]
-        },
-        {
-            "x":15,
-            "type":"Label",
-            "props":{"y":626,"x":537,"width":80,"text":"×200","height":46,"fontSize":35,"font":"Microsoft YaHei","color":"#ffe33c","bold":true},
-            "nodeParent":1,
-            "label":"Label",
-            "isDirectory":false,
-            "isAniNode":true,
-            "hasChild":false,
-            "compId":15,
-            "child":[
-                ]
-        },
-        {
-            "x":15,
-            "type":"Label",
-            "props":{"y":624,"x":305.5,"width":153,"text":"恭喜获得：","height":43,"fontSize":35,"font":"Microsoft YaHei","color":"#D5F9FF","bold":true},
-            "nodeParent":1,
-            "label":"Label",
-            "isDirectory":false,
-            "isAniNode":true,
-            "hasChild":false,
-            "compId":16,
-            "child":[
-                ]
-        },
-        {
-            "x":15,
-            "type":"Label",
-            "props":{"y":545,"x":303,"width":143,"text":"击败全国","height":43,"fontSize":35,"font":"Microsoft YaHei","color":"#D5F9FF","bold":true},
-            "nodeParent":1,
-            "label":"Label",
-            "isDirectory":false,
-            "isAniNode":true,
-            "hasChild":false,
-            "compId":17,
-            "child":[
-                ]
-        },
-        {
-            "x":15,
-            "type":"Label",
-            "props":{"y":547,"x":528,"width":114,"text":"的玩家","height":43,"fontSize":35,"font":"Microsoft YaHei","color":"#D5F9FF","bold":true},
-            "nodeParent":1,
-            "label":"Label",
-            "isDirectory":false,
-            "isAniNode":true,
-            "hasChild":false,
-            "compId":18,
-            "child":[
-                ]
-        },
-        {
-            "x":15,
-            "type":"Label",
-            "props":{"y":546,"x":451,"width":75,"text":"45%","height":42,"fontSize":35,"font":"Microsoft YaHei","color":"#ff9a38","bold":true},
-            "nodeParent":1,
-            "label":"Label",
-            "isDirectory":false,
-            "isAniNode":true,
-            "hasChild":false,
-            "compId":19,
-            "child":[
-                ]
+                {
+                    "type":"Sprite",
+                    "props":{"texture":"wxlocal/Common/dz.png"},
+                    "nodeParent":58,
+                    "label":"Sprite",
+                    "isDirectory":false,
+                    "isAniNode":true,
+                    "hasChild":false,
+                    "compId":14,
+                    "child":[
+                        ]
+                },
+                {
+                    "type":"Label",
+                    "props":{"y":2,"x":58,"width":80,"var":"ownBean","text":"×0","height":46,"fontSize":35,"font":"Microsoft YaHei","color":"#ffe33c","bold":true},
+                    "nodeParent":58,
+                    "label":"ownBean",
+                    "isDirectory":false,
+                    "isAniNode":true,
+                    "hasChild":false,
+                    "compId":15,
+                    "child":[
+                        ]
+                }]
         },
         {
             "x":15,
@@ -415,16 +283,17 @@
         {
             "x":15,
             "type":"Image",
-            "props":{"y":550,"x":168,"width":80,"skin":"wxlocal/Common/avstar.png","height":80},
+            "props":{"y":550,"x":168,"width":80,"var":"ownImage","skin":"wxlocal/Common/avstar.png","height":80},
             "nodeParent":1,
-            "label":"Image",
-            "isOpen":false,
+            "label":"ownImage",
+            "isOpen":true,
             "isDirectory":true,
             "isAniNode":true,
             "hasChild":true,
             "compId":24,
             "child":[
                 {
+                    "x":30,
                     "type":"Sprite",
                     "props":{"y":0,"x":0,"width":80,"renderType":"mask","height":80},
                     "nodeParent":24,
@@ -436,6 +305,7 @@
                     "compId":26,
                     "child":[
                         {
+                            "x":45,
                             "type":"Image",
                             "props":{"y":5,"x":5,"width":70,"skin":"wxlocal/Game/icon_girl.png","height":70},
                             "nodeParent":26,
@@ -447,7 +317,8 @@
                             "child":[
                                 ]
                         }]
-                }]
+                }],
+            "$HIDDEN":false
         },
         {
             "x":15,
@@ -465,9 +336,9 @@
         {
             "x":15,
             "type":"Image",
-            "props":{"y":717,"x":180,"width":80,"skin":"wxlocal/Common/avstar.png","height":80},
+            "props":{"y":717,"x":180,"width":80,"var":"oppoIcon","skin":"wxlocal/Common/avstar.png","height":80},
             "nodeParent":1,
-            "label":"Image",
+            "label":"oppoIcon",
             "isOpen":false,
             "isDirectory":true,
             "isAniNode":true,
@@ -515,9 +386,9 @@
         {
             "x":15,
             "type":"Label",
-            "props":{"y":633,"x":155,"width":123,"text":"泡泡大狮子","strokeColor":"#328aec","overflow":"hidden","height":35,"fontSize":24,"font":"Microsoft YaHei","color":"#F7FEFF","bold":true},
+            "props":{"y":633,"x":155,"width":123,"var":"ownName","text":"泡泡大狮子","strokeColor":"#328aec","overflow":"hidden","height":35,"fontSize":24,"font":"Microsoft YaHei","color":"#F7FEFF","bold":true,"align":"center"},
             "nodeParent":1,
-            "label":"Label",
+            "label":"ownName",
             "isDirectory":false,
             "isAniNode":true,
             "hasChild":false,
@@ -528,15 +399,260 @@
         {
             "x":15,
             "type":"Label",
-            "props":{"y":797,"x":155,"width":123,"text":"泡泡大狮子","strokeColor":"#328aec","overflow":"hidden","height":35,"fontSize":24,"font":"Microsoft YaHei","color":"#F7FEFF","bold":true},
+            "props":{"y":797,"x":155,"width":123,"var":"oppoName","text":"泡泡大狮子","strokeColor":"#328aec","overflow":"hidden","height":35,"fontSize":24,"font":"Microsoft YaHei","color":"#F7FEFF","bold":true,"align":"center"},
             "nodeParent":1,
-            "label":"Label",
+            "label":"oppoName",
             "isDirectory":false,
             "isAniNode":true,
             "hasChild":false,
             "compId":33,
             "child":[
                 ]
+        },
+        {
+            "x":15,
+            "type":"Box",
+            "props":{"y":545,"x":303,"var":"ownDofinish"},
+            "nodeParent":1,
+            "label":"ownDofinish",
+            "isOpen":true,
+            "isDirectory":true,
+            "isAniNode":true,
+            "hasChild":true,
+            "compId":48,
+            "child":[
+                {
+                    "x":30,
+                    "type":"Label",
+                    "props":{"y":79,"x":2,"width":153,"var":"ownEquality","text":"恭喜获得：","height":43,"fontSize":35,"font":"Microsoft YaHei","color":"#D5F9FF","bold":true},
+                    "nodeParent":48,
+                    "label":"ownEquality",
+                    "isDirectory":false,
+                    "isAniNode":true,
+                    "hasChild":false,
+                    "compId":16,
+                    "child":[
+                        ]
+                },
+                {
+                    "x":30,
+                    "type":"Label",
+                    "props":{"width":143,"text":"击败全国","height":43,"fontSize":35,"font":"Microsoft YaHei","color":"#D5F9FF","bold":true},
+                    "nodeParent":48,
+                    "label":"Label",
+                    "isDirectory":false,
+                    "isAniNode":true,
+                    "hasChild":false,
+                    "compId":17,
+                    "child":[
+                        ]
+                },
+                {
+                    "x":30,
+                    "type":"Label",
+                    "props":{"y":2,"x":225,"width":114,"text":"的玩家","height":43,"fontSize":35,"font":"Microsoft YaHei","color":"#D5F9FF","bold":true},
+                    "nodeParent":48,
+                    "label":"Label",
+                    "isDirectory":false,
+                    "isAniNode":true,
+                    "hasChild":false,
+                    "compId":18,
+                    "child":[
+                        ]
+                },
+                {
+                    "x":30,
+                    "type":"Label",
+                    "props":{"y":1,"x":148,"width":75,"var":"ownMoreNum","text":"45%","height":42,"fontSize":35,"font":"Microsoft YaHei","color":"#ff9a38","bold":true},
+                    "nodeParent":48,
+                    "label":"ownMoreNum",
+                    "isDirectory":false,
+                    "isAniNode":true,
+                    "hasChild":false,
+                    "compId":19,
+                    "child":[
+                        ]
+                }]
+        },
+        {
+            "x":15,
+            "type":"Box",
+            "props":{"y":712,"x":318,"var":"oppoUnfinish"},
+            "nodeParent":1,
+            "label":"oppoUnfinish",
+            "isOpen":null,
+            "isDirectory":true,
+            "isAniNode":true,
+            "hasChild":true,
+            "compId":49,
+            "child":[
+                {
+                    "type":"Label",
+                    "props":{"x":93,"width":105,"text":"未完成","height":45,"fontSize":34,"font":"Microsoft YaHei","color":"#42C0C5","bold":true},
+                    "nodeParent":49,
+                    "label":"Label",
+                    "isDirectory":false,
+                    "isAniNode":true,
+                    "hasChild":false,
+                    "compId":9,
+                    "child":[
+                        ]
+                },
+                {
+                    "type":"Label",
+                    "props":{"y":72,"width":186,"text":"非常遗憾：","height":45,"fontSize":34,"font":"Microsoft YaHei","color":"#42C0C5","bold":true},
+                    "nodeParent":49,
+                    "label":"Label",
+                    "isDirectory":false,
+                    "isAniNode":true,
+                    "hasChild":false,
+                    "compId":10,
+                    "child":[
+                        ]
+                }],
+            "$HIDDEN":false
+        },
+        {
+            "x":15,
+            "type":"Box",
+            "props":{"y":705,"x":306,"visible":false,"var":"oppoDofinish"},
+            "nodeParent":1,
+            "label":"oppoDofinish",
+            "isOpen":true,
+            "isDirectory":true,
+            "isAniNode":true,
+            "hasChild":true,
+            "compId":50,
+            "child":[
+                {
+                    "x":30,
+                    "type":"Label",
+                    "props":{"y":79,"x":2,"width":153,"var":"oppoTitle","text":"恭喜获得：","height":43,"fontSize":35,"font":"Microsoft YaHei","color":"#D5F9FF","bold":true},
+                    "nodeParent":50,
+                    "label":"oppoTitle",
+                    "isDirectory":false,
+                    "isAniNode":true,
+                    "hasChild":false,
+                    "compId":51,
+                    "child":[
+                        ]
+                },
+                {
+                    "x":30,
+                    "type":"Label",
+                    "props":{"width":143,"text":"击败全国","height":43,"fontSize":35,"font":"Microsoft YaHei","color":"#D5F9FF","bold":true},
+                    "nodeParent":50,
+                    "label":"Label",
+                    "isDirectory":false,
+                    "isAniNode":true,
+                    "hasChild":false,
+                    "compId":52,
+                    "child":[
+                        ]
+                },
+                {
+                    "x":30,
+                    "type":"Label",
+                    "props":{"y":2,"x":225,"width":114,"text":"的玩家","height":43,"fontSize":35,"font":"Microsoft YaHei","color":"#D5F9FF","bold":true},
+                    "nodeParent":50,
+                    "label":"Label",
+                    "isDirectory":false,
+                    "isAniNode":true,
+                    "hasChild":false,
+                    "compId":53,
+                    "child":[
+                        ]
+                },
+                {
+                    "x":30,
+                    "type":"Label",
+                    "props":{"y":1,"x":148,"width":75,"var":"oppoMoreNum","text":"45%","height":42,"fontSize":35,"font":"Microsoft YaHei","color":"#ff9a38","bold":true},
+                    "nodeParent":50,
+                    "label":"oppoMoreNum",
+                    "isDirectory":false,
+                    "isAniNode":true,
+                    "hasChild":false,
+                    "compId":54,
+                    "child":[
+                        ],
+                    "$HIDDEN":false
+                }],
+            "$HIDDEN":false
+        },
+        {
+            "x":15,
+            "type":"Box",
+            "props":{"y":553,"x":310,"visible":false,"var":"ownUndo"},
+            "nodeParent":1,
+            "label":"ownUndo",
+            "isOpen":null,
+            "isDirectory":true,
+            "isAniNode":true,
+            "hasChild":true,
+            "compId":55,
+            "child":[
+                {
+                    "type":"Label",
+                    "props":{"x":93,"width":105,"text":"未完成","height":45,"fontSize":34,"font":"Microsoft YaHei","color":"#42C0C5","bold":true},
+                    "nodeParent":55,
+                    "label":"Label",
+                    "isDirectory":false,
+                    "isAniNode":true,
+                    "hasChild":false,
+                    "compId":56,
+                    "child":[
+                        ]
+                },
+                {
+                    "type":"Label",
+                    "props":{"y":72,"width":186,"text":"非常遗憾：","height":45,"fontSize":34,"font":"Microsoft YaHei","color":"#42C0C5","bold":true},
+                    "nodeParent":55,
+                    "label":"Label",
+                    "isDirectory":false,
+                    "isAniNode":true,
+                    "hasChild":false,
+                    "compId":57,
+                    "child":[
+                        ]
+                }],
+            "$HIDDEN":true
+        },
+        {
+            "x":15,
+            "type":"Box",
+            "props":{"y":785,"x":491,"var":"oppoBeanBox"},
+            "nodeParent":1,
+            "label":"oppoBeanBox",
+            "isOpen":null,
+            "isDirectory":true,
+            "isAniNode":true,
+            "hasChild":true,
+            "compId":59,
+            "child":[
+                {
+                    "type":"Sprite",
+                    "props":{"texture":"wxlocal/Common/dz.png"},
+                    "nodeParent":59,
+                    "label":"Sprite",
+                    "isDirectory":false,
+                    "isAniNode":true,
+                    "hasChild":false,
+                    "compId":11,
+                    "child":[
+                        ]
+                },
+                {
+                    "type":"Label",
+                    "props":{"y":2,"x":50,"width":80,"var":"oppoBean","text":"x0","height":46,"fontSize":35,"font":"Microsoft YaHei","color":"#fff","bold":true},
+                    "nodeParent":59,
+                    "label":"oppoBean",
+                    "isDirectory":false,
+                    "isAniNode":true,
+                    "hasChild":false,
+                    "compId":12,
+                    "child":[
+                        ]
+                }]
         }],
     "animations":[
         {
