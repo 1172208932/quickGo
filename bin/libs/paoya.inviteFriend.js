@@ -60,7 +60,7 @@ var IFHostView = /** @class */ (function (_super) {
     function IFHostView() {
         return _super.call(this) || this;
     }
-    IFHostView.prototype.onEnable = function () {
+    IFHostView.prototype._initview = function () {
         this.toggleEnable(false);
         var myInfoView = new UserView();
         myInfoView.pos(57, 406);
@@ -82,7 +82,7 @@ var IFHostView = /** @class */ (function (_super) {
         this.btnInvite.clickHandler = Laya.Handler.create(this, function () {
             this.event(IFHostView.INVITE);
         }, null, false);
-        this.initTips();
+        // this.initTips();
     };
     IFHostView.prototype.getSceneUrl = function () {
         return "scene/InviteFriend/IFHostView.json";
@@ -141,6 +141,7 @@ var IFHostScene = /** @class */ (function (_super) {
                 _this.view.addChild(taskview);
             });
         }
+        this.view._initview();
         this.initView();
     };
     IFHostScene.prototype.onHide = function (res) {
@@ -225,7 +226,8 @@ var IFHostScene = /** @class */ (function (_super) {
         var title = PaoYa.DataCenter.config.game.share_list.randomItem;
         var params = {
             rname: PaoYa.DataCenter.rname,
-            type: PaoYa.ShareType.InviteFriend
+            type: 1,
+            id:PaoYa.DataCenter.user.id
         };
         PaoYa.ShareManager.shareTitle(title, params, function () {
         }, function () {
@@ -238,7 +240,7 @@ var IFMemberView = /** @class */ (function (_super) {
     function IFMemberView() {
         return _super.call(this) || this;
     }
-    IFMemberView.prototype.viewDidLoad = function () {
+    IFMemberView.prototype._initView = function () {
         var _this = this;
         var host = new UserView();
         host.centerX = 0;
@@ -252,7 +254,7 @@ var IFMemberView = /** @class */ (function (_super) {
         this.btnCancel.clickHandler = Laya.Handler.create(this, function () {
             _this.event(IFMemberView.CANCEL);
         }, null, false);
-        this.initTips();
+        // this.initTips();
     };
     IFMemberView.prototype.getSceneUrl = function () {
         return "scene/InviteFriend/IFMemberView.json";
@@ -282,13 +284,15 @@ var IFMemberView = /** @class */ (function (_super) {
     IFMemberView.AGREE = "agree";
     IFMemberView.CANCEL = "cancel";
     return IFMemberView;
-}(PaoYa.Scene));
+}(PaoYa.View));
 var IFMemberScene = /** @class */ (function (_super) {
     __extends(IFMemberScene, _super);
     function IFMemberScene(params) {
         var _this = _super.call(this) || this;
         _this.params = params;
         // this.initData()
+        var view = new IFMemberView();
+        _this.view = view;
         _this.joinRoom();
         return _this;
     }
@@ -299,21 +303,21 @@ var IFMemberScene = /** @class */ (function (_super) {
     };
     IFMemberScene.prototype.viewDidLoad = function () {
         var _this = this;
-        var view = new IFMemberView();
-        view.on(IFMemberView.CANCEL, this, function () {
+        this.view._initView();
+        this.view.on(IFMemberView.CANCEL, this, function () {
             PaoYa.Toast.showModal("提示", "确定退出房间?", "确定", function () {
                 _this.sendMessage(PaoYa.Client.LEAVE_ROOM, {});
                 _this.navigator.pop();
             }, "取消");
         });
-        view.on(IFMemberView.AGREE, this, function () {
+        this.view.on(IFMemberView.AGREE, this, function () {
             _this.sendMessage(PaoYa.Client.SHARE_START_GAME, { type: 1 });
         });
-        view.setUser({
+        this.view.setUser({
             name: "等待对方入场...",
             gender: ""
         });
-        this.view = view;
+        
     };
     IFMemberScene.prototype.onDisconnect = function () {
         var _this = this;
@@ -400,7 +404,7 @@ var InviteService = /** @class */ (function (_super) {
     }
     InviteService.prototype.handleOnShow = function (res) {
         var query = res.query;
-        if (query.type == PaoYa.ShareType.InviteFriend) {
+        if (query.type == 1) {
             var scene = PaoYa.Game.ins.navigator.visibleScene;
             if (!(scene instanceof IFHostScene) || !(scene instanceof IFMemberScene)) {
                 if (query.id != PaoYa.DataCenter.user.id) {
@@ -449,3 +453,4 @@ var InviteService = /** @class */ (function (_super) {
     InviteService.START_GAME = "start.game";
     return InviteService;
 }(Laya.EventDispatcher));
+window.InviteService = InviteService;

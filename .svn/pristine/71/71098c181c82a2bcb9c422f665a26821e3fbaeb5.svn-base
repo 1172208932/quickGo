@@ -1,0 +1,189 @@
+
+export default class PropertyBar extends Laya.View {
+    constructor() {
+        super()
+        this.indector = null
+        this._addChilds();
+        this._startPlay();
+        this.selectBox;
+    }
+
+    _addChilds() {
+        //添加选择框
+        let imgBg = new Laya.Image('wxlocal/Game/selectBox.png')
+        this.addChild(imgBg)
+        this.imgBg = imgBg;
+        imgBg.scaleX = 1.1;
+        imgBg.scaleY = 1.2;
+        //添加选择条
+        let indector = new Laya.Image('wxlocal/Game/icon_choose.png')
+        this.indector = indector;
+        this.indector.name = "indector";
+        this.indector.pos(0, 4)
+        this.addChild(indector);
+        //使用保护盾的提示信息添加到选择框位置
+        this.shieldBlockText = new Laya.Image('wxlocal/Game/text_shild.png')
+        this.addChild(this.shieldBlockText);
+        this.shieldBlockText.visible = false;
+        //使用加速的提示信息添加到选择框位置
+        this.speedUpText = new Laya.Image('wxlocal/Game/text_speedup.png')
+        this.addChild(this.speedUpText);
+        this.speedUpText.visible = false;
+
+        //使用水弹的提示信息添加到选择框位置
+        this.waterBombText = new Laya.Image('wxlocal/Game/text_waterbomb.png')
+        this.addChild(this.waterBombText);
+        this.waterBombText.visible = false;
+
+        //被对手水弹攻击晕眩的的提示信息添加到选择框位置
+        this.attractText = new Laya.Image('wxlocal/Game/text_dizzy.png')
+        this.addChild(this.attractText);
+        this.attractText.visible = false;
+
+        //设置两个空图片的位置
+        let skill1 = new Laya.Image();
+        let skill2 = new Laya.Image();
+        this.skill1 = skill1;
+        this.skill2 = skill2;
+        skill1.name = 'skill1';
+        skill2.name = 'skill2';
+        this.addChild(this.skill1)
+        this.addChild(this.skill2)
+        this.skill1.pos(0, 9.5)
+        this.skill1.pos(404, 9.5)
+
+
+    }
+
+    _startPlay() {
+        this._skillIcon();
+        if (this.selectBox == undefined) {
+            this.selectBox = Laya.TimeLine.to(this.indector, { x: 580 }, 3000).to(this.indector, { x: 0 }, 3000);
+        }
+        this.selectBox.play(0, true);
+    }
+    //两个同时随机，定位置
+    _randomPosition() {
+        let posArr = [4, 104, 204, 304, 404, 504];
+        let arr = this._randomFun(posArr)
+        return arr
+    }
+    //随机道具后，更换位置
+    _skillIcon() {
+        //1-护盾，2-加速，3-水弹
+        let posArr = this._randomPosition();
+        let skillArr = ["wxlocal/Game/icon_shild.png", "wxlocal/Game/icon_speedup.png", "wxlocal/Game/icon_waterbomb.png"];
+        this.skill1.skin = skillArr[Math.floor(Math.random() * 3)];
+        this.skill2.skin = skillArr[Math.floor(Math.random() * 3)];
+
+        this.skill1.pos(posArr[0], 9.5);
+        this.skill2.pos(posArr[1], 9.5);
+
+        this.skill1.visible = true;
+        this.skill2.visible = true;
+
+        let array = [];
+        array.push(this.skill1, this.skill2)
+        this.array = array;
+        // this.addChild(skill1)
+        // this.addChild(skill2)
+    }
+    //点击选择 道具
+    handleClick() {
+        let x = this.indector._x;
+        this.selectBox.pause();
+        let min = this.array[0]._x;
+        let max = this.array[0]._x + 87;
+        let min2 = this.array[1]._x;
+        let max2 = this.array[1]._x + 87;
+        let skin = "";
+        var _this = this
+
+        switch (true) {
+            case x >= min && x <= max:
+                _this.skin = this.array[0]._skin;
+                this._showDiaglog()
+                break;
+            case x >= min2 && x <= max2:
+                _this.skin = this.array[1]._skin;
+                this._showDiaglog()
+                break;
+            default:
+                this._selectEmpty()
+                _this.skin = null;
+                break;
+        }
+        return _this.skin
+    }
+    //随机位置
+    _randomFun(arr) {
+        var posArr = [];
+        for (var i = 0; i < 2; i++) {
+            var ran = Math.floor(Math.random() * (arr.length - i));
+            posArr.push(arr[ran]);
+            arr[ran] = arr[arr.length - i - 1];
+        };
+        return posArr
+    }
+    //未点击到任何道具
+    _selectEmpty() {
+        console.log("我是空")
+        Laya.timer.once(500, this, function () {
+            this.selectBox.resume()
+        });
+    }
+    //选中道具后，展示对应道具的提示框
+    _showDiaglog(x) {
+        this.skill1.visible = false;
+        this.skill2.visible = false;
+        console.log(this.getChildByName("skill1"))
+
+        this.indector.visible = false;
+        this.imgBg.visible = false;
+        var value = this.skin;
+        if (value == "wxlocal/Game/icon_waterbomb.png") {
+            this.waterBombText.visible = true;
+            this.waterBombText.pos(0, 0)
+        } else if (value == "wxlocal/Game/icon_speedup.png") {
+            this.speedUpText.visible = true;
+            this.speedUpText.pos(0, 0)
+        } else if (value == "wxlocal/Game/icon_shild.png") {
+            this.shieldBlockText.visible = true;
+            this.shieldBlockText.pos(0, 0)
+        }
+        Laya.timer.once(1500, this, this.refresh)
+    }
+    //如果受到水弹的攻击并产生晕眩效果
+    stun() {
+        console.log("收到攻击")
+        this.attractText.visible = true;
+        this.attractText.pos(-4, 0)
+        this._allVisible();
+        Laya.timer.once(1500, this, this._hideBox)
+    }
+    //
+    refresh() {
+        this.shieldBlockText.visible = false;
+        this.waterBombText.visible = false;
+        this.speedUpText.visible = false;
+        this._hideBox();
+    }
+    _hideBox() {
+        this.selectBox.pause()
+        this.indector.visible = true;
+        this.imgBg.visible = true;
+        this.attractText.visible = false;
+        this._startPlay();
+    }
+    _allVisible() {
+        this.shieldBlockText.visible = false;
+        this.skill1.visible = false;
+        this.skill2.visible = false;
+        this.waterBombText.visible = false;
+        this.speedUpText.visible = false;
+        this.indector.visible = false;
+        this.imgBg.visible = false;
+        this.selectBox.pause()
+    }
+
+}

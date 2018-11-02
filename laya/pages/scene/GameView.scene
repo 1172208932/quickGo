@@ -3,8 +3,10 @@
     "type":"Scene",
     "selectedBox":172,
     "selecteID":173,
+    "searchKey":"Scene",
     "props":{"width":750,"sceneColor":"#000000","height":1334},
     "nodeParent":-1,
+    "maxID":195,
     "label":"Scene",
     "isOpen":true,
     "isDirectory":true,
@@ -15,6 +17,7 @@
         {
             "x":15,
             "type":"Box",
+            "searchKey":"Box,playBox",
             "props":{"y":0,"x":0,"width":753,"var":"playBox","height":1643},
             "nodeParent":1,
             "label":"playBox",
@@ -27,6 +30,7 @@
                 {
                     "x":30,
                     "type":"Image",
+                    "searchKey":"Image",
                     "props":{"y":0,"skin":"wxlocal/Game/image_low.png"},
                     "nodeParent":172,
                     "label":"Image",
@@ -42,17 +46,20 @@
                     "type":"Panel",
                     "selectedBox":177,
                     "selecteID":190,
+                    "searchKey":"Panel,panel",
                     "props":{"y":0,"x":0,"width":750,"var":"panel","height":1334},
                     "nodeParent":172,
                     "label":"panel",
-                    "isOpen":false,
+                    "isOpen":true,
                     "isDirectory":true,
                     "isAniNode":true,
                     "hasChild":true,
                     "compId":173,
                     "child":[
                         {
+                            "x":45,
                             "type":"Image",
+                            "searchKey":"Image,bgn1",
                             "props":{"y":0,"x":0,"name":"bgn1"},
                             "nodeParent":173,
                             "label":"bgn1",
@@ -64,7 +71,9 @@
                                 ]
                         },
                         {
+                            "x":45,
                             "type":"Image",
+                            "searchKey":"Image,bgn2",
                             "props":{"x":0,"name":"bgn2"},
                             "nodeParent":173,
                             "label":"bgn2",
@@ -76,19 +85,23 @@
                                 ]
                         },
                         {
+                            "x":45,
                             "type":"Box",
+                            "searchKey":"Box,bgBox",
                             "props":{"name":"bgBox"},
                             "nodeParent":173,
                             "label":"bgBox",
-                            "isOpen":false,
+                            "isOpen":true,
                             "isDirectory":true,
                             "isAniNode":true,
                             "hasChild":true,
                             "compId":190,
                             "child":[
                                 {
+                                    "x":60,
                                     "type":"Image",
-                                    "props":{"y":-4,"x":0,"skin":"wxlocal/Game/icon_wave.png","name":"bg1"},
+                                    "searchKey":"Image,bg1",
+                                    "props":{"x":0,"visible":false,"skin":"wxlocal/Game/icon_wave.png","name":"bg1"},
                                     "nodeParent":190,
                                     "label":"bg1",
                                     "isDirectory":false,
@@ -99,8 +112,10 @@
                                         ]
                                 },
                                 {
+                                    "x":60,
                                     "type":"Image",
-                                    "props":{"y":182,"x":0,"skin":"wxlocal/Game/icon_wave1.png","name":"bg2"},
+                                    "searchKey":"Image,bg2",
+                                    "props":{"y":182,"x":0,"visible":false,"skin":"wxlocal/Game/icon_wave1.png","name":"bg2"},
                                     "nodeParent":190,
                                     "label":"bg2",
                                     "isDirectory":false,
@@ -111,8 +126,10 @@
                                         ]
                                 },
                                 {
+                                    "x":60,
                                     "type":"Image",
-                                    "props":{"y":405,"x":0,"skin":"wxlocal/Game/icon_wave.png","name":"bg3"},
+                                    "searchKey":"Image,bg3",
+                                    "props":{"y":405,"x":0,"visible":false,"skin":"wxlocal/Game/icon_wave.png","name":"bg3"},
                                     "nodeParent":190,
                                     "label":"bg3",
                                     "isDirectory":false,
@@ -123,8 +140,10 @@
                                         ]
                                 },
                                 {
+                                    "x":60,
                                     "type":"Image",
-                                    "props":{"y":588,"x":0,"skin":"wxlocal/Game/icon_wave1.png","name":"bg4"},
+                                    "searchKey":"Image,bg4",
+                                    "props":{"y":588,"x":0,"visible":false,"skin":"wxlocal/Game/icon_wave1.png","name":"bg4"},
                                     "nodeParent":190,
                                     "label":"bg4",
                                     "isDirectory":false,
@@ -135,8 +154,10 @@
                                         ]
                                 },
                                 {
+                                    "x":60,
                                     "type":"Image",
-                                    "props":{"y":812,"x":0,"skin":"wxlocal/Game/icon_wave.png","name":"bg5"},
+                                    "searchKey":"Image,bg5",
+                                    "props":{"y":812,"x":0,"visible":false,"skin":"wxlocal/Game/icon_wave.png","name":"bg5"},
                                     "nodeParent":190,
                                     "label":"bg5",
                                     "isDirectory":false,
@@ -147,8 +168,10 @@
                                         ]
                                 },
                                 {
+                                    "x":60,
                                     "type":"Image",
-                                    "props":{"y":994,"x":0,"skin":"wxlocal/Game/icon_wave1.png","name":"bg6"},
+                                    "searchKey":"Image,bg6",
+                                    "props":{"y":994,"x":0,"visible":false,"skin":"wxlocal/Game/icon_wave1.png","name":"bg6"},
                                     "nodeParent":190,
                                     "label":"bg6",
                                     "isDirectory":false,
@@ -159,8 +182,10 @@
                                         ]
                                 },
                                 {
+                                    "x":60,
                                     "type":"Image",
-                                    "props":{"y":1220,"x":0,"skin":"wxlocal/Game/icon_wave.png","name":"bg7"},
+                                    "searchKey":"Image,bg7",
+                                    "props":{"y":1220,"x":0,"visible":false,"skin":"wxlocal/Game/icon_wave.png","name":"bg7"},
                                     "nodeParent":190,
                                     "label":"bg7",
                                     "isDirectory":false,
@@ -172,7 +197,9 @@
                                 }]
                         },
                         {
+                            "x":45,
                             "type":"Image",
+                            "searchKey":"Image,endLine",
                             "props":{"y":0,"x":0,"name":"endLine"},
                             "nodeParent":173,
                             "label":"endLine",
@@ -184,9 +211,11 @@
                                 ]
                         },
                         {
+                            "x":45,
                             "type":"Script",
                             "switchAble":true,
                             "source":"src/common/GameBg.js",
+                            "searchKey":"Script,GameBg",
                             "removeAble":true,
                             "props":{"endLength":1000,"enabled":true},
                             "nodeParent":173,
@@ -211,6 +240,7 @@
                 {
                     "x":30,
                     "type":"Image",
+                    "searchKey":"Image",
                     "props":{"y":176,"x":699,"width":41,"skin":"wxlocal/Game/icon_end.png","sizeGrid":"39,0,8,0","height":530},
                     "nodeParent":172,
                     "label":"Image",
@@ -224,6 +254,7 @@
                 {
                     "x":30,
                     "type":"Image",
+                    "searchKey":"Image,owne",
                     "props":{"y":690,"x":690,"var":"owne","skin":"wxlocal/Game/icon_girl1.png"},
                     "nodeParent":172,
                     "label":"owne",
@@ -237,6 +268,7 @@
                 {
                     "x":30,
                     "type":"Image",
+                    "searchKey":"Image,oppo",
                     "props":{"y":690,"x":708,"var":"oppo","skin":"wxlocal/Game/icon_boy1.png"},
                     "nodeParent":172,
                     "label":"oppo",
@@ -250,6 +282,7 @@
                 {
                     "x":30,
                     "type":"Image",
+                    "searchKey":"Image",
                     "props":{"y":-1,"x":0,"visible":false,"skin":"wxlocal/Game/image_end.png"},
                     "nodeParent":172,
                     "label":"Image",
@@ -264,6 +297,7 @@
                 {
                     "x":30,
                     "type":"Box",
+                    "searchKey":"Box,myInfo,myInfo",
                     "props":{"y":122,"x":2,"var":"myInfo","name":"myInfo"},
                     "nodeParent":172,
                     "label":"myInfo",
@@ -276,6 +310,7 @@
                         {
                             "x":45,
                             "type":"Image",
+                            "searchKey":"Image",
                             "props":{"y":0,"x":0,"skin":"wxlocal/Game/icon_picfra.png"},
                             "nodeParent":134,
                             "label":"Image",
@@ -290,6 +325,7 @@
                         {
                             "x":45,
                             "type":"Label",
+                            "searchKey":"Label,txtNameSelf",
                             "props":{"y":30,"x":95,"width":106,"var":"txtNameSelf","text":"海绵一号","strokeColor":"#F7FEFF","height":41,"fontSize":24,"font":"Microsoft YaHei","color":"#F7FEFF","bold":true,"align":"center"},
                             "nodeParent":134,
                             "label":"txtNameSelf",
@@ -304,6 +340,7 @@
                         {
                             "x":45,
                             "type":"Image",
+                            "searchKey":"Image,imgHeadSelf",
                             "props":{"y":5.5,"x":-2,"width":80,"var":"imgHeadSelf","skin":"wxlocal/Common/avstar.png","runtime":"PaoYa.RoundImageView","height":80},
                             "nodeParent":134,
                             "label":"imgHeadSelf",
@@ -315,6 +352,7 @@
                             "child":[
                                 {
                                     "type":"Sprite",
+                                    "searchKey":"Sprite",
                                     "props":{"y":0,"x":0,"width":80,"renderType":"mask","height":80},
                                     "nodeParent":148,
                                     "label":"Sprite",
@@ -326,6 +364,7 @@
                                     "child":[
                                         {
                                             "type":"Image",
+                                            "searchKey":"Image",
                                             "props":{"y":5,"x":5,"width":70,"skin":"wxlocal/Game/icon_girl.png","height":70},
                                             "nodeParent":149,
                                             "label":"Image",
@@ -341,6 +380,7 @@
                         {
                             "x":45,
                             "type":"Image",
+                            "searchKey":"Image,MyGender",
                             "props":{"y":58,"x":47,"var":"MyGender","skin":"wxlocal/Game/icon_girl.png"},
                             "nodeParent":134,
                             "label":"MyGender",
@@ -356,6 +396,7 @@
                 {
                     "x":30,
                     "type":"Box",
+                    "searchKey":"Box,otherInfo,otherInfo",
                     "props":{"y":228,"x":2,"var":"otherInfo","name":"otherInfo"},
                     "nodeParent":172,
                     "label":"otherInfo",
@@ -368,6 +409,7 @@
                         {
                             "x":45,
                             "type":"Image",
+                            "searchKey":"Image",
                             "props":{"y":0,"x":0,"skin":"wxlocal/Game/icon_picfra.png"},
                             "nodeParent":135,
                             "label":"Image",
@@ -382,6 +424,7 @@
                         {
                             "x":45,
                             "type":"Label",
+                            "searchKey":"Label,txtNameOther",
                             "props":{"y":29,"x":95,"width":106,"var":"txtNameOther","text":"海绵一号","height":41,"fontSize":24,"font":"Microsoft YaHei","color":"#F7FEFF","bold":true,"align":"center"},
                             "nodeParent":135,
                             "label":"txtNameOther",
@@ -396,6 +439,7 @@
                         {
                             "x":45,
                             "type":"Image",
+                            "searchKey":"Image,imgHeadOther",
                             "props":{"y":5.5,"x":-2,"width":80,"var":"imgHeadOther","skin":"wxlocal/Common/avstar.png","runtime":"PaoYa.RoundImageView","height":80},
                             "nodeParent":135,
                             "label":"imgHeadOther",
@@ -407,6 +451,7 @@
                             "child":[
                                 {
                                     "type":"Sprite",
+                                    "searchKey":"Sprite",
                                     "props":{"y":0,"x":0,"width":80,"renderType":"mask","height":80},
                                     "nodeParent":155,
                                     "label":"Sprite",
@@ -418,6 +463,7 @@
                                     "child":[
                                         {
                                             "type":"Image",
+                                            "searchKey":"Image",
                                             "props":{"y":5,"x":5,"width":70,"skin":"wxlocal/Game/icon_girl.png","height":70},
                                             "nodeParent":156,
                                             "label":"Image",
@@ -433,6 +479,7 @@
                         {
                             "x":45,
                             "type":"Image",
+                            "searchKey":"Image,otherGender",
                             "props":{"y":56.5,"x":50,"var":"otherGender","skin":"wxlocal/Game/icon_boy.png"},
                             "nodeParent":135,
                             "label":"otherGender",
@@ -448,6 +495,7 @@
                 {
                     "x":30,
                     "type":"Image",
+                    "searchKey":"Image",
                     "props":{"y":815,"x":82,"width":603,"visible":false,"skin":"wxlocal/Game/icon_state_s.png","sizeGrid":"6,6,6,6","height":107},
                     "nodeParent":172,
                     "label":"Image",
@@ -460,6 +508,7 @@
                         {
                             "x":45,
                             "type":"Image",
+                            "searchKey":"Image",
                             "props":{"y":30.5,"x":129,"skin":"wxlocal/Game/text_dizzy.png"},
                             "nodeParent":143,
                             "label":"Image",
@@ -475,6 +524,7 @@
                 {
                     "x":30,
                     "type":"Box",
+                    "searchKey":"Box,controlPanel,controlPanel",
                     "props":{"y":959,"x":74,"width":611,"var":"controlPanel","name":"controlPanel","height":356},
                     "nodeParent":172,
                     "label":"controlPanel",
@@ -487,6 +537,7 @@
                         {
                             "x":45,
                             "type":"Image",
+                            "searchKey":"Image",
                             "props":{"skin":"wxlocal/Game/icon_gridlins.png"},
                             "nodeParent":194,
                             "label":"Image",
@@ -500,6 +551,7 @@
                         {
                             "x":45,
                             "type":"Image",
+                            "searchKey":"Image",
                             "props":{"y":350,"x":610,"skin":"wxlocal/Game/icon_gridlins.png","rotation":180},
                             "nodeParent":194,
                             "label":"Image",
@@ -513,6 +565,7 @@
                         {
                             "x":45,
                             "type":"Label",
+                            "searchKey":"Label",
                             "props":{"y":138,"x":43,"width":520,"text":"把握时机！点击屏幕选择道具","height":74,"fontSize":40,"font":"Microsoft YaHei","color":"#FEFEFE","bold":true,"alpha":0.6},
                             "nodeParent":194,
                             "label":"Label",

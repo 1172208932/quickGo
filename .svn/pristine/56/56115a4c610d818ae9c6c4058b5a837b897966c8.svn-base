@@ -1,0 +1,132 @@
+import SpineConfig from '../SpineConfig'
+export default class MatchGradeView extends PaoYa.View{
+    constructor(params){
+        super();
+        this.params = params;
+        console.log('3333333333333333',this.params)
+    }
+
+    getSceneUrl(){
+        return 'scene/MatchGrade.json';
+    }
+
+    onEnable(){
+        this.shield = new Laya.Skeleton(SpineConfig.fen_xiang.templet);
+        this.shield.pivot(0.5,0.5)            
+        this.shield.pos(626, 332)
+        this.shield.play(0 , true);
+        this.shield.size(200,200)
+        // this.shield.on(Laya.Event.CLICK,this,function(){
+        //     console.log(123)
+        //     this.owner.toGetProp()
+        // })
+        this.addChild(this.shield);
+        this.winRewardArr = this.winReward._children;
+        this.goldLimitArr = this.goldLimit._children;
+        this.peopleArr = this.peopleNum._children;
+        this.currentId = 0;//推荐场次id 
+        this.fields = [];
+        this.initView();
+    }
+
+    initView() {
+        this.btnPropGet.on(Laya.Event.CLICK,this,function(){
+            this.owner.toGetProp()
+        })
+        this.noviceField.on(Laya.Event.CLICK, this, function () {
+            console.log('chuji')
+            this.event(MatchGradeView.NOVICE, null);
+        })
+        this.primaryField.on(Laya.Event.CLICK, this, function () {
+            this.event(MatchGradeView.PRIMARY, null);
+        })
+        this.middleField.on(Laya.Event.CLICK, this, function () {
+            this.event(MatchGradeView.MIDDLE, null);
+        })
+        this.quickMatch.on(Laya.Event.CLICK, this, function () {
+            this.event(MatchGradeView.QUICKMATCH, null);
+        })
+        // //充值
+        // this.goldView.on(Laya.Event.CLICK, this, function () {
+        //     this.event(MatchGradeView.CHARGE,null);
+        // })
+        // //提现
+        // this.moneyView.on(Laya.Event.CLICK, this, function () {
+        //     PaoYa.DataTrack.trackType(PaoYa.DataTrackType.WithDraw)
+        //     this.event(MatchGradeView.TIXIAN, null);
+        // })
+        //返回
+        // this.backBtn.clickHandler=Laya.Handler.create(this,function(){
+        //     this.event(MatchGradeView.BACK,MatchGradeView.BACK);
+        // },null,false);
+        //绘制圆形头像
+       // this.imgIcon.fillCircleTexture();
+
+        this.fields = [this.noviceField, this.primaryField, this.middleField];
+        var length = this.params.length;
+        for (var i = 0; i < length; i++) {
+            this.winRewardArr[i].text = this.params[i].cost;
+            this.fields[i].goldLimit = this.params[i].limit.split("-");
+            this.fields[i].quickLimit=this.params[i].quick_limit.split("-");
+            this.fields[i].id = this.params[i].id;
+            if (this.fields[i].goldLimit.length > 1) {
+                this.goldLimitArr[i].text = this.params[i].limit
+            } else {
+                this.goldLimitArr[i].text = this.params[i].limit + "以上";
+            }
+        }
+
+        
+    }
+    //设置参赛人数
+   setPeopleCount(data) {
+        for (var i = 0; i < data.length; i++) {
+            this.peopleArr[i].text = data[i].count;
+        }
+    }
+    
+    setQuickMatchSession(gold) {
+        if (gold > this.fields[2].quickLimit[0]) {
+            this.sessionText.text = "中级场";
+            this.currentId = this.fields[2].id;
+        } else if (this.fields[1].quickLimit[0] <= gold && gold <= this.fields[1].quickLimit[1]) {
+            this.sessionText.text = "初级场";
+            this.currentId = this.fields[1].id;
+        } else{
+            this.sessionText.text = "新手场";
+            this.currentId = this.fields[0].id;
+        }
+       PaoYa.DataCenter.currentId=this.currentId;
+
+
+       //置灰
+    //    console.log(this.fields)
+    //    if(gold>this.fields[0].goldLimit[1]){
+    //        this.noviceField.disabled=true;
+    //    }
+    //    if(gold>this.fields[1].goldLimit.length > 1){
+    //        if(gold<this.fields[1].goldLimit[0]){
+    //            this.primaryField.disabled=true;
+    //        }
+    //        if(gold>this.fields[1].goldLimit[1]){
+    //            this.primaryField.disabled=true;
+    //        }
+    //    }
+    //    else{
+    //        if(gold<this.fields[1].goldLimit){
+    //            this.primaryField.disabled=true;
+    //        }
+    //    }
+    //    if(gold<this.fields[2].goldLimit){
+    //        this.middleField.disabled=true;
+    //    }
+    }
+}
+
+MatchGradeView.NOVICE = "novice";
+MatchGradeView.PRIMARY = "primary";
+MatchGradeView.MIDDLE = "middle";
+MatchGradeView.QUICKMATCH = "quickMatch";
+MatchGradeView.CHARGE="charge";
+MatchGradeView.TIXIAN="tixian";
+MatchGradeView.BACK="back";

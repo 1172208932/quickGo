@@ -1,0 +1,48 @@
+import MatchGradeScene from "../MatchGrade/MatchGradeScene";
+
+export default class GetPropDialog extends PaoYa.Dialog {
+    constructor() {
+        super()
+    }
+    getSceneUrl(){
+        return 'scene/dialog/GetPropDialog.json'
+    }
+    onEnable() {
+        this.btnGetProp.on(Laya.Event.CLICK, this, function () {
+            PaoYa.ShareManager.share(PaoYa.DataCenter.config.game.share_list.randomItem, PaoYa.DataCenter.config.game.share_img.randomItem, {}, function () {
+                // _this.changeDialog()
+            });
+        })
+        this.btnUseProp.on(Laya.Event.CLICK, this, function () {
+            this.close()
+            MatchGradeScene.quickMatch()
+        })
+    }
+    changeDialog() {
+            this.btnGetProp.skin = 'wxlocal/Share/btn_imuse.png'
+            this.title.text = '恭喜获得'
+            this.propName.visible = true
+            this.btnGetProp.visible = false
+            this.btnUseProp.visible = true
+            this.propIcon.width = 160
+            this.propIcon.height = 160
+            let num = parseInt(3 * Math.random()) + 1
+            switch (num) {
+                case 1:
+                    this.propName.text = '泡泡护盾'
+                    this.propIcon.texture = 'wxlocal/Game/icon_shild.png'  
+                    PaoYa.DataCenter.firstProp = 1 
+                    break
+                case 2:
+                    this.propName.text = '加速冲刺'
+                    this.propIcon.texture = 'wxlocal/Game/icon_speedup.png'
+                    PaoYa.DataCenter.firstProp = 2
+                    break
+                case 3:
+                    this.propName.text = '泡泡水弹'
+                    this.propIcon.texture = 'wxlocal/Game/icon_waterbomb.png'
+                    PaoYa.DataCenter.firstProp = 3
+                    break
+            }
+    }
+}

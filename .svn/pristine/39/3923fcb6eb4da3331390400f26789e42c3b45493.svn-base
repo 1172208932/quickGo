@@ -1,0 +1,105 @@
+import GameResultView from "./GameResultView";
+import GameScene from "../game/GameScene";
+import MatchGradeScene from '../MatchGrade/MatchGradeScene'
+import Sound from "../common/Sound";
+import ShareDialog from "../dialog/ShareDialog";
+import HomeScene from "../Home/HomeScene";
+// import SelectGameScene from "../Home/SelectGameScene";
+
+export default class GameResultScene extends PaoYa.Scene {
+    constructor(e, data) {
+        super()
+        this.view = new GameResultView(e, data, PaoYa.DataCenter.matchSUccessData)
+        this.shareBean = false
+    }
+    viewDidAppear() {
+        var _this = this;
+        this.GET("/props_refresh_time_get", { type: 0 }, function (data) {
+            if (data.is_get == 1) {
+                PaoYa.DataCenter.isGet = true
+            } else {
+                PaoYa.DataCenter.isGet = false
+            }
+        })
+    }
+    viewDidLoad() {
+        Sound.onPlayHomeMusic()
+
+    }
+    onViewClick(e) {
+        switch (e.target.name) {
+            case 'btnAgain':
+                if (PaoYa.DataCenter.gameType == "friend") {
+                    var gameScene = new GameScene(PaoYa.DataCenter.game_params)
+                    PaoYa.Game.ins.navigator.push(gameScene);
+                } else {
+                    this.goMatchScene()
+                }
+                break
+            case 'btnBack':
+            if (PaoYa.DataCenter.gameType == "friend") {
+                let scene = this.navigator.findSceneWithClass(HomeScene)
+                this.navigator.popToScene(scene)
+            }else{
+                let scene = this.navigator.findSceneWithClass(MatchGradeScene)
+                this.navigator.popToScene(scene)
+            }
+                break
+            case 'btnShowy':
+                PaoYa.ShareManager.share(PaoYa.DataCenter.config.game.share_list.randomItem, PaoYa.DataCenter.config.game.share_img.randomItem, {}, function () { });
+                break
+            case 'btnChangeLuck':
+                console.log('更改')
+                var _this = this;
+                Service.navigateToMiniProgram({
+                    appId: _this.jumpInfo.appId,
+                    images: [_this.jumpInfo.img]
+                });
+                break
+            case 'btnShowGigt':
+                this.shareBean = true
+                PaoYa.ShareManager.share(PaoYa.DataCenter.config.game.share_list.randomItem, PaoYa.DataCenter.config.game.share_img.randomItem, {}, function () { });
+                break
+            case 'btnCheat':
+            if (PaoYa.DataCenter.gameType == "friend") {
+                let scene = this.navigator.findSceneWithClass(HomeScene)
+                this.navigator.popToScene(scene)
+            }else{
+                let toMatch = new MatchGradeScene(1)
+                this.navigator.push(toMatch)
+            }
+                break
+        }
+    }
+    goMatchScene() {
+        var type = PaoYa.DataCenter.config.game.match_type;
+        switch (MatchGradeScene.matchTypeId) {
+            case type[0].id:
+                // this.event(MatchGradeScene.goNovice)
+                MatchGradeScene.goNovice();
+                break;
+            case type[1].id:
+                MatchGradeScene.goPrimary();
+                break;
+            case type[2].id:
+                // this.event(MatchGradeScene.MIDDLE,{})
+                MatchGradeScene.goMiddle();
+                break;
+        }
+    }
+    onShow() {
+        this.view.btnShowy.disabled = true
+        this.view.btnShowGigt.disabled = true
+        this.view.btnChangeLuck.disabled = true
+        this.view.btnCheat.disabled = true
+        if (this.shareBean) {
+            // let shareDialog = new ShareDialog()
+            // shareDialog.popup()
+            Laya.Scene.open('scene/dialog/ShareDialog.json')
+            this.POST('/surfing_win_reward', {}, function (data) {
+                console.log('得到豆子', data)
+            })
+            this.shareBean = false
+        }
+    }
+}

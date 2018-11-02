@@ -1,9 +1,8 @@
+import SpineConfig from '../SpineConfig'
 export default class GameBg extends Laya.Script {
     /** @prop {name:ownSpeed,tips:"自身(背景)的速度：0,2,4",type:int,default:2}*/
     /** @prop {name:oppoSpeed,tips:"对手的速度：0,2,4",type:int,default:2}*/
     /** @prop {name:endLength,tips:"总长度",type:int,default:8000}*/
-    
-    
     constructor() {
         super()
         this.init();
@@ -15,8 +14,8 @@ export default class GameBg extends Laya.Script {
         // 总长度
         this.endLength = 8000
         // 百分比
-        this.ownPercent 
-        this.oppoPercent 
+        this.ownPercent
+        this.oppoPercent
         // 结果
         this.resOut
 
@@ -37,6 +36,17 @@ export default class GameBg extends Laya.Script {
     }
     onEnable() {
         this._box = this.owner.getChildByName('bgBox')
+
+        this.shield = new Laya.Skeleton(SpineConfig.wave.templet);
+        // this.shield.pivot(1,1)            
+        this.shield.pos(375, 203)
+        this.shield.play(0, true);
+        // this.shield.size(750, 224)
+        this._box.addChild(this.shield);
+
+
+
+
         this._bgn1 = this.owner.getChildByName('bgn1')
         this._bgn2 = this.owner.getChildByName('bgn2')
         this._endLine = this.owner.getChildByName('endLine')
@@ -47,22 +57,26 @@ export default class GameBg extends Laya.Script {
         this._bgn1.pos(0, -406)
         this._bgn2.pos(0, -224)
     }
+    timeBegin() {//
+        this.ownSpeed = 2
+        this.sdCan = true
+    }
+    oppoTime() {
+        this.oppoSpeed = 2
+        this.oppoCan = true
+    }
     onUpdate() {
         this.ownPercent = this.length / this.endLength
         this.oppoPercent = this.oppoLength / this.endLength
         if (this.ownSpeed != 2 && this.sdCan) {
-            Laya.timer.once(1500, this, function () {
-                console.log('doale')
-                this.ownSpeed = 2
-                this.sdCan = true
-            })
+            Laya.timer.clear(this, this.timeBegin)
+            Laya.timer.once(1500, this, this.timeBegin)
             this.sdCan = false
         }
+
         if (this.oppoSpeed != 2 && this.oppoCan) {
-            Laya.timer.once(1500, this, function () {
-                this.oppoSpeed = 2
-                this.oppoCan = true
-            })
+            Laya.timer.clear(this, this.oppoTime)
+            Laya.timer.once(1500, this, this.oppoTime)
             this.oppoCan = false
         }
         if (this._bgn1.y >= 0) {
@@ -100,4 +114,7 @@ export default class GameBg extends Laya.Script {
             this.beginGo = false
         }
     }
+    // onDestroy(){
+    //     // Laya.Timer.clear(this)
+    // }
 }

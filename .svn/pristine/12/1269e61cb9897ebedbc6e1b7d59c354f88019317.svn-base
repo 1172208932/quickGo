@@ -1,0 +1,11 @@
+import RankingListView from "./RankingListView";
+
+export default class RankingListScene extends PaoYa.Scene{
+    constructor(){super()
+        let rankView = new RankingListView()
+        this.view = rankView
+    }
+    onViewClick(){
+        
+    }
+}

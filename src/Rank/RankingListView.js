@@ -1,0 +1,71 @@
+export default class RankingListView extends PaoYa.View {
+    constructor() { super() }
+    getSceneUrl() {
+        return 'scene/RankingListView.json';
+    }
+    onEnable() {
+        // var data = [];
+        this.btnRanking.on(Laya.Event.CLICK,this,function(){
+            this.btnRanking.skin = 'wxlocal/Rank/btn_winnumb_p.png'
+            this.btnRankingFriend.skin = 'wxlocal/Rank/btn_budlist_n.png'
+            this.wxBox.visible = false
+            this.rankingList.visible = true
+        })
+        this.btnRankingFriend.on(Laya.Event.CLICK,this,function(){
+            this.btnRanking.skin = 'wxlocal/Rank/btn_budlist_n.png'
+            this.btnRankingFriend.skin = 'wxlocal/Rank/btn_budlist_p.png'
+            this.wxBox.visible = true   
+            this.rankingList.visible = false
+        })
+    
+    }
+    setList(data){
+         for (var m = 0; m < data.list.length; m++) {
+            data.list[m].labelRanking=m+1;
+         }
+        console.log(data)
+        
+        this.ownRanking.text = data.ranking
+        this.ownPhoto.skin = data.member_avstar
+        this.ownName.text = data.member_nick
+        this.ownScore.text = data.score+'局'
+
+
+        this.rankingList.array = data.list;
+        // this.rankingList.vScrollBarSkin = '';
+        this.rankingList.scrollBar.hide = true;//隐藏列表的滚动条。
+        this.rankingList.scrollBar.elasticBackTime = 200;//设置橡皮筋回弹时间。单位为毫秒。
+        this.rankingList.scrollBar.elasticDistance = 50;//设置橡皮筋极限距离。
+
+        this.rankingList.renderHandler = new Laya.Handler(this, updateItem);
+        function updateItem(cell, index) { 
+            if (index > data.length) return
+            var nameBg = cell.getChildByName('nameBg')
+            var scoreNum = cell.getChildByName('scoree')
+            var listIcon = cell.getChildByName('listIcon')
+  
+            
+            if((index % 2) != 0){
+                nameBg.visible = true
+            }
+            switch(index){
+                case 0:
+                listIcon.texture = 'wxlocal/Rank/icon_first.png'
+                listIcon.visible = true
+                    break
+                case 1:
+                listIcon.texture = 'wxlocal/Rank/icon_second.png'
+                listIcon.visible = true
+                    break
+                case 2:
+                listIcon.texture = 'wxlocal/Rank/icon_third.png'
+                listIcon.visible = true
+                    break
+                default:
+                listIcon.visible = false
+                break
+            }
+            scoreNum.text = data.list[index].score+'局'
+        }
+    }
+}

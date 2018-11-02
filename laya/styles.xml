@@ -5,16 +5,47 @@
    <item name="wxlocal/Role/icon_picfra_small.png" type="Image" compress="0" pack="0" quality="80" props="" picType="0" scale="0"/>
    <item name="wxlocal/Role/icon_picfra_glow.png" type="Image" compress="0" pack="0" quality="80" props="" picType="0" scale="0"/>
    <item name="wxlocal/Role/mask_small.png" type="Image" compress="0" pack="0" quality="80" props="" picType="0" scale="0"/>
-   <item name="wxlocal/Result/text_victory.png" type="Image" compress="0" pack="0" quality="80" props="" picType="0" scale="0"/>
-   <item name="wxlocal/Result/text_failure.png" type="Image" compress="0" pack="0" quality="80" props="" picType="0" scale="0"/>
-   <item name="wxlocal/Result/text_draw.png" type="Image" compress="0" pack="0" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/Result/text_victory.png" type="Image" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/Result/text_failure.png" type="Image" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/Result/text_draw.png" type="Image" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
    <item name="wxlocal/Share/icon_fram.png" type="Image" compress="0" pack="0" quality="80" props="" picType="0" scale="0"/>
    <item name="wxlocal/loading/01.png" type="Sprite" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
    <item name="wxlocal/loading/02.png" type="Sprite" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
    <item name="wxlocal/loading/image_reprod.jpg" type="Image" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
-   <item name="wxlocal/Game/icon_wave.png" type="Sprite" compress="0" pack="0" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/Game/icon_wave.png" type="Sprite" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
    <item name="wxlocal/Game/text_speedup.png" type="Text" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
    <item name="wxlocal/Game/text_shild.png" type="Text" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
    <item name="wxlocal/Game/text_dizzy.png" type="Text" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
    <item name="wxlocal/Game/text_waterbomb.png" type="Text" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/Charge/top.png" type="Sprite" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/Common/bg.png" type="Sprite" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/Result/image_fram.png" type="Image" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/Role/icon_reprod.png" type="Sprite" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/Task/icon_prog_n.png" type="Sprite" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/match/d.png" type="Sprite" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/match/circle4.png" type="Sprite" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/match/circle3.png" type="Sprite" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/match/circle1.png" type="Sprite" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/match/circle2.png" type="Sprite" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/Common/invite-friend-center.png" type="Sprite" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/Common/mask.png" type="Sprite" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/Common/pop-bg.png" type="Sprite" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/Common/result-bg.png" type="Sprite" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/Common/yindao1.png" type="Sprite" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/Game/icon_wave1.png" type="Sprite" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/Game/iconlbl_ready.png" type="Sprite" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/Game/image_end.png" type="Image" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/Game/image_low.png" type="Image" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/Game/image_match_reprod.jpg" type="Image" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/Game/selectBox.png" type="Sprite" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/Home/icon_intermfield.png" type="Sprite" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/Home/icon_senfield.png" type="Sprite" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/Home/icon_startgame.png" type="Sprite" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/Home/image_reprod.jpg" type="Image" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/Home/image_rule.png" type="Image" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/Rank/icon_reprod.png" type="Sprite" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/Rank/shadow.png" type="Sprite" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/match/circle-bg.png" type="Sprite" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/match/d2.png" type="Sprite" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/Home/icon_morerole.png" type="Image" compress="0" pack="0" quality="80" props="" picType="0" scale="0"/>
 </res>

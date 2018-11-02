@@ -224,11 +224,13 @@ var Service = /** @class */ (function () {
     };
     return Service;
 }());
+window.Service = Service;
 var UserViewStyle;
 (function (UserViewStyle) {
     UserViewStyle[UserViewStyle["Girl"] = 0] = "Girl";
     UserViewStyle[UserViewStyle["Boy"] = 1] = "Boy";
 })(UserViewStyle || (UserViewStyle = {}));
+window.UserViewStyle = UserViewStyle;
 var UserView = /** @class */ (function (_super) {
     __extends(UserView, _super);
     function UserView(style) {
@@ -341,6 +343,7 @@ var UserView = /** @class */ (function (_super) {
     };
     return UserView;
 }(Laya.View));
+window.UserView = UserView;
 var AlertDialog = /** @class */ (function (_super) {
     __extends(AlertDialog, _super);
     function AlertDialog(title, msg, ok, okHandler, cancel, cancelHandler) {
@@ -400,6 +403,7 @@ var AlertDialog = /** @class */ (function (_super) {
     };
     return AlertDialog;
 }(PaoYa.Dialog));
+window.AlertDialog = AlertDialog;
 var ChargeAlertForIOS = /** @class */ (function (_super) {
     __extends(ChargeAlertForIOS, _super);
     function ChargeAlertForIOS() {
@@ -413,6 +417,7 @@ var ChargeAlertForIOS = /** @class */ (function (_super) {
     };
     return ChargeAlertForIOS;
 }(PaoYa.Dialog));
+window.ChargeAlertForIOS = ChargeAlertForIOS;
 var GoldLackAlert = /** @class */ (function (_super) {
     __extends(GoldLackAlert, _super);
     function GoldLackAlert() {
@@ -434,6 +439,7 @@ var GoldLackAlert = /** @class */ (function (_super) {
     };
     return GoldLackAlert;
 }(PaoYa.Dialog));
+window.GoldLackAlert = GoldLackAlert;
 var GoldLackAlertForIOS = /** @class */ (function (_super) {
     __extends(GoldLackAlertForIOS, _super);
     function GoldLackAlertForIOS() {
@@ -455,6 +461,7 @@ var GoldLackAlertForIOS = /** @class */ (function (_super) {
     };
     return GoldLackAlertForIOS;
 }(PaoYa.Dialog));
+window.GoldLackAlertForIOS = GoldLackAlertForIOS;
 var WithDrawAlert = /** @class */ (function (_super) {
     __extends(WithDrawAlert, _super);
     function WithDrawAlert() {
@@ -468,6 +475,7 @@ var WithDrawAlert = /** @class */ (function (_super) {
     };
     return WithDrawAlert;
 }(PaoYa.Dialog));
+window.WithDrawAlert = WithDrawAlert;
 var ChargeView = /** @class */ (function (_super) {
     __extends(ChargeView, _super);
     function ChargeView(cb) {
@@ -508,7 +516,7 @@ var ChargeView = /** @class */ (function (_super) {
     };
     ChargeView.prototype.clickHandler = function (item) {
         var _this = this;
-        PaoYa.PayService.pay(item.pao_gold, function () {
+        PaoYa.PayManager.pay(item.pao_gold, function () {
             _this.refreshGold(item.id);
         }, function (code) {
             if (code != -2 || code != 1) {
@@ -534,6 +542,7 @@ var ChargeView = /** @class */ (function (_super) {
     };
     return ChargeView;
 }(PaoYa.Dialog));
+window.ChargeView = ChargeView;
 var PrizeView = /** @class */ (function (_super) {
     __extends(PrizeView, _super);
     function PrizeView(prize) {
@@ -588,6 +597,7 @@ var PrizeShowView = /** @class */ (function (_super) {
     };
     return PrizeShowView;
 }(Laya.HBox));
+window.PrizeShowView = PrizeShowView;
 var Scene = /** @class */ (function (_super) {
     __extends(Scene, _super);
     function Scene() {
@@ -698,6 +708,7 @@ var Scene = /** @class */ (function (_super) {
     };
     return Scene;
 }(PaoYa.Scene));
+window.Scene = Scene;
 var SettingDialog = /** @class */ (function (_super) {
     __extends(SettingDialog, _super);
     function SettingDialog() {
@@ -765,6 +776,7 @@ var SettingDialog = /** @class */ (function (_super) {
     };
     return SettingDialog;
 }(PaoYa.Dialog));
+window.SettingDialog = SettingDialog;
 var TaskReward = /** @class */ (function (_super) {
     __extends(TaskReward, _super);
     function TaskReward(prizes, btnName) {
@@ -842,12 +854,12 @@ var TaskView = /** @class */ (function (_super) {
                 box.skin = "wxlocal/Task/box-noReceive-" + box.taskId + ".png";
                 break;
             case TaskViewStatus.receive:
-                box.alpha = 0;
+                box.skin = null;
                 var boxSkeleton = this.boxAnimate.buildArmature(0);
                 box.boxSkeleton = boxSkeleton;
-                boxSkeleton.pos(Math.ceil(box.width / 2) + box.posX, Math.ceil(box.height / 2) + box.posY);
+                boxSkeleton.pos(70, 70);
                 boxSkeleton.play("jiang_li_" + box.taskId, true);
-                this.giftBoxesInfo.addChild(boxSkeleton);
+                box.addChild(boxSkeleton);
                 break;
             case TaskViewStatus.received:
                 box.skin = "wxlocal/Task/box-received-" + box.taskId + ".png";
@@ -894,6 +906,7 @@ var TaskView = /** @class */ (function (_super) {
     };
     return TaskView;
 }(PaoYa.View));
+window.TaskView = TaskView;
 var GameAgainDialog = /** @class */ (function (_super) {
     __extends(GameAgainDialog, _super);
     function GameAgainDialog() {
@@ -1066,3 +1079,4 @@ var GameAgainService = /** @class */ (function (_super) {
     GameAgainService.START_GAME = "start_game";
     return GameAgainService;
 }(PaoYa.Scene));
+window.GameAgainService = GameAgainService;

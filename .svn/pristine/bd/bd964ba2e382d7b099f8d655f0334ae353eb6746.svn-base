@@ -1,0 +1,231 @@
+export default class MatchView extends PaoYa.View {
+    constructor(params) {
+        super();
+        this.seconds = 0;
+        this.matchCost = params.matchCost;
+        this.ticketCost = params.ticketCost;
+        this.times = new Laya.Label();
+        this.times.text = this.seconds
+        this.times.zOrder = 100
+        this.times.y = 640;
+        this.times.fontSize = 60;
+        this.times.color = "#ffffff";
+        this.times.bold = "true";
+        this.times.width = 750;
+        this.times.align = "center"
+        this.addChild(this.times);
+        //小提示：
+        var tipLabel = new Laya.Label();
+        var tipsText = "Tips:" + PaoYa.DataCenter.config.game.strategy.split(';').randomItem;
+        console.log('fffffffffff', tipsText)
+        tipLabel.text = tipsText;
+        tipLabel.width = 600;
+        //tipLabel.underline=true;
+        tipLabel.color = "#666666";
+        tipLabel.wordWrap = true;
+        tipLabel.align = "center";
+        tipLabel.leading = 20;
+        tipLabel.fontSize = 22;
+        tipLabel.x = (this.width - tipLabel.width) / 2;
+        tipLabel.y = 1220;
+        this.addChild(tipLabel);
+        
+    }
+
+    getSceneUrl() {
+        return 'scene/Match';
+    }
+
+    onEnable() {
+        if (this._getBit(0x08)) {
+            return
+        }
+        console.log(11111111, 'onEnable');
+
+        this.vs.visible = false;
+        if (this.matchCost)
+            this.costRemind.text = "单局输赢" + this.matchCost + "豆子，门票消耗" + this.ticketCost + "豆子";
+        else
+            this.costRemind.visible = false;
+        var match_time_out = PaoYa.DataCenter.config.game.match_time_out;
+        this.match_time_out = parseInt(match_time_out);
+        this.myAddress.visible = false;
+        this.myGender.visible = false;
+        this.otherAddress.visible = false;
+        this.otherGender.visible = false;
+
+
+        var _this = this;
+        this.timerService = new PaoYa.TimerService(1000, 1, true);
+        this.timerService.on(PaoYa.TimerService.PROGRESS, this, function (time) {
+            _this.times.text = time + "";
+        });
+
+        this.animate = new Laya.Animation();
+        this.animate.interval = 400;
+        this.animate.pos(112, 404);
+        // this.animate.loadImages(aniUrls(["circle", 4, 'match']), "circles");
+        this.animate.loadImages(PaoYa.Utils.makeImagesWithFormat("wxlocal/match/circle%i.png", 1, 4), "circles");
+
+        this.addChild(this.animate);
+
+        //我方头像
+        this.myImg.skin = PaoYa.Utils.makeIcon(PaoYa.DataCenter.user.avstar, 132);
+        this.myName.text = PaoYa.Utils.formatName(PaoYa.DataCenter.user.nickname, 5);
+        this.otherImg.skin = PaoYa.Utils.makeIcon("");
+
+        /*匹配成功显示 */
+        this.successText = new Laya.Text();
+        this.successText.text = "匹配成功";
+        this.successText.fontSize = 41;
+        this.successText.x = 292;
+        this.successText.y = 648;
+        this.successText.color = "#ffffff";
+        this.successText.visible = false;
+        this.addChild(this.successText);
+
+
+
+        var width = 674;
+        var height = 966;
+        var x = 0;
+        var y = 0;
+        var r = 20;
+        this.rectSprite.graphics.drawPath(x, y, PaoYa.Utils.makeAllCornerRoundRectPath(width, height, r), {
+            fillStyle: "#ffffff"
+        });
+
+        //返回
+        this.backBtn.clickHandler = Laya.Handler.create(this, function () {
+            this.event(MatchView.BACK, MatchView.BACK);
+        }, null, false);
+
+    }
+    onStart() {
+
+    }
+    startMatch() {
+        this.timerService.start();
+        this._startAnimation();
+    }
+    stopMatch() {
+        this.timerService.stop();
+        this._stopAnimation();
+    }
+
+
+    _startAnimation() {
+        Laya.timer.frameLoop(1, this, this._rotate);
+        this.animate.play(1, true, "circles");
+    }
+    _stopAnimation() {
+        Laya.timer.clear(this, this._rotate);
+        this.animate.clear();
+    }
+
+    _rotate() {
+        this.bigCircle.rotation += 2;
+    }
+
+    matchSuccess(params, complete, makeIcon) {
+        if (this.timerService)
+            this.timerService.stop();
+
+        this.backBtn.visible = false;
+
+        this.times.visible = false;
+        this.successText.visible = true;
+
+        console.log('matchSuccess', params)
+        var myInfo, otherInfo;
+        if (params.match_list[0].user_id == PaoYa.DataCenter.user.id) {
+            myInfo = params.match_list[0];
+            otherInfo = params.match_list[1];
+        } else {
+            myInfo = params.match_list[1];
+            otherInfo = params.match_list[0];
+        }
+
+        this.otherImg.skin = makeIcon !== false ? PaoYa.Utils.makeIcon(otherInfo.user_icon, 132) : otherInfo.user_icon;
+        this.otherName.text = PaoYa.Utils.formatName(otherInfo.user_name, 5);
+
+        this.myAddress.text = PaoYa.DataCenter.user.member_province + ' ' + PaoYa.DataCenter.user.city || "未知";
+        myInfo.location = this.myAddress.text;
+        this.otherAddress.text = otherInfo.location || "未知";
+
+        this.myGender.skin = this.getGenderUrl(PaoYa.DataCenter.user.gender);
+        this.otherGender.skin = this.getGenderUrl(otherInfo.gender);
+
+        this.myAddress.visible = true;
+        this.myGender.visible = true;
+        this.otherAddress.visible = true;
+        this.otherGender.visible = true;
+
+        var myWinRate = myInfo.continuous_win;
+        var otherWinRate = otherInfo.continuous_win;
+        var myLocal = myInfo.location;
+        var otherLocal;
+        if (!otherInfo.location) {
+            otherLocal = myInfo.location;
+        } else {
+            otherLocal = otherInfo.location;
+        }
+        var otherSex = otherInfo.gender;
+        this.showWinRate(myWinRate, "myWinRate");
+        this.showWinRate(otherWinRate, "otherWinRate");
+
+        PaoYa.DataCenter.winRate = {
+            "myWinRate": myWinRate,
+            "otherWinRate": otherWinRate
+        }
+        var otherInfo = {
+            otherLocal: otherLocal,
+            otherSex: otherSex
+        }
+        PaoYa.DataCenter.user.myLocal = myLocal;
+        PaoYa.DataCenter.otherInfo = otherInfo;
+
+        var _this = this;
+        Laya.timer.once(1000, this, function () {
+            _this.circleBg.visible = false;
+            _this.times.visible = false;
+            _this.successText.visible = false;
+            this.vs.visible = true;
+            Laya.Tween.to(_this.myInfo, {
+                x: 480,
+                y: 500
+            }, 300, Laya.Ease.linearInOut);
+            Laya.Tween.to(_this.otherInfo, {
+                x: 50,
+                y: 500
+            }, 300, Laya.Ease.linearInOut, Laya.Handler.create(this, function () {
+                //延时2s触发成功回调
+                Laya.timer.once(2000, this, complete);
+            }));
+        })
+    }
+
+    showWinRate(num, name) {
+        if (num > 1) {
+            this[name].visible = true;
+            this[name].skin = "wxlocal/continuWin/" + num + ".png";
+        }
+        else {
+            this[name].visible = false;
+        }
+    }
+
+    getGenderUrl(params) {
+        if (!params) {
+            return "wxlocal/match/gay.png";
+        } else if (params == "男") {
+            return "wxlocal/match/boy.png";
+        } else {
+            return "wxlocal/match/girl.png";
+        }
+    }
+}
+
+MatchView.BACK = "back";
+MatchView.MATCH_AGAIN = "match_again";
+MatchView.MATCH_CANCEL = "match_cancel";

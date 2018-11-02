@@ -1,0 +1,44 @@
+import GameResultView from "./GameResultView";
+import GameScene from "../game/GameScene";
+import MatchGradeScene from '../MatchGrade/MatchGradeScene'
+// import SelectGameScene from "../Home/SelectGameScene";
+
+export default class GameResultScene extends PaoYa.Scene {
+    constructor(e, data) {
+        super()
+        this.view = new GameResultView(e, data,PaoYa.DataCenter.matchSUccessData)
+    }
+    onViewClick(e) {
+        switch (e.target.name) {
+            case 'btnAgain':
+                console.log(1234321)
+                this.goMatchScene()
+                break
+            case 'btnBack':
+                let scene = this.navigator.findSceneWithClass(MatchGradeScene)
+                this.navigator.popToScene(scene)
+                break
+            case 'btnShowy':
+            PaoYa.ShareManager.share(PaoYa.DataCenter.config.game.share_list.randomItem, PaoYa.DataCenter.config.game.share_img.randomItem, {}, function () {});
+                break
+            case 'btnChangeLuck':
+                console.log('更改')
+        }
+    }
+    goMatchScene() {
+        var type = PaoYa.DataCenter.config.game.match_type;
+        switch (MatchGradeScene.matchTypeId) {
+            case type[0].id:
+                // this.event(MatchGradeScene.goNovice)
+                MatchGradeScene.goNovice();
+                break;
+            case type[1].id:
+                MatchGradeScene.goPrimary();
+                break;
+            case type[2].id:
+                // this.event(MatchGradeScene.MIDDLE,{})
+                MatchGradeScene.goMiddle();
+                break;
+        }
+    }
+}
