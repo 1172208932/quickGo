@@ -6,9 +6,10 @@ export default class HomeView extends PaoYa.View {
     }
     onEnable(){
         console.log(PaoYa.ShareManager.imageURL)
-        this.shield = new Laya.Skeleton(SpineConfig.win_lose.templet);
-        this.shield.pos(0, 0)
-        this.shield.play(0, true);
-        this.addChild(this.shield);
+        // this.shield = new Laya.Skeleton(SpineConfig.win_lose.templet);
+        // this.shield.pos(0, 0)
+        // this.shield.play(0, true);
+        // this.addChild(this.shield);
     }
 }
+export var name = 'zhangxiaoxu'

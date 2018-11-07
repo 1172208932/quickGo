@@ -34,7 +34,14 @@ export default class GameScene extends PaoYa.Scene {
     toReslutMessage(e) {
         console.log(e)
         this.view.mouseEnabled = false;
+        this.isGameOver = true;
+       if(e == 2){
+           console.log(2)
+        this.sendMessage(PaoYa.Client.GAME_BET, { user_bets: { is_finish: 2, distance: 8000} });
+       }else{
         this.sendMessage(PaoYa.Client.GAME_BET, { user_bets: { is_finish: 1, distance: 8000, user_id: e } });
+       }
+
     }
 
     toReslut(e, data) {
@@ -43,9 +50,9 @@ export default class GameScene extends PaoYa.Scene {
         this.view.clearAnimation();
         this.shield = new Laya.Skeleton(SpineConfig.win_lose.templet);
         this.shield.pos(0, 350)
-        if(e==1){
+        if (e == 1) {
             this.shield.play(0, false);
-        }else{
+        } else {
             this.shield.play(e, false);
         }
         this.view.addChild(this.shield);
@@ -71,7 +78,7 @@ export default class GameScene extends PaoYa.Scene {
         var message;
         console.log("收到消息时的数据", e)
         let props_id = e.props_id;
-        this.isRobot = this.params.other.isRobot;
+        // this.isRobot = this.params.other.isRobot;
         this.otherUserId = this.params.other.user_id;
         switch (true) {
             case props_id == 1:
@@ -104,11 +111,12 @@ export default class GameScene extends PaoYa.Scene {
 
     /**收到游戏结束消息 */
     onEndPK(data) {
+        console.log('jiedsaf1111111111',data)
         let res
         let ownUserId = PaoYa.DataCenter.user.id
         let winId = data.win_userid
         switch (winId) {
-            case '0':
+            case 0:
                 res = 2
                 break
             case ownUserId:

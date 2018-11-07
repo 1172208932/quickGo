@@ -1,0 +1,138 @@
+import GameView from './GameView'
+import clearTime from '../dialog/ReadyGoDialog'
+import SpineConfig from "../SpineConfig";
+import GameResultScene from '../result/GameResultScene';
+import GameBg from '../common/GameBg';
+import Sound from '../common/Sound';
+export default class GameScene extends PaoYa.Scene {
+    constructor(params) {
+        super();
+        this.params = params;
+        let gameview = new GameView(params)
+        this.view = gameview;
+        this.isGameOver = false;
+        // this.view.on(GameOnlineView.SendBet, this, this.onSendBet);
+    }
+
+    viewDidLoad() {
+        Sound.stopAll()
+        Sound.onPlayBatBg()
+        Laya.Scene.open('scene/dialog/ReadyGo.json');
+        this.view.on(GameView.SendBet, this, this.onSendBet);
+        this.onMessage(PaoYa.Client.GAME_START_PK, this, this.onStartPK);
+        this.onMessage(PaoYa.Client.GAME_BET, this, this.onBet);
+        this.onMessage(PaoYa.Client.GAME_END_PK, this, this.onEndPK)
+        this.onMessage(PaoYa.Client.GAME_END_PKGAME, this, this.onEndPkGame)
+        this.view.on(GameView.RESULT, this, this.toReslutMessage)
+        this.view.on(GameView.SendMyInfo, this, this.sendMyInfo)
+    }
+
+    sendMyInfo(e) {
+        this.sendMessage(PaoYa.Client.GAME_BET, { user_bets: e });
+    }
+
+    toReslutMessage(e) {
+        console.log(e)
+        this.view.mouseEnabled = false;
+        this.sendMessage(PaoYa.Client.GAME_BET, { user_bets: { is_finish: 1, distance: 8000, user_id: e } });
+    }
+
+    toReslut(e, data) {
+        Laya.Tween.clearAll(this.playerSelf);
+        Laya.Tween.clearAll(this.playerOther);
+        this.view.clearAnimation();
+        this.shield = new Laya.Skeleton(SpineConfig.win_lose.templet);
+        this.shield.pos(0, 350)
+        if (e == 1) {
+            this.shield.play(0, false);
+        } else {
+            this.shield.play(e, false);
+        }
+        this.view.addChild(this.shield);
+        this.shield.on(Laya.Event.STOPPED, this, function () {
+            this.shield.destroy();
+            this.gameOver(e, data)
+        })
+        Sound.stopAll();
+    }
+
+    gameOver(e, data) {
+        // 2平局 4 胜利 1失败        
+        console.log(e)
+        this.isGameOver = true;
+        PaoYa.DataCenter.firstProp = 0
+        let gameResultScene = new GameResultScene(e, data)
+        this.navigator.push(gameResultScene)
+    }
+
+    onBet(e) {
+        //1-护盾，2-加速，3-水弹
+        if (this.isGameOver) { return; }
+        var message;
+        console.log("收到消息时的数据", e)
+        let props_id = e.props_id;
+        this.isRobot = this.params.other.isRobot;
+        this.otherUserId = this.params.other.user_id;
+        switch (true) {
+            case props_id == 1:
+                // this.view.protectShield(false)
+                // console.log("对手击中护盾")
+                this.view.fasting = 1;//1代表对手
+                console.log("对手击中加速")
+                PaoYa.DataCenter.isRobot ? null : this.view.runFast()
+                break;
+            case props_id == 2:
+                this.view.fasting = 1;//1代表对手
+                console.log("对手击中加速")
+                PaoYa.DataCenter.isRobot ? null : this.view.runFast()
+                break;
+            case props_id == 3:
+                this.view.watering = 1;//1代表对手
+                console.log("对手击中水弹")
+                this.view.throwWater()
+                break;
+        }
+
+    }
+
+    onStartPK() {
+        let arr = PaoYa.DataCenter.value
+        console.log(arr)
+    }
+
+    /**发送消息 */
+    onSendBet(e) {
+        this.sendMessage(PaoYa.Client.GAME_BET, e);
+    }
+
+    /**收到游戏结束消息 */
+    onEndPK(data) {
+        let res
+        let ownUserId = PaoYa.DataCenter.user.id
+        let winId = data.win_userid
+        switch (winId) {
+            case 0:
+                res = 2
+                break
+            case ownUserId:
+                res = 4
+                break
+            default:
+                res = 1
+                break
+        }
+        this.toReslut(res, data)
+    }
+
+    onEndPkGame(data) {
+        console.log('晋级赛结束：', data)
+        //切换服务器
+    }
+    onShow(){
+        Sound.onPlayBatBg()
+    }
+    destroy() {
+        Laya.timer.clearAll(this);
+        PaoYa.Scene.prototype.onDestroy.call(this);
+    }
+}

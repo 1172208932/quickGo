@@ -97,7 +97,7 @@ class Main extends PaoYa.Main {
 			var homeScene = new HomeScene();
 			this.navigator.push(homeScene);
 			this.navigator.dismiss(this.loadingScene)
-
+			console.log(111, PaoYa.DataCenter.user.avstar)
 		})
 	}
 

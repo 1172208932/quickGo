@@ -1,9 +1,11 @@
 import HomeView from "./HomeView";
 import RoleChangeScene from "../role/RoleChangeScene";
-import GameScene from "../game/GameScene";
+import GameScene, { name as teads } from "../game/GameScene";
 import MatchGradeScene from "../MatchGrade/MatchGradeScene";
 import RankingListScene from "../Rank/RankingListScene";
 import Sound from "../common/Sound";
+
+
 
 export default class HomeScene extends Scene {
     constructor() {
@@ -12,18 +14,20 @@ export default class HomeScene extends Scene {
         this.view = homeView
     }
     viewWillAppear() {
+        console.log(PaoYa.DataCenter.user,'33333333333333')
         Scene.prototype.viewWillAppear.call(this);
         if (PaoYa.DataCenter.rawData.is_first_game == 0) {
             Laya.Scene.open('scene/dialog/RuleDialog.json')
             this.POST('/save_new_hand', {}, function (data) {
-                console.log(data)
+                console.log('shouci',data)
             })
+            PaoYa.DataCenter.rawData.is_first_game = 1
         }
-        console.log(PaoYa.DataCenter.login)
+        console.log(PaoYa.DataCenter.user.avstar)
         let userData = PaoYa.DataCenter.user
         // console.log(userData)
         var a = 70;
-        console.log('4444444', new Number(90).formatTime())
+        // console.log('4444444', new Number(90).formatTime())
         this.showWxIcon()
         this.addMarquee();
         if (this.marquee) {

@@ -11,6 +11,7 @@ export default class RankingListScene extends PaoYa.Scene{
     viewDidLoad(){
         var _this = this
         this.GET("/ranking_list", { type: 8 }, function (data) {
+            console.log(data)
             _this.view.setList(data)
         })
     }
