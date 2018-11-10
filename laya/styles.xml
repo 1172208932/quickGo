@@ -36,7 +36,7 @@
    <item name="wxlocal/Game/iconlbl_ready.png" type="Sprite" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
    <item name="wxlocal/Game/image_end.png" type="Image" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
    <item name="wxlocal/Game/image_low.png" type="Image" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
-   <item name="wxlocal/Game/image_match_reprod.jpg" type="Image" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
+   <item name="wxlocal/Game/image_match_reprod.jpg" type="Image" compress="0" pack="2" quality="80" props="" picType="0" scale="0"/>
    <item name="wxlocal/Game/selectBox.png" type="Sprite" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
    <item name="wxlocal/Home/icon_intermfield.png" type="Sprite" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>
    <item name="wxlocal/Home/icon_senfield.png" type="Sprite" compress="0" pack="1" quality="80" props="" picType="0" scale="0"/>

@@ -737,20 +737,21 @@ var SettingDialog = /** @class */ (function (_super) {
         this.musicSwitch.on(Laya.Event.CLICK, this, this.setMusicVolume);
         this.effectSwitch.on(Laya.Event.CLICK, this, this.setEffectVolume);
         if (localStorage.getItem("musicSwitchState")) {
-            this.musicSwitch.skin = "wxlocal/Common/volumeBar0.png";
-            Laya.SoundManager.musicMuted = true;
-        }
-        else {
             this.musicSwitch.skin = "wxlocal/Common/volumeBar1.png";
             Laya.SoundManager.musicMuted = false;
         }
-        if (localStorage.getItem("effectSwitchState")) {
-            this.effectSwitch.skin = "wxlocal/Common/volumeBar0.png";
-            Laya.SoundManager.soundMuted = true;
-        }
         else {
+            this.musicSwitch.skin = "wxlocal/Common/volumeBar0.png";
+            Laya.SoundManager.musicMuted = true;
+
+        }
+        if (localStorage.getItem("effectSwitchState")) {
             this.effectSwitch.skin = "wxlocal/Common/volumeBar1.png";
             Laya.SoundManager.soundMuted = false;
+        }
+        else {
+            this.effectSwitch.skin = "wxlocal/Common/volumeBar0.png";
+            Laya.SoundManager.soundMuted = true;
         }
     };
     SettingDialog.prototype.getSceneUrl = function () {

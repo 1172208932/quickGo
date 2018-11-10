@@ -80,7 +80,7 @@ export default class GameView extends PaoYa.View {
 
     monitor() {
         var userId = 2;
-        Sound.stopAll();
+        // Sound.stopAll();
 
         this.a = this.panel.getComponent(GameBg);
         Laya.timer.once(5000, this, function () {
@@ -210,10 +210,12 @@ export default class GameView extends PaoYa.View {
                     this.mouseEnabled = false;
                 } else {
                     this.a.oppoSpeed = 0;
-                    PaoYa.DataCenter.isRobot = true;
-                    Laya.timer.once(750, this, function () {
-                        PaoYa.DataCenter.isRobot = false;
-                    })
+                    PaoYa.DataCenter.addSpeedCan = true;
+                    Laya.timer.once(750,this,function(){ PaoYa.DataCenter.addSpeedCan = false;})
+                    // PaoYa.DataCenter.isRobot = true;
+                    // Laya.timer.once(750, this, function () {
+                    //     PaoYa.DataCenter.isRobot = false;
+                    // })
                 }
             } else {
                 playerAttacked.shield.visible = false;
@@ -313,26 +315,26 @@ export default class GameView extends PaoYa.View {
     }
 
     tweenPlayerDs(removeY) {
-        if (removeY == 200) {
-            this.removeLength += 1.33
+        // if (removeY == 200) {
+        //     this.removeLength += 1.33
+        //     Laya.timer.once(1500, this, function () {
+        //         this.removeLength -= 1.33
+        //         this.playerSelf.skPlayer.play(1, true);
+        //         this.playerDs.skPlayer.play(1, true);
+        //         this.playerSelf.skate.play(0, true);
+        //         this.playerDs.skate.play(0, true);
+        //     })
+        // }
+        // if (removeY == -200) {
+        //     this.removeLength -= 1.33
             Laya.timer.once(1500, this, function () {
-                this.removeLength -= 1.33
+                // this.removeLength += 1.33
                 this.playerSelf.skPlayer.play(1, true);
                 this.playerDs.skPlayer.play(1, true);
                 this.playerSelf.skate.play(0, true);
                 this.playerDs.skate.play(0, true);
             })
-        }
-        if (removeY == -200) {
-            this.removeLength -= 1.33
-            Laya.timer.once(1500, this, function () {
-                this.removeLength += 1.33
-                this.playerSelf.skPlayer.play(1, true);
-                this.playerDs.skPlayer.play(1, true);
-                this.playerSelf.skate.play(0, true);
-                this.playerDs.skate.play(0, true);
-            })
-        }
+        // }
         // if (this.tweenDs) {
         //     this.tweenDs.complete();
         // }
@@ -346,7 +348,9 @@ export default class GameView extends PaoYa.View {
     }
     dsMove() {
         Laya.timer.loop(10, this, function () {
-            this.playerDs.y += this.removeLength
+        console.log( this.removeLength)
+            // this.playerDs.y += this.removeLength
+            this.playerDs.y =  (this.a.ownPercent-this.a.oppoPercent)*8000+600
         })
     }
 

@@ -1,6 +1,5 @@
 D .
 D wxlocal
-R 3668D2A6 Common.zip
 D wxlocal/Charge
 P DAFBB4A3 1.png
 P 84FD8DB9 2.png
@@ -16,6 +15,7 @@ D wxlocal/Common
 P 222B5511 22.png
 P 580D835B add.png
 P 654FEADE avstar.png
+R F2822F8A bg.jpg
 P FE11DCED bg.png
 P 64783D8D bgMusicSet.png
 P BFC25418 bgSet.png
@@ -63,7 +63,6 @@ P ECF992B4 icon-hb-ladder.png
 P A39CAB46 invite-friend-center.png
 P D8AB4445 inviteFriend.png
 P 49DEEB8A jump-hall.png
-P 6CCC0946 mask.png
 P 4C90886A moreGame.png
 P 7235C073 pop-bg.png
 P 6A5AFBC3 public-qr.png
@@ -84,61 +83,15 @@ P E26B933E vscroll$down.png
 P B9680947 vscroll$up.png
 P 7E990267 vscroll.png
 P 87422219 weixin.png
-D wxlocal/comp
-P D12221A9 bg.png
-P 9401CC40 blank.png
-P B03390E5 btn_close.png
-P 1F3929EA button.png
-P 6CC6DF97 checkbox.png
-P FB94CCF2 clip_num.png
-P F7B6B7D7 clip_selectBox.png
-P 755271AE clip_tree_arrow.png
-P 859FD34C clip_tree_folder.png
-P A0E3B8F9 combobox.png
-P 9EDA959E hscroll$bar.png
-P 1AB768D4 hscroll$down.png
-P 685261D3 hscroll$up.png
-P 274B8076 hscroll.png
-P E466EB1C hslider$bar.png
-P C4BECA54 hslider.png
-P 5EDC128C html.png
-P ACFFCCCF image.png
-P 5EDC128C label.png
-P 5EDC128C linkbutton.png
-P 9E4DD730 progress$bar.png
-P 3FD78E12 progress.png
-P BF898D6A radio.png
-P BF898D6A radiogroup.png
-P 8CFD9D35 tab.png
-P BDA71F88 textarea.png
-P BDA71F88 textinput.png
-P 52107B89 vscroll$bar.png
-P E26B933E vscroll$down.png
-P B9680947 vscroll$up.png
-P 7E990267 vscroll.png
-P E466EB1C vslider$bar.png
-P 2BFF7046 vslider.png
-D wxlocal/continuWin
-P 00A52D44 1.png
-P 9F601858 10.png
-P FC5E5B7F 11.png
-P 1CE45EE5 2.png
-P 1578615F 3.png
-P 805E31F4 4.png
-P 0C5D0D86 5.png
-P 0561592A 6.png
-P 2BBF978E 7.png
-P BF90FB3A 8.png
-P 622F8951 9.png
 D wxlocal/Game
 P 64605D90 body1.png
 P 27AE9DA4 body2.png
 P 1FA62380 icon_boy.png
-P 5184E7EC icon_boy1.png
+P 63A73CDB icon_boy1.png
 P 9466D874 icon_choose.png
 P F2C49F40 icon_end.png
 P C421E085 icon_girl.png
-P 5E9B9CE9 icon_girl1.png
+P BB6E9CD3 icon_girl1.png
 P AD878CC0 icon_gridlins.png
 P 8BDA786C icon_picfra.png
 P 8FFFBC73 icon_shild.png
@@ -157,8 +110,8 @@ P D3D7ABDD iconlbl_3.png
 P 84AA8EC7 iconlbl_go.png
 P 34FE8013 iconlbl_ready.png
 P 544E9F7A image_end.png
-P 6272BBD6 image_low.png
-P E768DA51 image_match_reprod.jpg
+R E3B0295A image_low.jpg
+R E768DA51 image_match_reprod.jpg
 P 7591270B selectBox.png
 P 14A4558C skills_shild.png
 P B7FB9EEC skills_speedup.png
@@ -173,14 +126,14 @@ P C7D58323 btn_shutdown.png
 P 55DD3555 btnRank.png
 P 49E1BAEC btnSet.png
 P AE0499D2 icon_bean.png
-P E8F45EB8 icon_frendsplay.png
+P 1E054A22 icon_frendsplay.png
 P 654B4E66 icon_getbean.png
 R 07A2BBC1 icon_intermfield1.png
 P F30D059E icon_morerole.png
 P 2FB9F2F2 icon_newfield.png
 P 0A370850 icon_peop.png
 R 8AB64520 icon_primary.png
-P 12C5D4BD icon_startgame.png
+P 3069C208 icon_startgame.png
 P F507DDA4 icon_treasch.png
 P 76F69BD5 image_reprod.jpg
 P 8BDDE663 image_rule.png
@@ -204,8 +157,6 @@ D wxlocal/MatchGrade
 P 2DCB9CB4 outBox.png
 D wxlocal/Rank
 P 654FEADE avstar.png
-P 0F67DCC3 btn-left.png
-P B5096EF9 btn-right.png
 P 49AB3234 btn_budlist_n.png
 P 32A70172 btn_budlist_p.png
 P 324DE739 btn_winnumb_n.png
@@ -219,10 +170,7 @@ P FA7F3D9E icon_third.png
 P 0E678198 image_box_oneself.png
 P 7DF34505 mask_pictfra1.png
 P 4B5D8918 mask_pictfra2.png
-P 540433A7 second.png
 P B2ACA80C shadow.png
-P 36FD6E55 third.png
-P E5DF5EBC winner.png
 D wxlocal/Result
 P D585E01C btn_changeluck.png
 P 4C91869A btn_openhang.png
@@ -281,4 +229,3 @@ P 380FF5A2 box-received-2.png
 P F9E65944 box-received-3.png
 P C0079690 icon_prog_n.png
 P 2A69DD91 prog_bot.png
-D wxlocal/新建文件夹

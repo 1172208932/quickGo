@@ -10,6 +10,7 @@ class Main extends PaoYa.Main {
 			gameId: 1017,
 			/**API 接口地址 */
 			baseURL: 'http://47.96.1.255:8080/ServiceCore/',
+			// baseURL: 'https://wxapi.xingqiu123.com/ServiceCore/',
 			/**socket 游戏 zone */
 			zone: 'surfing',
 			/**米大师支付 */
@@ -27,7 +28,7 @@ class Main extends PaoYa.Main {
 			/**是否显示性能面板 */
 			showStat: false,
 			/**用于浏览器登录 */
-			userId: 110577//110577
+			userId: 162378			//110577
 		}
 		super(params);
 
@@ -36,8 +37,12 @@ class Main extends PaoYa.Main {
 
 	/**初始化首屏界面 */
 	initRootScene(launchOption) {
-		PaoYa.Loader.load(["res/atlas/wxlocal/loading.atlas"], this, function () {
-			Sound.onPlayHomeMusic()
+
+		Laya.loader.load('res/atlas/wxlocal/Rank.atlas', Laya.Handler.create(this, function () {
+			typeof wx != 'undefined' && Laya.MiniAdpter.sendAtlasToOpenDataContext('res/atlas/wxlocal/Rank.atlas');
+		}));
+		PaoYa.Loader.load(['wxlocal/loading/image_reprod.jpg', "res/atlas/wxlocal/loading.atlas"], this, function () {
+			// Sound.onPlayHomeMusic()
 			if (Laya.Render.isConchApp) {
 				Laya.timer.once(500, this, function () {
 					typeof wx != 'undefined' && wx.hideSplash && wx.hideSplash();
@@ -54,12 +59,14 @@ class Main extends PaoYa.Main {
 			view.y = y
 			this.addChild(view)
 		}
+
 		this.ifService = new InviteService();
 		this.ifService.on(InviteService.START_GAME, this, function (data, data2) {
 			//收到服务端发送的游戏开始命令的回掉
 			//用于数据的处理并且构建游戏界面
+			PaoYa.DataCenter.gameType = "friend"
 			console.log('好友邀请数据：', data, data2);
-			var dd = {match_list :[data.invite_user,data.receive_user]}
+			var dd = { match_list: [data.invite_user, data.receive_user] }
 			PaoYa.DataCenter.matchSUccessData = dd
 			var params = { self: null, other: null };
 			if (PaoYa.DataCenter.user.id == data.invite_user.user_id) {
@@ -70,8 +77,8 @@ class Main extends PaoYa.Main {
 				params.other = data.invite_user;
 			}
 			params.gameConfig = data2.game_config;
-
-			console.log("params",params)
+			params.speed = data2.speed;
+			console.log("params", params)
 			PaoYa.DataCenter.game_params = params;
 			var gameScene = new GameScene(params)
 			PaoYa.Game.ins.navigator.push(gameScene);
@@ -79,6 +86,14 @@ class Main extends PaoYa.Main {
 		});
 
 	};
+
+	initService() {
+		this.networkMonitor.on(PaoYa.NetworkMonitor.NETWORK_CHANGE, this, function (res) {
+			if (this.navigator.scenes.length > 1 && !res.isConnected) {
+				this.navigator.popToRootScene();
+			}
+		});		
+	}
 
 	handleOnShow(res) {
 		PaoYa.Main.prototype.handleOnShow.call(this, res);
@@ -94,10 +109,11 @@ class Main extends PaoYa.Main {
 		this.login();
 		PaoYa.NotificationCenter.defaultCenter.on(PaoYa.NotificationName.LoginSuccess, this, function () {
 			console.log("登陆成功")
-			var homeScene = new HomeScene();
-			this.navigator.push(homeScene);
-			this.navigator.dismiss(this.loadingScene)
-			console.log(111, PaoYa.DataCenter.user.avstar)
+			PaoYa.Loader.load('res/atlas/wxlocal/Home.atlas', this, function () {
+				var homeScene = new HomeScene();
+				this.navigator.push(homeScene);
+				this.navigator.dismiss(this.loadingScene)
+			})
 		})
 	}
 
@@ -114,7 +130,7 @@ class Main extends PaoYa.Main {
 	//游戏页面用户性别信息
 	getGenderUrl(params) {
 		if (!params) {
-			return "wxlocal/match/gay.png";
+			return "wxlocal/match/girl.png";
 		} else if (params == "男") {
 			return "wxlocal/match/boy.png";
 		} else {
@@ -122,7 +138,29 @@ class Main extends PaoYa.Main {
 		}
 	}
 
+	onShareAppMessage() {
+		PaoYa.DataCenter.isShare = true;
+		return {
+			title: PaoYa.DataCenter.config.game.share_list.randomItem,
+			imageUrl: "http://res.xingqiu123.com/" + PaoYa.DataCenter.config.game.share_img.randomItem,
+			query: "",
+			success: function (res) {
+				console.log(res.shareTickets, res.groupMsgInfos);
+			}
+		}
+	}
+
+	jumpOtherGame(){
+		var _this = this;
+        Service.navigateToMiniProgram({
+            appId: _this.jumpInfo.appId,
+            images: [_this.jumpInfo.img]
+        });
+	}
+
 }
+
 //激活启动类
 PaoYa.ShareManager.imageURL = "http://res.xingqiu123.com/wxgame/surfing/share/image_sharepro.png";
+PaoYa.DataCenter.CDNURL = 'https://res.xingqiu123.com/';
 new Main();
